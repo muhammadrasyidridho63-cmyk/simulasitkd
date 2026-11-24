@@ -13,6 +13,7 @@ const App = (function () {
     view: 'landing', // landing | dashboard | exam | result | admin
     user: ApiClient.getSavedUser(),
     authTab: 'login', // login | register | emergency
+    authConfig: null, // { googleOAuthEnabled, googleClientId, demoOAuth }
     dashData: null,
     paketFilter: 'Semua', // Semua | Latihan | Pro
     exam: null, // { paket, soal, answers, doubtful, idx, startedAt, endAt }
@@ -105,12 +106,14 @@ const App = (function () {
 
     if (view === 'landing') {
       renderLanding(root);
+      loadAuthConfigAndMountGoogle();
       return;
     }
 
     if (!state.user && !ApiClient.getToken()) {
       state.view = 'landing';
       renderLanding(root);
+      loadAuthConfigAndMountGoogle();
       return;
     }
 
@@ -373,6 +376,17 @@ const App = (function () {
                   <button onclick="App.setAuthTab('login')" class="py-2.5 rounded-full ${state.authTab === 'login' ? 'bg-white text-[#0E3B2C] shadow-sm' : 'text-[#64748B]'}">Masuk</button>
                   <button onclick="App.setAuthTab('register')" class="py-2.5 rounded-full ${state.authTab === 'register' ? 'bg-white text-[#0E3B2C] shadow-sm' : 'text-[#64748B]'}">Daftar Akun Latihan</button>
                 </div>
+
+                ${state.authTab !== 'emergency' ? `
+                  <div id="google-oauth-wrap" class="hidden space-y-3">
+                    <div id="google-signin-btn" class="flex justify-center"></div>
+                    <div class="relative flex items-center py-1">
+                      <div class="flex-grow border-t border-[#E2E8F0]"></div>
+                      <span class="mx-3 text-[11px] font-medium text-[#64748B]">atau lanjutkan dengan email</span>
+                      <div class="flex-grow border-t border-[#E2E8F0]"></div>
+                    </div>
+                  </div>
+                ` : ''}
 
                 ${state.authTab === 'login' ? `
                   <form onsubmit="App.handleLogin(event)" class="space-y-4">
@@ -979,6 +993,74 @@ const App = (function () {
     }
   }
 
+  async function loadAuthConfigAndMountGoogle() {
+    try {
+      if (!state.authConfig) {
+        state.authConfig = await ApiClient.call('auth.config');
+      }
+      mountGoogleSignInButton();
+    } catch (e) {
+      // Abaikan diam-diam jika auth.config gagal
+    }
+  }
+
+  function mountGoogleSignInButton(attempt) {
+    attempt = attempt || 0;
+    const cfg = state.authConfig;
+    const wrap = document.getElementById('google-oauth-wrap');
+    const slot = document.getElementById('google-signin-btn');
+    if (!wrap || !slot || !cfg || !cfg.googleOAuthEnabled) return;
+
+    wrap.classList.remove('hidden');
+
+    // Mode Demo Lokal (tanpa Google Client ID asli)
+    if (cfg.demoOAuth || ApiClient.isDemoMode()) {
+      slot.innerHTML = `
+        <button type="button" onclick="App.handleDemoGoogleLogin()"
+          class="w-full h-11 px-4 rounded-full border border-[#E2E8F0] bg-white hover:bg-[#F7FAF8] text-xs sm:text-sm font-semibold text-[#111827] inline-flex items-center justify-center gap-2.5 shadow-sm transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.3h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.26-2.08 3.56-5.15 3.56-8.65z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.93-2.91l-3.87-3c-1.07.72-2.44 1.14-4.06 1.14-3.12 0-5.77-2.11-6.72-4.95H1.29v3.09A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.28 14.28A7.18 7.18 0 0 1 4.9 12c0-.79.14-1.56.38-2.28V6.63H1.29A12 12 0 0 0 0 12c0 1.94.46 3.77 1.29 5.37l3.99-3.09z"/><path fill="#EA4335" d="M12 4.77c1.76 0 3.34.61 4.58 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.29 6.63l3.99 3.09C6.23 6.88 8.88 4.77 12 4.77z"/></svg>
+          Masuk dengan Google (Mode Demo)
+        </button>`;
+      return;
+    }
+
+    // Mode Produksi: Google Identity Services (OAuth 2.0)
+    if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+      if (attempt < 15) setTimeout(function () { mountGoogleSignInButton(attempt + 1); }, 300);
+      return;
+    }
+
+    slot.innerHTML = '';
+    window.google.accounts.id.initialize({
+      client_id: cfg.googleClientId,
+      callback: handleGoogleCredentialResponse
+    });
+    window.google.accounts.id.renderButton(slot, {
+      theme: 'outline',
+      size: 'large',
+      shape: 'pill',
+      text: state.authTab === 'register' ? 'signup_with' : 'signin_with',
+      width: Math.min(360, Math.max(260, slot.parentElement.offsetWidth || 320)),
+      locale: 'id'
+    });
+  }
+
+  async function handleGoogleCredentialResponse(response) {
+    if (!response || !response.credential) {
+      return toast('Login Google dibatalkan atau gagal.', 'warning');
+    }
+    try {
+      toast('Memverifikasi akun Google Anda...', 'info');
+      const res = await ApiClient.call('auth.googleLogin', { credential: response.credential });
+      ApiClient.setSession(res.token, res.user);
+      state.user = res.user;
+      toast(res.isNewUser ? 'Akun Latihan dibuat otomatis via Google!' : 'Selamat datang kembali, ' + res.user.nama_lengkap, 'success');
+      go(res.user.role === 'Admin' ? 'admin' : 'dashboard');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
   // ==========================================================================
   // PUBLIC HANDLERS & INIT
   // ==========================================================================
@@ -1023,7 +1105,8 @@ const App = (function () {
     openModal: openModal,
     closeModal: closeModal,
     logout: logout,
-    setAuthTab: function (t) { state.authTab = t; renderLanding(document.getElementById('app')); },
+    setAuthTab: function (t) { state.authTab = t; renderLanding(document.getElementById('app')); mountGoogleSignInButton(); },
+    handleDemoGoogleLogin: function () { handleGoogleCredentialResponse({ credential: 'DEMO_ID_TOKEN' }); },
     handleLogin: async function (e) {
       e.preventDefault();
       try {

@@ -797,26 +797,85 @@ const AdminPanel = (function () {
     const sec = (state.secretsData && state.secretsData.secrets) || [];
     const set = (state.secretsData && state.secretsData.settings) || {};
     const mig = state.migrationResult;
+    const gClient = sec.find(function (s) { return s.key === 'GOOGLE_CLIENT_ID'; }) || { ada: false, masked: '' };
+    const oauthAktif = (set.OAUTH_GOOGLE_AKTIF || 'YA') === 'YA';
+    const curOrigin = (window.location && window.location.origin && window.location.origin !== 'null')
+      ? window.location.origin
+      : 'https://USERNAME.github.io';
 
     return `
       <div>
         <div class="text-xs font-bold tracking-wider uppercase text-[#1F8A5B]">Keamanan &amp; Upgrade Sistem</div>
-        <h1 class="text-2xl font-heading font-bold text-[#111827] mt-1">Brankas Script Properties &amp; Migrasi Database</h1>
+        <h1 class="text-2xl font-heading font-bold text-[#111827] mt-1">Google OAuth 2.0, Brankas Script Properties &amp; Migrasi</h1>
       </div>
+
+      <!-- Kartu Khusus Pengaturan Google OAuth 2.0 -->
+      <form onsubmit="AdminPanel.saveOAuthSettings(event)" class="card-stitch p-5 sm:p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+          <div class="flex items-start gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-[#E8F5EE] flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.3h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.26-2.08 3.56-5.15 3.56-8.65z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.93-2.91l-3.87-3c-1.07.72-2.44 1.14-4.06 1.14-3.12 0-5.77-2.11-6.72-4.95H1.29v3.09A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.28 14.28A7.18 7.18 0 0 1 4.9 12c0-.79.14-1.56.38-2.28V6.63H1.29A12 12 0 0 0 0 12c0 1.94.46 3.77 1.29 5.37l3.99-3.09z"/><path fill="#EA4335" d="M12 4.77c1.76 0 3.34.61 4.58 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.29 6.63l3.99 3.09C6.23 6.88 8.88 4.77 12 4.77z"/></svg>
+            </div>
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="font-heading font-bold text-base">Pengaturan Login Google OAuth 2.0</h3>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${gClient.ada && oauthAktif ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEF9C3] text-[#854D0E]'}">
+                  ${gClient.ada && oauthAktif ? 'Aktif & Terverifikasi Server' : 'Perlu Konfigurasi Client ID'}
+                </span>
+              </div>
+              <p class="text-xs text-[#64748B] mt-0.5">Peserta bisa masuk/daftar 1-klik memakai akun Google. ID Token diverifikasi ketat di server GAS (Aturan R7).</p>
+            </div>
+          </div>
+          <button type="button" onclick="AdminPanel.openOAuthGuideModal()" class="btn-outline px-3.5 py-2 text-xs inline-flex items-center gap-1.5 shrink-0">
+            <i data-lucide="book-open" class="w-3.5 h-3.5 text-[#1F8A5B]"></i> Panduan Google Cloud
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
+          <div class="lg:col-span-5">
+            <div class="flex items-center justify-between text-xs mb-1">
+              <label class="font-bold text-[#111827]">Google OAuth 2.0 Client ID</label>
+              <span class="${gClient.ada ? 'text-[#166534] font-semibold' : 'text-[#64748B]'}">${gClient.ada ? 'Tersimpan: ' + esc(gClient.masked) : 'Belum diisi'}</span>
+            </div>
+            <input type="text" id="oauth-client-id" placeholder="xxxx-xxxx.apps.googleusercontent.com (kosongkan jika tidak ubah)"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] text-sm" />
+          </div>
+
+          <div class="lg:col-span-4">
+            <label class="text-xs font-bold text-[#111827] block mb-1">Authorized JavaScript Origin (Tempel di Google Cloud)</label>
+            <div class="flex items-center gap-1.5">
+              <input type="text" readonly id="oauth-origin-url" value="${esc(curOrigin)}" class="flex-1 px-3 py-2.5 rounded-xl border border-[#E2E8F0] bg-[#F7FAF8] text-xs font-mono text-[#4B5563]" />
+              <button type="button" onclick="AdminPanel.copyOrigin()" class="px-3 py-2.5 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#E8F5EE] text-xs font-semibold text-[#0E3B2C] shrink-0">Salin</button>
+            </div>
+          </div>
+
+          <div class="lg:col-span-3 flex items-center justify-between gap-3 p-2.5 rounded-xl bg-[#F7FAF8] border border-[#E2E8F0]">
+            <label for="oauth-aktif" class="text-xs font-semibold text-[#111827] cursor-pointer">Aktifkan Tombol Google</label>
+            <input type="checkbox" id="oauth-aktif" ${oauthAktif ? 'checked' : ''} class="w-5 h-5 accent-[#0E3B2C]" />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
+          <span class="text-[11px] text-[#64748B]">Ketik <code>__HAPUS__</code> pada kolom Client ID jika ingin menghapusnya dari Script Properties.</span>
+          <button type="submit" class="btn-primary px-5 py-2.5 text-xs inline-flex items-center gap-2">
+            <i data-lucide="save" class="w-4 h-4"></i> Simpan Pengaturan OAuth 2.0
+          </button>
+        </div>
+      </form>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
         <!-- Rahasia Script Properties -->
         <form onsubmit="AdminPanel.saveSecrets(event)" class="card-stitch p-5 lg:col-span-6 space-y-4">
           <div class="flex items-start justify-between gap-2">
             <div>
-              <h3 class="font-heading font-bold text-base">Kredensial Rahasia (Script Properties)</h3>
+              <h3 class="font-heading font-bold text-base">Kredensial Rahasia Lainnya (Script Properties)</h3>
               <p class="text-xs text-[#64748B]">Token disimpan eksklusif di Script Properties (tidak pernah di Sheet/Git). Kosongkan input bila tidak ingin mengubah.</p>
             </div>
             <i data-lucide="lock" class="w-5 h-5 text-[#1F8A5B] shrink-0"></i>
           </div>
 
           <div class="space-y-3">
-            ${sec.map(function (item) {
+            ${sec.filter(function (item) { return item.key !== 'GOOGLE_CLIENT_ID'; }).map(function (item) {
               return `
                 <div>
                   <div class="flex items-center justify-between text-xs mb-1">
@@ -1184,10 +1243,52 @@ const AdminPanel = (function () {
         render(document.getElementById('app'), 'crm');
       } catch (e) { App.toast(e.message, 'error'); }
     },
+    saveOAuthSettings: async function (e) {
+      e.preventDefault();
+      const cid = document.getElementById('oauth-client-id').value.trim();
+      const aktif = document.getElementById('oauth-aktif').checked ? 'YA' : 'TIDAK';
+      const secrets = {};
+      if (cid) secrets.GOOGLE_CLIENT_ID = cid;
+      try {
+        state.secretsData = await ApiClient.call('admin.saveSecret', {
+          secrets: secrets,
+          settings: { OAUTH_GOOGLE_AKTIF: aktif }
+        });
+        App.toast('Pengaturan Google OAuth 2.0 berhasil disimpan!', 'success');
+        paintShell(document.getElementById('app'));
+      } catch (err) { App.toast(err.message, 'error'); }
+    },
+    copyOrigin: function () {
+      const el = document.getElementById('oauth-origin-url');
+      if (!el) return;
+      navigator.clipboard.writeText(el.value).then(function () {
+        App.toast('Origin berhasil disalin: ' + el.value, 'success');
+      }).catch(function () {
+        el.select(); document.execCommand('copy');
+        App.toast('Origin disalin!', 'success');
+      });
+    },
+    openOAuthGuideModal: function () {
+      const origin = (window.location && window.location.origin && window.location.origin !== 'null')
+        ? window.location.origin : 'https://USERNAME.github.io';
+      App.openModal('Panduan Setup Google OAuth 2.0', `
+        <ol class="space-y-3 text-xs text-[#4B5563] list-decimal pl-4 leading-relaxed">
+          <li>Buka <b>Google Cloud Console</b> (<code>console.cloud.google.com</code>) dan buat / pilih proyek Anda.</li>
+          <li>Masuk ke menu <b>APIs &amp; Services → OAuth consent screen</b> → pilih <b>External</b> → isi nama aplikasi <b>SimulasiTKD Pro</b> &amp; email kontak → simpan.</li>
+          <li>Masuk ke menu <b>APIs &amp; Services → Credentials</b> → klik <b>+ CREATE CREDENTIALS → OAuth client ID</b>.</li>
+          <li>Pilih Application type: <b>Web application</b>.</li>
+          <li>Pada bagian <b>Authorized JavaScript origins</b>, klik <b>+ ADD URI</b> lalu tempelkan domain Anda:<br/>
+            <code class="inline-block mt-1 px-2 py-1 rounded bg-[#E8F5EE] text-[#0E3B2C] font-bold">${esc(origin)}</code>
+          </li>
+          <li>Klik <b>Create</b>, lalu salin <b>Client ID</b> (berakhiran <code>.apps.googleusercontent.com</code>).</li>
+          <li>Tempelkan Client ID tersebut ke kolom <b>Google OAuth 2.0 Client ID</b> di Panel Admin ini dan klik <b>Simpan</b>. Selesai!</li>
+        </ol>
+      `);
+    },
     saveSecrets: async function (e) {
       e.preventDefault();
       const secrets = {};
-      ['FONNTE_TOKEN', 'GOOGLE_CLIENT_ID', 'WEBHOOK_SECRET'].forEach(function (k) {
+      ['FONNTE_TOKEN', 'WEBHOOK_SECRET'].forEach(function (k) {
         const el = document.getElementById('sec-' + k);
         if (el && el.value.trim()) secrets[k] = el.value.trim();
       });

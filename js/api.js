@@ -59,7 +59,7 @@ const ApiClient = (function () {
       return DemoBackend.handle(action, data || {}, getToken());
     }
 
-    const isRead = /^(public\.|auth\.me|peserta\.dashboard|peserta\.leaderboard|peserta\.resultDetail|admin\.overview|admin\.get|admin\.crmList|admin\.notifConfig)/i.test(action);
+    const isRead = /^(public\.|auth\.config|auth\.me|peserta\.dashboard|peserta\.leaderboard|peserta\.resultDetail|admin\.overview|admin\.get|admin\.crmList|admin\.notifConfig)/i.test(action);
     const cacheKey = action + '|' + JSON.stringify(data || {});
 
     if (!isRead) {
@@ -146,6 +146,7 @@ const ApiClient = (function () {
           PG_TWK_DEFAULT: '65',
           PG_TIU_DEFAULT: '80',
           PG_TKP_DEFAULT: '166',
+          OAUTH_GOOGLE_AKTIF: 'YA',
           APP_URL: window.location.href
         },
         secrets: [
@@ -221,6 +222,37 @@ const ApiClient = (function () {
       const db = loadDb();
       if (action === 'public.init') {
         return { settings: db.settings, paket: db.paket, stats: { totalPaket: db.paket.length, standarSoal: 110 } };
+      }
+      if (action === 'auth.config') {
+        const gItem = (db.secrets || []).find(function (s) { return s.key === 'GOOGLE_CLIENT_ID'; });
+        const aktif = db.settings.OAUTH_GOOGLE_AKTIF !== 'TIDAK';
+        return {
+          googleOAuthEnabled: aktif,
+          googleClientId: (gItem && gItem.ada) ? 'DEMO_CLIENT_ID' : 'DEMO_CLIENT_ID',
+          demoOAuth: true
+        };
+      }
+      if (action === 'auth.googleLogin') {
+        const email = 'peserta.google@gmail.com';
+        let u = db.users.find(function (x) { return x.email === email; });
+        let isNew = false;
+        if (!u) {
+          isNew = true;
+          u = {
+            user_id: 'USR-G' + Date.now().toString().slice(-3),
+            nama_lengkap: 'Peserta Google (Demo)',
+            email: email,
+            no_wa: '',
+            password: '',
+            role: 'Latihan',
+            status_akun: 'Aktif',
+            status_upgrade: 'None',
+            tanggal_daftar: new Date().toISOString()
+          };
+          db.users.push(u);
+          saveDb(db);
+        }
+        return { token: 'demo-token-' + u.user_id, isNewUser: isNew, user: u };
       }
       if (action === 'auth.login') {
         const em = String(data.email || '').toLowerCase().trim();
