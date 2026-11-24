@@ -25,6 +25,8 @@ const AdminPanel = (function () {
     notifCfg: null,
     secretsData: null,
     adminEmailsData: null,
+    userSearch: '',
+    userRoleFilter: 'Semua',
     migrationResult: null
   };
 
@@ -897,34 +899,67 @@ const AdminPanel = (function () {
         </div>
       </div>
 
-      <!-- Tabel Semua Pengguna (1-Klik Promosi ke Admin / Pro / Latihan) -->
-      <div class="card-stitch p-5 space-y-3">
-        <h3 class="font-heading font-bold text-base">Manajemen Peran Akun Terdaftar (${users.length})</h3>
+      <!-- Tabel Semua Pengguna (Tambah User, Ubah Role, & Hapus User) -->
+      <div class="card-stitch p-5 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <h3 class="font-heading font-bold text-base">Manajemen Akun &amp; User Terdaftar (${users.length})</h3>
+            <p class="text-xs text-[#64748B]">Tambah user baru (Latihan / Pro / Admin), ubah tier secara instan, atau hapus akun peserta.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <input type="text" value="${esc(state.userSearch)}" oninput="AdminPanel.setUserSearch(this.value)" placeholder="Cari nama atau email..."
+              class="px-3.5 py-2 rounded-full border border-[#E2E8F0] bg-[#F7FAF8] text-xs w-44" />
+            <select onchange="AdminPanel.setUserRoleFilter(this.value)" class="px-3 py-2 rounded-full border border-[#E2E8F0] bg-[#F7FAF8] text-xs font-semibold">
+              ${['Semua', 'Latihan', 'Pro', 'Admin'].map(function (r) {
+                return `<option value="${r}" ${state.userRoleFilter === r ? 'selected' : ''}>${r === 'Semua' ? 'Semua Role' : r}</option>`;
+              }).join('')}
+            </select>
+            <button onclick="AdminPanel.openCreateUserModal()" class="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5">
+              <i data-lucide="user-plus" class="w-4 h-4"></i> Tambah User
+            </button>
+          </div>
+        </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="bg-[#F7FAF8] text-[11px] uppercase tracking-wider text-[#64748B]">
                 <th class="py-3 px-4 rounded-l-lg">Nama &amp; Email</th>
+                <th class="py-3 px-4 hidden sm:table-cell">No. WA</th>
                 <th class="py-3 px-4">Role Saat Ini</th>
-                <th class="py-3 px-4 text-right rounded-r-lg">Ubah Cepat</th>
+                <th class="py-3 px-4 text-right rounded-r-lg">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              ${users.map(function (u) {
-                const badge = u.role === 'Admin' ? 'bg-[#0E3B2C] text-white' : u.role === 'Pro' ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEF9C3] text-[#854D0E]';
-                return `
-                  <tr class="border-t border-[#E2E8F0]">
-                    <td class="py-3 px-4"><div class="font-semibold">${esc(u.nama_lengkap)}</div><div class="text-xs text-[#64748B]">${esc(u.email)}</div></td>
-                    <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${badge}">${esc(u.role)}</span></td>
-                    <td class="py-3 px-4 text-right">
-                      <div class="inline-flex flex-wrap justify-end gap-1.5">
-                        ${u.role !== 'Admin' ? `<button onclick="AdminPanel.quickPromoteAdmin('${esc(u.email)}','${esc(u.nama_lengkap)}')" class="px-3 py-1 rounded-full bg-[#0E3B2C] text-white text-xs font-semibold">Jadikan Admin</button>` : ''}
-                        ${u.role !== 'Pro' && u.role !== 'Admin' ? `<button onclick="AdminPanel.setUserTier('${esc(u.user_id)}','Pro')" class="px-3 py-1 rounded-full bg-[#DCFCE7] text-[#166534] text-xs font-semibold">Set Pro</button>` : ''}
-                        ${u.role === 'Pro' ? `<button onclick="AdminPanel.setUserTier('${esc(u.user_id)}','Latihan')" class="px-3 py-1 rounded-full bg-[#F1F5F9] text-[#475569] text-xs font-semibold">Set Latihan</button>` : ''}
-                      </div>
-                    </td>
-                  </tr>`;
-              }).join('')}
+              ${(function () {
+                const q = state.userSearch.toLowerCase();
+                const filtered = users.filter(function (u) {
+                  const mr = state.userRoleFilter === 'Semua' || u.role === state.userRoleFilter;
+                  const mq = !q || String(u.nama_lengkap).toLowerCase().includes(q) || String(u.email).toLowerCase().includes(q);
+                  return mr && mq;
+                });
+                if (!filtered.length) return `<tr><td colspan="4" class="py-8 text-center text-xs text-[#64748B]">Tidak ada user yang cocok dengan filter.</td></tr>`;
+                return filtered.map(function (u) {
+                  const badge = u.role === 'Admin' ? 'bg-[#0E3B2C] text-white' : u.role === 'Pro' ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEF9C3] text-[#854D0E]';
+                  const isSelf = String(u.email || '').toLowerCase() === String(d.currentEmail || '').toLowerCase();
+                  return `
+                    <tr class="border-t border-[#E2E8F0] hover:bg-[#F7FAF8]">
+                      <td class="py-3 px-4">
+                        <div class="font-semibold text-[#111827]">${esc(u.nama_lengkap)} ${isSelf ? '<span class="ml-1 text-[10px] font-bold text-[#1F8A5B]">(Anda)</span>' : ''}</div>
+                        <div class="text-xs text-[#64748B]">${esc(u.email)}</div>
+                      </td>
+                      <td class="py-3 px-4 text-xs text-[#4B5563] tabular-nums hidden sm:table-cell">${esc(u.no_wa || '-')}</td>
+                      <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${badge}">${esc(u.role)}</span></td>
+                      <td class="py-3 px-4 text-right">
+                        <div class="inline-flex flex-wrap justify-end gap-1.5">
+                          ${u.role !== 'Admin' ? `<button onclick="AdminPanel.quickPromoteAdmin('${esc(u.email)}','${esc(u.nama_lengkap)}')" class="px-3 py-1 rounded-full bg-[#0E3B2C] text-white text-xs font-semibold">Jadikan Admin</button>` : ''}
+                          ${u.role !== 'Pro' && u.role !== 'Admin' ? `<button onclick="AdminPanel.setUserTier('${esc(u.user_id)}','Pro')" class="px-3 py-1 rounded-full bg-[#DCFCE7] text-[#166534] text-xs font-semibold">Set Pro</button>` : ''}
+                          ${u.role === 'Pro' ? `<button onclick="AdminPanel.setUserTier('${esc(u.user_id)}','Latihan')" class="px-3 py-1 rounded-full bg-[#F1F5F9] text-[#475569] text-xs font-semibold">Set Latihan</button>` : ''}
+                          ${!isSelf ? `<button onclick="AdminPanel.deleteUser('${esc(u.user_id)}','${esc(u.email)}')" class="px-3 py-1 rounded-full bg-[#FEE2E2] text-[#991B1B] hover:bg-red-200 text-xs font-semibold inline-flex items-center gap-1"><i data-lucide="trash-2" class="w-3 h-3"></i> Hapus</button>` : ''}
+                        </div>
+                      </td>
+                    </tr>`;
+                }).join('');
+              })()}
             </tbody>
           </table>
         </div>
@@ -1422,6 +1457,64 @@ const AdminPanel = (function () {
       try {
         await ApiClient.call('admin.updateUserTier', { user_id: userId, role: role });
         App.toast('Tier akun diperbarui menjadi ' + role + '.', 'success');
+        render(document.getElementById('app'), 'admins');
+      } catch (err) { App.toast(err.message, 'error'); }
+    },
+    setUserSearch: function (q) { state.userSearch = q; paintShell(document.getElementById('app')); },
+    setUserRoleFilter: function (r) { state.userRoleFilter = r; paintShell(document.getElementById('app')); },
+    openCreateUserModal: function () {
+      App.openModal('Tambah User Baru', `
+        <form onsubmit="AdminPanel.createUser(event)" class="space-y-3.5 text-sm">
+          <div>
+            <label class="text-xs font-semibold text-[#4B5563]">Nama Lengkap</label>
+            <input type="text" id="cu-nama" required minlength="3" placeholder="Nama lengkap peserta / admin" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0]" />
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-[#4B5563]">Email</label>
+            <input type="email" id="cu-email" required placeholder="nama@gmail.com" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0]" />
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-semibold text-[#4B5563]">No. WhatsApp (Opsional)</label>
+              <input type="tel" id="cu-wa" placeholder="0812xxxxxxxx" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0]" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[#4B5563]">Role / Tier Akun</label>
+              <select id="cu-role" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] bg-white font-semibold">
+                <option value="Latihan">Latihan (Gratis)</option>
+                <option value="Pro">Pro (Premium)</option>
+                <option value="Admin">Admin (Panel Kontrol)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-[#4B5563]">Kata Sandi (Min. 6 Karakter)</label>
+            <input type="password" id="cu-pass" required minlength="6" placeholder="Buat kata sandi awal" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0]" />
+          </div>
+          <button type="submit" class="btn-primary w-full py-3 text-xs">Simpan User Baru</button>
+        </form>
+      `);
+    },
+    createUser: async function (e) {
+      e.preventDefault();
+      try {
+        const res = await ApiClient.call('admin.createUser', {
+          nama_lengkap: document.getElementById('cu-nama').value,
+          email: document.getElementById('cu-email').value,
+          no_wa: document.getElementById('cu-wa').value,
+          role: document.getElementById('cu-role').value,
+          password: document.getElementById('cu-pass').value
+        });
+        App.closeModal();
+        App.toast('User ' + res.nama_lengkap + ' (' + res.role + ') berhasil ditambahkan!', 'success');
+        render(document.getElementById('app'), 'admins');
+      } catch (err) { App.toast(err.message, 'error'); }
+    },
+    deleteUser: async function (userId, email) {
+      if (!confirm('Hapus permanen user ' + email + ' dari database? Sesi login user tersebut akan langsung dicabut.')) return;
+      try {
+        await ApiClient.call('admin.deleteUser', { user_id: userId });
+        App.toast('User ' + email + ' berhasil dihapus.', 'info');
         render(document.getElementById('app'), 'admins');
       } catch (err) { App.toast(err.message, 'error'); }
     },

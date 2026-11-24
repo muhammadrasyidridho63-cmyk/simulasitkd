@@ -524,6 +524,41 @@ const ApiClient = (function () {
         return { role: data.role };
       }
 
+      if (action === 'admin.createUser') {
+        const em = String(data.email || '').toLowerCase().trim();
+        if (!em || em.indexOf('@') === -1) throw new Error('Format email tidak valid.');
+        if (db.users.some(function (x) { return x.email === em; })) throw new Error('Email ' + em + ' sudah terdaftar.');
+        const role = ['Latihan', 'Pro', 'Admin'].indexOf(data.role) > -1 ? data.role : 'Latihan';
+        const nu = {
+          user_id: (role === 'Admin' ? 'ADM-' : 'USR-') + Date.now().toString().slice(-4),
+          nama_lengkap: String(data.nama_lengkap || '').trim(),
+          email: em,
+          no_wa: String(data.no_wa || '').trim(),
+          password: String(data.password || 'demo123'),
+          role: role,
+          status_akun: 'Aktif',
+          status_upgrade: role === 'Latihan' ? 'None' : 'Approved',
+          tanggal_daftar: new Date().toISOString()
+        };
+        db.users.push(nu);
+        if (role === 'Admin') {
+          db.adminEmails = db.adminEmails || [];
+          if (db.adminEmails.indexOf(em) === -1) db.adminEmails.push(em);
+        }
+        saveDb(db);
+        return nu;
+      }
+
+      if (action === 'admin.deleteUser') {
+        const target = db.users.find(function (x) { return x.user_id === data.user_id; });
+        if (!target) throw new Error('User tidak ditemukan.');
+        if (target.email === me.email) throw new Error('Anda tidak dapat menghapus akun Anda sendiri.');
+        db.users = db.users.filter(function (x) { return x.user_id !== data.user_id; });
+        db.adminEmails = (db.adminEmails || []).filter(function (e) { return e !== target.email; });
+        saveDb(db);
+        return { deleted: data.user_id, email: target.email };
+      }
+
       if (action === 'admin.crmList') return { kontak: db.crmKontak, blasts: db.blasts, antrian: [] };
       if (action === 'admin.crmSync') return { inserted: 0, updated: 0, total: db.crmKontak.length };
       if (action === 'admin.crmUpdate') {
