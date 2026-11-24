@@ -1,0 +1,242 @@
+/* ============================================================================
+ * SimulasiTKD Pro — Design System Stylesheet (Stitch DESIGN.md Fidelity)
+ * Clean Modern Minimalist Edu-SaaS | Deep Forest Emerald & Crisp White
+ * ============================================================================ */
+
+:root {
+  --primary: #0E3B2C;
+  --primary-deep: #002419;
+  --accent: #1F8A5B;
+  --accent-bright: #22A06B;
+  --surface-canvas: #FFFFFF;
+  --surface-sage: #F7FAF8;
+  --surface-mint: #E8F5EE;
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --border-subtle: #E2E8F0;
+
+  --passed-bg: #DCFCE7;
+  --passed-text: #166534;
+  --passed-accent: #16A34A;
+
+  --doubt-bg: #FEF9C3;
+  --doubt-text: #854D0E;
+  --doubt-accent: #D97706;
+
+  --failed-bg: #FEE2E2;
+  --failed-text: #991B1B;
+  --failed-accent: #DC2626;
+
+  --unanswered-bg: #F1F5F9;
+  --unanswered-text: #475569;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--surface-sage);
+  color: var(--text-primary);
+  scroll-behavior: smooth;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Elevation & Cards */
+.card-stitch {
+  background: var(--surface-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px -2px rgba(14, 59, 44, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.card-stitch-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -6px rgba(14, 59, 44, 0.09);
+  border-color: #CBD5E1;
+}
+
+/* Pill Buttons */
+.btn-primary {
+  background-color: var(--primary);
+  color: #FFFFFF;
+  border-radius: 9999px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  transition: background-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+}
+.btn-primary:hover {
+  background-color: var(--primary-deep);
+  box-shadow: 0 6px 16px rgba(14, 59, 44, 0.22);
+}
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-accent {
+  background-color: var(--accent-bright);
+  color: #FFFFFF;
+  border-radius: 9999px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  transition: background-color 0.15s ease, transform 0.12s ease;
+}
+.btn-accent:hover {
+  background-color: var(--accent);
+}
+
+.btn-outline {
+  background-color: #FFFFFF;
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 9999px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.btn-outline:hover {
+  background-color: var(--surface-sage);
+  border-color: #CBD5E1;
+}
+
+/* CAT Exam Option Rows (min 52px touch target) */
+.cat-option {
+  min-height: 54px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border-subtle);
+  background: #F8FAFC;
+  transition: all 0.14s ease;
+  cursor: pointer;
+}
+.cat-option:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+}
+.cat-option.selected {
+  background: var(--surface-mint);
+  border: 2px solid var(--accent);
+}
+.cat-option.selected .opt-badge {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-color: var(--primary);
+}
+
+/* CAT Question Navigator Tiles */
+.nav-tile {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  user-select: none;
+}
+.nav-tile:active {
+  transform: scale(0.94);
+}
+.nav-tile.unanswered {
+  background: var(--unanswered-bg);
+  color: var(--unanswered-text);
+}
+.nav-tile.answered {
+  background: var(--passed-accent);
+  color: #FFFFFF;
+}
+.nav-tile.doubtful {
+  background: var(--doubt-accent);
+  color: #FFFFFF;
+}
+.nav-tile.active-tile {
+  box-shadow: 0 0 0 2.5px #FFFFFF, 0 0 0 4.5px var(--primary);
+}
+
+/* Ambient Hero Glow */
+.hero-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(34, 160, 107, 0.16) 0%, rgba(232, 245, 238, 0.4) 45%, rgba(255, 255, 255, 0) 75%);
+}
+
+/* Skeleton Shimmer */
+.skeleton {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 10px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 360px;
+}
+.toast-item {
+  animation: slideIn 0.2s ease-out;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Mobile Bottom Sheet Drawer */
+.bottom-sheet-backdrop {
+  background: rgba(17, 24, 39, 0.45);
+  backdrop-filter: blur(4px);
+}
+.bottom-sheet-panel {
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  animation: sheetUp 0.22s ease-out;
+}
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* Admin Sidebar Active Link */
+.admin-nav-link {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.admin-nav-link.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  border-left: 3px solid var(--accent-bright);
+}
+
+/* Focus Accessibility */
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Print / Rapor PDF Styling */
+@media print {
+  .no-print { display: none !important; }
+  body { background: #FFFFFF !important; }
+  .card-stitch { box-shadow: none !important; border: 1px solid #CBD5E1 !important; break-inside: avoid; }
+}
