@@ -24,6 +24,7 @@ const AdminPanel = (function () {
     crm: { kontak: [], blasts: [], antrian: [] },
     notifCfg: null,
     secretsData: null,
+    adminEmailsData: null,
     migrationResult: null
   };
 
@@ -134,6 +135,9 @@ const AdminPanel = (function () {
       } else if (state.tab === 'security') {
         state.secretsData = await ApiClient.call('admin.getSecrets');
         paintShell(root);
+      } else if (state.tab === 'admins') {
+        state.adminEmailsData = await ApiClient.call('admin.getAdminEmails');
+        paintShell(root);
       }
     } catch (err) {
       App.toast(err.message, 'error');
@@ -142,10 +146,13 @@ const AdminPanel = (function () {
 
   function paintShell(root) {
     const pendingCount = (state.overview && state.overview.kpi && state.overview.kpi.pendingUpgrade) || 0;
+    const savedAdmin = ApiClient.getSavedUser() || {};
+    const adminInitials = String(savedAdmin.nama_lengkap || 'AD').split(' ').map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
     const navItems = [
       { id: 'overview', label: 'Ringkasan Analitik', icon: 'bar-chart-3', badge: pendingCount > 0 ? pendingCount : '' },
       { id: 'questions', label: 'Bank Soal & Paket', icon: 'file-question' },
       { id: 'crm', label: 'Notifikasi WA & CRM', icon: 'message-square-text' },
+      { id: 'admins', label: 'Kelola Admin (Email)', icon: 'user-cog' },
       { id: 'security', label: 'Keamanan & Migrasi', icon: 'shield-check' }
     ];
 
@@ -222,7 +229,11 @@ const AdminPanel = (function () {
               <button onclick="AdminPanel.refresh()" class="p-2 rounded-full border border-[#E2E8F0] text-[#4B5563] hover:bg-[#F7FAF8]" title="Segarkan Data">
                 <i data-lucide="refresh-cw" class="w-4 h-4"></i>
               </button>
-              <div class="w-9 h-9 rounded-full bg-[#0E3B2C] text-white flex items-center justify-center text-xs font-bold">AD</div>
+              <div class="hidden sm:block text-right">
+                <div class="text-xs font-bold text-[#111827] leading-tight">${esc(savedAdmin.nama_lengkap || 'Admin')}</div>
+                <div class="text-[11px] text-[#64748B] leading-tight">${esc(savedAdmin.email || '')}</div>
+              </div>
+              <div class="w-9 h-9 rounded-full bg-[#0E3B2C] text-white flex items-center justify-center text-xs font-bold">${esc(adminInitials)}</div>
             </div>
           </header>
 
@@ -230,6 +241,7 @@ const AdminPanel = (function () {
             ${state.tab === 'overview' ? renderOverview() : ''}
             ${state.tab === 'questions' ? renderQuestionsAndReports() : ''}
             ${state.tab === 'crm' ? renderCrmWa() : ''}
+            ${state.tab === 'admins' ? renderAdminEmails() : ''}
             ${state.tab === 'security' ? renderSecurityMigration() : ''}
           </main>
         </div>
@@ -791,7 +803,137 @@ const AdminPanel = (function () {
   }
 
   // --------------------------------------------------------------------------
-  // TAB 4: KEAMANAN SCRIPT PROPERTIES & MIGRASI DATABASE SPREADSHEET
+  // TAB 4: KELOLA ADMIN & SINKRONISASI EMAIL (GOOGLE OAUTH <-> USERS)
+  // --------------------------------------------------------------------------
+  function renderAdminEmails() {
+    const d = state.adminEmailsData;
+    if (!d) return `<div class="space-y-4"><div class="skeleton h-32"></div><div class="skeleton h-52"></div></div>`;
+    const admins = d.admins || [];
+    const users = d.users || [];
+
+    return `
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <div class="text-xs font-bold tracking-wider uppercase text-[#1F8A5B]">Otorisasi &amp; Sinkronisasi Email</div>
+          <h1 class="text-2xl font-heading font-bold text-[#111827] mt-1">Kelola Admin Tersinkron Email Google</h1>
+          <p class="text-xs text-[#64748B] mt-1">Setiap email yang terdaftar di sini otomatis memperoleh akses <b>Panel Kontrol Admin</b> saat masuk via Google OAuth 2.0 maupun login email biasa.</p>
+        </div>
+        <button onclick="AdminPanel.syncAdminEmails()" class="btn-primary px-4 py-2.5 text-xs inline-flex items-center gap-2 shrink-0">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i> Sinkronkan Email Sekarang
+        </button>
+      </div>
+
+      <!-- Info Akun Aktif & Form Tambah Email Admin -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div class="card-stitch p-5 lg:col-span-5 space-y-3">
+          <div class="text-xs font-bold uppercase tracking-wider text-[#64748B]">Status Sinkronisasi Sesi</div>
+          <div class="p-3.5 rounded-2xl bg-[#E8F5EE] text-[#0E3B2C] space-y-1 text-xs">
+            <div class="font-bold">Email Login Saat Ini:</div>
+            <div class="font-mono text-sm font-bold break-all">${esc(d.currentEmail || '-')}</div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-[#F7FAF8] border border-[#E2E8F0] space-y-1 text-xs">
+            <div class="font-semibold text-[#4B5563]">Pemilik Google Apps Script (Otomatis Admin):</div>
+            <div class="font-mono font-bold text-[#111827] break-all">${esc(d.ownerEmail || 'Terdeteksi otomatis di GAS')}</div>
+          </div>
+        </div>
+
+        <form onsubmit="AdminPanel.addAdminEmail(event)" class="card-stitch p-5 lg:col-span-7 space-y-4">
+          <div>
+            <h3 class="font-heading font-bold text-base">Tambah Email Admin Baru</h3>
+            <p class="text-xs text-[#64748B]">Masukkan alamat Gmail/Google yang ingin diberi akses Panel Admin. Sistem otomatis menyinkronkan ke <code>Script Properties</code> &amp; Sheet <code>Users</code>.</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-semibold text-[#4B5563]">Alamat Email Google</label>
+              <input type="email" id="adm-new-email" required placeholder="adminbaru@gmail.com" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] text-sm" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[#4B5563]">Nama Admin (Opsional)</label>
+              <input type="text" id="adm-new-nama" placeholder="Misal: Pengelola Tryout" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] text-sm" />
+            </div>
+          </div>
+          <button type="submit" class="btn-accent px-5 py-2.5 text-xs inline-flex items-center gap-2">
+            <i data-lucide="user-plus" class="w-4 h-4"></i> Tambahkan &amp; Sinkronkan Email Admin
+          </button>
+        </form>
+      </div>
+
+      <!-- Tabel Daftar Email Admin Tersinkron -->
+      <div class="card-stitch p-5 space-y-3">
+        <h3 class="font-heading font-bold text-base">Daftar Email Admin Aktif (${admins.length})</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-[#F7FAF8] text-[11px] uppercase tracking-wider text-[#64748B]">
+                <th class="py-3 px-4 rounded-l-lg">Email Google</th>
+                <th class="py-3 px-4">Nama di Users</th>
+                <th class="py-3 px-4">Status Sinkron</th>
+                <th class="py-3 px-4 text-right rounded-r-lg">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${admins.length ? admins.map(function (a) {
+                return `
+                  <tr class="border-t border-[#E2E8F0]">
+                    <td class="py-3 px-4 font-semibold text-[#111827]">
+                      ${esc(a.email)}
+                      ${a.isOwner ? '<span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0E3B2C] text-white">Pemilik</span>' : ''}
+                    </td>
+                    <td class="py-3 px-4 text-xs text-[#4B5563]">${esc(a.nama)}</td>
+                    <td class="py-3 px-4">
+                      <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${a.syncedRole === 'Admin' ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEF9C3] text-[#854D0E]'}">
+                        ${a.syncedRole === 'Admin' ? '✓ Tersinkron (Admin)' : esc(a.syncedRole)}
+                      </span>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                      ${a.email !== d.currentEmail ? `
+                        <button onclick="AdminPanel.removeAdminEmail('${esc(a.email)}')" class="px-3 py-1 rounded-full bg-[#FEE2E2] text-[#991B1B] text-xs font-semibold hover:bg-red-200">Cabut Admin</button>
+                      ` : '<span class="text-xs text-[#64748B]">Sesi aktif Anda</span>'}
+                    </td>
+                  </tr>`;
+              }).join('') : `<tr><td colspan="4" class="py-8 text-center text-xs text-[#64748B]">Belum ada email admin tersimpan. Klik <b>Sinkronkan Email Sekarang</b>.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tabel Semua Pengguna (1-Klik Promosi ke Admin / Pro / Latihan) -->
+      <div class="card-stitch p-5 space-y-3">
+        <h3 class="font-heading font-bold text-base">Manajemen Peran Akun Terdaftar (${users.length})</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-[#F7FAF8] text-[11px] uppercase tracking-wider text-[#64748B]">
+                <th class="py-3 px-4 rounded-l-lg">Nama &amp; Email</th>
+                <th class="py-3 px-4">Role Saat Ini</th>
+                <th class="py-3 px-4 text-right rounded-r-lg">Ubah Cepat</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${users.map(function (u) {
+                const badge = u.role === 'Admin' ? 'bg-[#0E3B2C] text-white' : u.role === 'Pro' ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEF9C3] text-[#854D0E]';
+                return `
+                  <tr class="border-t border-[#E2E8F0]">
+                    <td class="py-3 px-4"><div class="font-semibold">${esc(u.nama_lengkap)}</div><div class="text-xs text-[#64748B]">${esc(u.email)}</div></td>
+                    <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${badge}">${esc(u.role)}</span></td>
+                    <td class="py-3 px-4 text-right">
+                      <div class="inline-flex flex-wrap justify-end gap-1.5">
+                        ${u.role !== 'Admin' ? `<button onclick="AdminPanel.quickPromoteAdmin('${esc(u.email)}','${esc(u.nama_lengkap)}')" class="px-3 py-1 rounded-full bg-[#0E3B2C] text-white text-xs font-semibold">Jadikan Admin</button>` : ''}
+                        ${u.role !== 'Pro' && u.role !== 'Admin' ? `<button onclick="AdminPanel.setUserTier('${esc(u.user_id)}','Pro')" class="px-3 py-1 rounded-full bg-[#DCFCE7] text-[#166534] text-xs font-semibold">Set Pro</button>` : ''}
+                        ${u.role === 'Pro' ? `<button onclick="AdminPanel.setUserTier('${esc(u.user_id)}','Latihan')" class="px-3 py-1 rounded-full bg-[#F1F5F9] text-[#475569] text-xs font-semibold">Set Latihan</button>` : ''}
+                      </div>
+                    </td>
+                  </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  // --------------------------------------------------------------------------
+  // TAB 5: KEAMANAN SCRIPT PROPERTIES & MIGRASI DATABASE SPREADSHEET
   // --------------------------------------------------------------------------
   function renderSecurityMigration() {
     const sec = (state.secretsData && state.secretsData.secrets) || [];
@@ -1242,6 +1384,46 @@ const AdminPanel = (function () {
         App.toast('Status Opt-Out kontak diperbarui.', 'info');
         render(document.getElementById('app'), 'crm');
       } catch (e) { App.toast(e.message, 'error'); }
+    },
+    addAdminEmail: async function (e) {
+      e.preventDefault();
+      const email = document.getElementById('adm-new-email').value.trim();
+      const nama = document.getElementById('adm-new-nama').value.trim();
+      try {
+        state.adminEmailsData = await ApiClient.call('admin.addAdminEmail', { email: email, nama: nama });
+        App.toast('Email ' + email + ' berhasil dijadikan Admin & disinkronkan!', 'success');
+        paintShell(document.getElementById('app'));
+      } catch (err) { App.toast(err.message, 'error'); }
+    },
+    quickPromoteAdmin: async function (email, nama) {
+      if (!confirm('Jadikan ' + email + ' sebagai Administrator?')) return;
+      try {
+        state.adminEmailsData = await ApiClient.call('admin.addAdminEmail', { email: email, nama: nama });
+        App.toast(email + ' kini berstatus Admin & tersinkron!', 'success');
+        paintShell(document.getElementById('app'));
+      } catch (err) { App.toast(err.message, 'error'); }
+    },
+    removeAdminEmail: async function (email) {
+      if (!confirm('Cabut akses Admin dari ' + email + '? Sesi aktif akun tersebut akan otomatis logout.')) return;
+      try {
+        state.adminEmailsData = await ApiClient.call('admin.removeAdminEmail', { email: email });
+        App.toast('Akses Admin ' + email + ' berhasil dicabut.', 'info');
+        paintShell(document.getElementById('app'));
+      } catch (err) { App.toast(err.message, 'error'); }
+    },
+    syncAdminEmails: async function () {
+      try {
+        state.adminEmailsData = await ApiClient.call('admin.syncAdminEmails');
+        App.toast('Sinkronisasi Email Admin selesai! (' + (state.adminEmailsData.admins || []).length + ' email tersinkron)', 'success');
+        paintShell(document.getElementById('app'));
+      } catch (err) { App.toast(err.message, 'error'); }
+    },
+    setUserTier: async function (userId, role) {
+      try {
+        await ApiClient.call('admin.updateUserTier', { user_id: userId, role: role });
+        App.toast('Tier akun diperbarui menjadi ' + role + '.', 'success');
+        render(document.getElementById('app'), 'admins');
+      } catch (err) { App.toast(err.message, 'error'); }
     },
     saveOAuthSettings: async function (e) {
       e.preventDefault();

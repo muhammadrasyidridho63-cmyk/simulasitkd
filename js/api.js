@@ -154,6 +154,7 @@ const ApiClient = (function () {
           { key: 'GOOGLE_CLIENT_ID', ada: false, masked: '' },
           { key: 'WEBHOOK_SECRET', ada: false, masked: '' }
         ],
+        adminEmails: ['admin@demo.id'],
         notifConfig: {
           waAktif: true,
           emailAktif: true,
@@ -548,6 +549,46 @@ const ApiClient = (function () {
         return { blastId: b.BlastID, total: b.Total, message: 'Simulasi Blast WA berhasil dijadwalkan!' };
       }
       if (action === 'admin.getSecrets') return { secrets: db.secrets, settings: db.settings };
+      if (action === 'admin.getAdminEmails' || action === 'admin.syncAdminEmails') {
+        db.adminEmails = db.adminEmails || ['admin@demo.id'];
+        if (action === 'admin.syncAdminEmails') {
+          db.users.forEach(function (u) {
+            if (u.role === 'Admin' && db.adminEmails.indexOf(u.email) === -1) db.adminEmails.push(u.email);
+            if (db.adminEmails.indexOf(u.email) > -1) u.role = 'Admin';
+          });
+          saveDb(db);
+        }
+        return {
+          currentEmail: me.email,
+          ownerEmail: 'admin@demo.id',
+          admins: db.adminEmails.map(function (em) {
+            const u = db.users.find(function (x) { return x.email === em; });
+            return { email: em, isOwner: em === 'admin@demo.id', inUsersSheet: !!u, syncedRole: u ? u.role : 'Belum Login', nama: u ? u.nama_lengkap : '-' };
+          }),
+          users: db.users
+        };
+      }
+      if (action === 'admin.addAdminEmail') {
+        const em = String(data.email || '').toLowerCase().trim();
+        if (!em || em.indexOf('@') === -1) throw new Error('Format email tidak valid.');
+        db.adminEmails = db.adminEmails || ['admin@demo.id'];
+        if (db.adminEmails.indexOf(em) === -1) db.adminEmails.push(em);
+        const u = db.users.find(function (x) { return x.email === em; });
+        if (u) { u.role = 'Admin'; u.status_upgrade = 'Approved'; }
+        else {
+          db.users.push({ user_id: 'ADM-' + Date.now().toString().slice(-3), nama_lengkap: data.nama || em.split('@')[0], email: em, no_wa: '', password: '', role: 'Admin', status_akun: 'Aktif', status_upgrade: 'Approved', tanggal_daftar: new Date().toISOString() });
+        }
+        saveDb(db);
+        return handle('admin.getAdminEmails', {}, token);
+      }
+      if (action === 'admin.removeAdminEmail') {
+        const em = String(data.email || '').toLowerCase().trim();
+        db.adminEmails = (db.adminEmails || []).filter(function (x) { return x !== em; });
+        const u = db.users.find(function (x) { return x.email === em; });
+        if (u && u.role === 'Admin') u.role = 'Pro';
+        saveDb(db);
+        return handle('admin.getAdminEmails', {}, token);
+      }
       if (action === 'admin.saveSecret') {
         if (data.secrets) {
           Object.keys(data.secrets).forEach(function (k) {
