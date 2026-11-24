@@ -434,6 +434,39 @@ const ApiClient = (function () {
         return data;
       }
 
+      if (action === 'admin.importQuestions') {
+        const pid = data.paket_id;
+        const items = Array.isArray(data.items) ? data.items : [];
+        let maxNo = db.soal.filter(function (s) { return s.paket_id === pid; }).reduce(function (m, s) { return Math.max(m, Number(s.nomor_urut || 0)); }, 0);
+        let added = 0;
+        items.forEach(function (it, i) {
+          if (!String(it.pertanyaan || '').trim()) return;
+          maxNo++;
+          db.soal.push({
+            soal_id: 'SOAL-' + Date.now().toString().slice(-4) + '-' + i,
+            paket_id: pid,
+            nomor_urut: Number(it.nomor_urut || maxNo),
+            subtes: String(it.subtes || 'TWK').toUpperCase(),
+            topik: it.topik || '',
+            pertanyaan: it.pertanyaan,
+            drive_image_id: it.drive_image_id || '',
+            opsi_a: it.opsi_a || '',
+            opsi_b: it.opsi_b || '',
+            opsi_c: it.opsi_c || '',
+            opsi_d: it.opsi_d || '',
+            opsi_e: it.opsi_e || '',
+            kunci_atau_bobot: it.kunci_atau_bobot || 'A',
+            pembahasan: it.pembahasan || ''
+          });
+          added++;
+        });
+        const pkt = db.paket.find(function (p) { return p.paket_id === pid; });
+        const totalInPkg = db.soal.filter(function (s) { return s.paket_id === pid; }).length;
+        if (pkt) pkt.jumlah_soal = totalInPkg;
+        saveDb(db);
+        return { imported: added, totalInPackage: totalInPkg };
+      }
+
       if (action === 'admin.deleteQuestion') {
         db.soal = db.soal.filter(function (s) { return s.soal_id !== data.soal_id; });
         saveDb(db);

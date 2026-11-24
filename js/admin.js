@@ -39,6 +39,60 @@ const AdminPanel = (function () {
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  /** Parser CSV standar RFC-4180 (otomatis deteksi koma `,` atau titik koma `;` Excel Indonesia) */
+  function parseCsvQuestions(text) {
+    const clean = String(text || '').replace(/^\uFEFF/, '').trim();
+    if (!clean) return [];
+    const firstLine = clean.split(/\r?\n/)[0] || '';
+    const delim = (firstLine.split(';').length > firstLine.split(',').length) ? ';' : ',';
+
+    const rows = [];
+    let cur = [], field = '', inQuotes = false;
+    for (let i = 0; i < clean.length; i++) {
+      const ch = clean[i];
+      const next = clean[i + 1];
+      if (inQuotes) {
+        if (ch === '"' && next === '"') { field += '"'; i++; }
+        else if (ch === '"') { inQuotes = false; }
+        else { field += ch; }
+      } else {
+        if (ch === '"') { inQuotes = true; }
+        else if (ch === delim) { cur.push(field.trim()); field = ''; }
+        else if (ch === '\n' || (ch === '\r' && next === '\n')) {
+          if (ch === '\r') i++;
+          cur.push(field.trim());
+          if (cur.some(function (x) { return x !== ''; })) rows.push(cur);
+          cur = []; field = '';
+        } else if (ch !== '\r') { field += ch; }
+      }
+    }
+    cur.push(field.trim());
+    if (cur.some(function (x) { return x !== ''; })) rows.push(cur);
+    if (rows.length < 2) return [];
+
+    const headers = rows[0].map(function (h) { return h.toLowerCase().trim(); });
+    const out = [];
+    for (let r = 1; r < rows.length; r++) {
+      const obj = {};
+      headers.forEach(function (h, idx) { obj[h] = rows[r][idx] || ''; });
+      if (!obj.pertanyaan) continue;
+      out.push({
+        subtes: String(obj.subtes || 'TWK').toUpperCase().trim(),
+        topik: obj.topik || '',
+        pertanyaan: obj.pertanyaan,
+        drive_image_id: obj.drive_image_id || '',
+        opsi_a: obj.opsi_a || '',
+        opsi_b: obj.opsi_b || '',
+        opsi_c: obj.opsi_c || '',
+        opsi_d: obj.opsi_d || '',
+        opsi_e: obj.opsi_e || '',
+        kunci_atau_bobot: obj.kunci_atau_bobot || (String(obj.subtes).toUpperCase() === 'TKP' ? 'A:5,B:4,C:3,D:2,E:1' : 'A'),
+        pembahasan: obj.pembahasan || ''
+      });
+    }
+    return out;
+  }
+
   function fmtDate(iso) {
     if (!iso) return '-';
     try {
@@ -416,10 +470,13 @@ const AdminPanel = (function () {
         </div>
         <div class="flex flex-wrap gap-2">
           <button onclick="AdminPanel.openPackageModal()" class="btn-outline px-4 py-2 text-xs inline-flex items-center gap-1.5">
-            <i data-lucide="folder-plus" class="w-4 h-4"></i> + Paket Baru
+            <i data-lucide="folder-plus" class="w-4 h-4"></i> Paket Baru
+          </button>
+          <button onclick="AdminPanel.openImportModal()" class="btn-accent px-4 py-2 text-xs inline-flex items-center gap-1.5">
+            <i data-lucide="upload" class="w-4 h-4"></i> Impor Massal (CSV)
           </button>
           <button onclick="AdminPanel.newQuestion()" class="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5">
-            <i data-lucide="plus" class="w-4 h-4"></i> + Tambah Soal
+            <i data-lucide="plus" class="w-4 h-4"></i> Tambah Soal
           </button>
         </div>
       </div>
@@ -931,6 +988,99 @@ const AdminPanel = (function () {
         App.toast('Soal dihapus.', 'info');
         render(document.getElementById('app'), 'questions');
       } catch (err) { App.toast(err.message, 'error'); }
+    },
+    openImportModal: function () {
+      const pakets = state.qData.paket || [];
+      const curPkg = pakets.find(function (p) { return p.paket_id === state.selectedPaketId; });
+      window._parsedImportItems = [];
+      App.openModal('Impor Massal Bank Soal (CSV / Excel)', `
+        <div class="space-y-4 text-sm">
+          <div class="p-3.5 rounded-2xl bg-[#E8F5EE] text-[#0E3B2C] text-xs space-y-1.5">
+            <div class="font-bold">Paket Tujuan: ${esc(curPkg ? curPkg.nama_paket : state.selectedPaketId)}</div>
+            <div>Unggah file <b>.csv</b> berisi puluhan hingga ratusan soal sekaligus. 1x simpan langsung masuk ke Google Sheets tanpa lag!</div>
+            <button type="button" onclick="AdminPanel.downloadCsvTemplate()" class="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-[#0E3B2C] font-bold border border-[#CBEAD9] hover:bg-[#F7FAF8]">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Unduh Template CSV
+            </button>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-[#4B5563]">Pilih File CSV Soal (.csv)</label>
+            <input type="file" id="csv-soal-file" accept=".csv,text/csv" onchange="AdminPanel.handleCsvFile(this)"
+              class="mt-1 w-full text-xs p-3 rounded-xl border border-dashed border-[#CBD5E1] bg-[#F7FAF8]" />
+          </div>
+
+          <div id="csv-preview-box" class="hidden p-3.5 rounded-2xl bg-[#F7FAF8] border border-[#E2E8F0] space-y-2 text-xs">
+            <div id="csv-preview-summary" class="font-bold text-[#166534]"></div>
+            <div id="csv-preview-list" class="max-h-40 overflow-y-auto space-y-1 text-[#4B5563]"></div>
+          </div>
+
+          <button type="button" id="btn-submit-csv" disabled onclick="AdminPanel.submitBulkImport()"
+            class="btn-primary w-full py-3 text-xs disabled:opacity-40 disabled:cursor-not-allowed">
+            Simpan Soal Massal ke Database
+          </button>
+        </div>
+      `);
+    },
+    downloadCsvTemplate: function () {
+      const lines = [
+        'subtes,topik,pertanyaan,opsi_a,opsi_b,opsi_c,opsi_d,opsi_e,kunci_atau_bobot,pembahasan',
+        'TWK,Pilar Negara,"Contoh soal TWK: Lambang negara Indonesia adalah...",Garuda Pancasila,Bendera Merah Putih,Bahasa Indonesia,Lagu Indonesia Raya,Pohon Beringin,A,"Garuda Pancasila dengan semboyan Bhinneka Tunggal Ika adalah lambang negara RI."',
+        'TIU,Deret Angka,"Contoh soal TIU: Lanjutan dari deret 2, 4, 8, 16, ... adalah...",24,28,30,32,36,D,"Pola dikali 2 setiap suku: 16 x 2 = 32."',
+        'TKP,Pelayanan Publik,"Contoh soal TKP: Saat warga mengeluh antrean lama, sikap Anda...",Meminta sabar dengan ramah dan menjelaskan estimasi waktu,Mengabaikannya,Menyuruh pulang,Memarahi balik,Menutup loket,"A:5,B:1,C:1,D:1,E:1","Sikap ramah dan informatif mencerminkan pelayanan publik prima (Opsi A = 5)."'
+      ];
+      const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Template_Bank_Soal_SimulasiTKD.csv';
+      a.click();
+      App.toast('Template CSV berhasil diunduh!', 'success');
+    },
+    handleCsvFile: function (input) {
+      const f = input.files && input.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = function () {
+        const items = parseCsvQuestions(String(reader.result || ''));
+        window._parsedImportItems = items;
+        const box = document.getElementById('csv-preview-box');
+        const sum = document.getElementById('csv-preview-summary');
+        const list = document.getElementById('csv-preview-list');
+        const btn = document.getElementById('btn-submit-csv');
+        if (!items.length) {
+          App.toast('Tidak ada baris soal valid terbaca. Pastikan header sesuai template CSV.', 'warning');
+          box.classList.add('hidden');
+          btn.disabled = true;
+          return;
+        }
+        const cTwk = items.filter(function (x) { return x.subtes === 'TWK'; }).length;
+        const cTiu = items.filter(function (x) { return x.subtes === 'TIU'; }).length;
+        const cTkp = items.filter(function (x) { return x.subtes === 'TKP'; }).length;
+        sum.textContent = '✓ Siap diimpor: ' + items.length + ' soal (TWK: ' + cTwk + ' • TIU: ' + cTiu + ' • TKP: ' + cTkp + ')';
+        list.innerHTML = items.slice(0, 6).map(function (x, i) {
+          return '<div class="truncate"><b>' + (i + 1) + '. [' + esc(x.subtes) + ']</b> ' + esc(x.pertanyaan) + '</div>';
+        }).join('') + (items.length > 6 ? '<div class="text-[#1F8A5B] font-semibold">...dan ' + (items.length - 6) + ' soal lainnya</div>' : '');
+        box.classList.remove('hidden');
+        btn.disabled = false;
+      };
+      reader.readAsText(f, 'UTF-8');
+    },
+    submitBulkImport: async function () {
+      const items = window._parsedImportItems || [];
+      if (!items.length) return;
+      const btn = document.getElementById('btn-submit-csv');
+      if (btn) { btn.disabled = true; btn.textContent = 'Mengimpor ' + items.length + ' soal...'; }
+      try {
+        const res = await ApiClient.call('admin.importQuestions', {
+          paket_id: state.selectedPaketId,
+          items: items
+        });
+        App.closeModal();
+        App.toast('Berhasil mengimpor ' + res.imported + ' soal! Total di paket ini: ' + res.totalInPackage + ' soal.', 'success');
+        render(document.getElementById('app'), 'questions');
+      } catch (err) {
+        App.toast(err.message, 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Simpan Soal Massal ke Database'; }
+      }
     },
     openPackageModal: function () {
       App.openModal('Tambah Paket Tryout Baru', `
