@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-  <title>SimulasiTKD Pro — Platform Simulasi &amp; Tryout CAT TKD</title>
-  <meta name="description" content="Platform web simulasi &amp; tryout CAT TKD (TWK, TIU, TKP) berstandar BKN dengan timer real-time, analisis passing grade, pembahasan lengkap, dan peringkat nasional." />
+  <title>SimulasiTKD Pro — Simulasi Ujian CAT Standar BKN</title>
+  <meta name="description" content="Platform simulasi dan evaluasi ujian CAT TKD (TWK, TIU, TKP) berstandar BKN untuk seleksi CPNS, BUMN, dan Sekolah Kedinasan." />
 
-  <!-- Fonts: Plus Jakarta Sans + Inter (Sesuai Stitch DESIGN.md) -->
+  <!-- Fonts: Plus Jakarta Sans (400-600), Inter (400-600), IBM Plex Mono (400-500) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -19,15 +19,19 @@
         extend: {
           colors: {
             emeraldDeep: '#0E3B2C',
-            emeraldDark: '#002419',
-            emeraldAccent: '#1F8A5B',
-            emeraldBright: '#22A06B',
-            sageBg: '#F7FAF8',
-            mintTint: '#E8F5EE'
+            emeraldDark: '#09291E',
+            emeraldAccent: '#166E48',
+            sageBg: '#F6F7F6',
+            surfaceRaised: '#EFF1F0',
+            mintTint: '#EAF3EE',
+            inkPrimary: '#11181C',
+            inkSecondary: '#4B5358',
+            inkMuted: '#687076'
           },
           fontFamily: {
             heading: ['"Plus Jakarta Sans"', 'sans-serif'],
-            sans: ['Inter', 'sans-serif']
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace']
           }
         }
       }
@@ -39,10 +43,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <!-- Custom Design System CSS -->
+  <!-- Design System CSS -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body class="bg-[#F7FAF8] text-[#111827] antialiased selection:bg-[#E8F5EE] selection:text-[#0E3B2C]">
+<body class="bg-[#F6F7F6] text-[#11181C] antialiased selection:bg-[#EAF3EE] selection:text-[#0E3B2C]">
 
   <!-- Toast Container -->
   <div id="toast-container" class="no-print"></div>
@@ -52,17 +56,17 @@
 
   <!-- Main SPA App Root -->
   <div id="app" class="min-h-screen flex flex-col">
-    <div class="max-w-6xl mx-auto w-full px-4 py-12 space-y-6">
-      <div class="skeleton h-14 w-full"></div>
+    <div class="max-w-6xl mx-auto w-full px-6 py-12 space-y-6">
+      <div class="skeleton h-12 w-full"></div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="skeleton h-44"></div>
-        <div class="skeleton h-44"></div>
-        <div class="skeleton h-44"></div>
+        <div class="skeleton h-40"></div>
+        <div class="skeleton h-40"></div>
+        <div class="skeleton h-40"></div>
       </div>
     </div>
   </div>
 
-  <!-- Modular Scripts (Pure Static Frontend — No .gs files!) -->
+  <!-- Modular Scripts (Pure Static Frontend) -->
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/admin.js"></script>

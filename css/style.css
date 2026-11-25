@@ -1,34 +1,48 @@
 /* ============================================================================
- * SimulasiTKD Pro — Design System Stylesheet (Stitch DESIGN.md Fidelity)
- * Clean Modern Minimalist Edu-SaaS | Deep Forest Emerald & Crisp White
+ * SimulasiTKD Pro — Design System Stylesheet
+ * Tinted Neutral Ramp, Nested Radius Math, Tabular Mono Figures, Quiet Chrome
  * ============================================================================ */
 
 :root {
+  /* Brand & Accent */
   --primary: #0E3B2C;
-  --primary-deep: #002419;
-  --accent: #1F8A5B;
-  --accent-bright: #22A06B;
-  --surface-canvas: #FFFFFF;
-  --surface-sage: #F7FAF8;
-  --surface-mint: #E8F5EE;
-  --text-primary: #111827;
-  --text-secondary: #4B5563;
-  --border-subtle: #E2E8F0;
+  --primary-deep: #09291E;
+  --accent: #166E48;
 
-  --passed-bg: #DCFCE7;
+  /* One Tinted Neutral Ramp (Cool Sage-Graphite) */
+  --surface-canvas: #FFFFFF;
+  --surface-page: #F6F7F6;
+  --surface-raised: #EFF1F0;
+  --surface-mint: #EAF3EE;
+
+  /* Three Strict Text Roles */
+  --text-primary: #11181C;
+  --text-secondary: #4B5358;
+  --text-muted: #687076;
+
+  /* Quiet Hairlines */
+  --border-subtle: rgba(17, 24, 28, 0.08);
+  --border-strong: rgba(17, 24, 28, 0.16);
+  --border-solid: #E4E7E6;
+
+  /* Toned Semantic CAT Statuses */
+  --passed-bg: #E8F5EE;
   --passed-text: #166534;
   --passed-accent: #16A34A;
 
-  --doubt-bg: #FEF9C3;
-  --doubt-text: #854D0E;
+  --doubt-bg: #FEF3C7;
+  --doubt-text: #92400E;
   --doubt-accent: #D97706;
 
   --failed-bg: #FEE2E2;
   --failed-text: #991B1B;
   --failed-accent: #DC2626;
 
-  --unanswered-bg: #F1F5F9;
-  --unanswered-text: #475569;
+  --unanswered-bg: #EFF1F0;
+  --unanswered-text: #4B5358;
+
+  /* Single Easing Curve */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
@@ -40,7 +54,7 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: var(--surface-sage);
+  background-color: var(--surface-page);
   color: var(--text-primary);
   scroll-behavior: smooth;
 }
@@ -49,84 +63,127 @@ h1, h2, h3, h4, .font-heading {
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.tabular-nums {
+.font-mono-num, .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* Elevation & Cards */
+.font-mono-num {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Cards & Panels — Nested Radius (Card: 12px, Inner Controls: 8px, Tags: 6px) */
 .card-stitch {
   background: var(--surface-canvas);
   border: 1px solid var(--border-subtle);
-  border-radius: 20px;
-  box-shadow: 0 4px 20px -2px rgba(14, 59, 44, 0.05);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 150ms var(--ease-out), background-color 150ms var(--ease-out);
 }
 
 .card-stitch-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px -6px rgba(14, 59, 44, 0.09);
-  border-color: #CBD5E1;
+  border-color: var(--border-strong);
 }
 
-/* Pill Buttons */
+/* Controls & Buttons (8px radius, 4px grid heights, zero colored glow) */
 .btn-primary {
   background-color: var(--primary);
   color: #FFFFFF;
-  border-radius: 9999px;
+  border: 1px solid transparent;
+  border-radius: 8px;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 600;
-  transition: background-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+  font-weight: 500;
+  transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out);
 }
 .btn-primary:hover {
   background-color: var(--primary-deep);
-  box-shadow: 0 6px 16px rgba(14, 59, 44, 0.22);
 }
 .btn-primary:active {
   transform: scale(0.98);
 }
 
+/* Secondary / Quiet Accent Button (mapped to primary or surface to keep 1 accent in chrome) */
 .btn-accent {
-  background-color: var(--accent-bright);
+  background-color: var(--primary);
   color: #FFFFFF;
-  border-radius: 9999px;
+  border: 1px solid transparent;
+  border-radius: 8px;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 600;
-  transition: background-color 0.15s ease, transform 0.12s ease;
+  font-weight: 500;
+  transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out);
 }
 .btn-accent:hover {
-  background-color: var(--accent);
+  background-color: var(--primary-deep);
+}
+.btn-accent:active {
+  transform: scale(0.98);
+}
+
+/* Off-white button for dark banner surfaces */
+.btn-on-dark {
+  background-color: #FFFFFF;
+  color: var(--primary);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 500;
+  transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+}
+.btn-on-dark:hover {
+  background-color: #EFF1F0;
+}
+.btn-on-dark:active {
+  transform: scale(0.98);
 }
 
 .btn-outline {
-  background-color: #FFFFFF;
+  background-color: var(--surface-canvas);
   color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  border-radius: 9999px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 600;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  font-weight: 500;
+  transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), transform 120ms var(--ease-out);
 }
 .btn-outline:hover {
-  background-color: var(--surface-sage);
-  border-color: #CBD5E1;
+  background-color: var(--surface-raised);
+}
+.btn-outline:active {
+  transform: scale(0.98);
 }
 
-/* CAT Exam Option Rows (min 52px touch target) */
+/* Form Inputs & Selects */
+.input-control {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: border-color 150ms var(--ease-out), background-color 150ms var(--ease-out);
+}
+.input-control::placeholder {
+  color: var(--text-muted);
+}
+.input-control:hover {
+  border-color: rgba(17, 24, 28, 0.26);
+}
+
+/* CAT Exam Option Rows (52px on 4px grid, explicit transitions) */
 .cat-option {
-  min-height: 54px;
-  border-radius: 12px;
-  border: 1.5px solid var(--border-subtle);
-  background: #F8FAFC;
-  transition: all 0.14s ease;
+  min-height: 52px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-canvas);
+  transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out);
   cursor: pointer;
 }
 .cat-option:hover {
-  background: #F1F5F9;
-  border-color: #CBD5E1;
+  background: var(--surface-page);
 }
 .cat-option.selected {
   background: var(--surface-mint);
-  border: 2px solid var(--accent);
+  border-color: var(--accent);
 }
 .cat-option.selected .opt-badge {
   background: var(--primary);
@@ -134,22 +191,24 @@ h1, h2, h3, h4, .font-heading {
   border-color: var(--primary);
 }
 
-/* CAT Question Navigator Tiles */
+/* CAT Question Navigator Tiles (36x36px on 4px grid, 6px nested radius) */
 .nav-tile {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 150ms var(--ease-out);
   user-select: none;
 }
 .nav-tile:active {
-  transform: scale(0.94);
+  transform: scale(0.97);
 }
 .nav-tile.unanswered {
   background: var(--unanswered-bg);
@@ -164,72 +223,90 @@ h1, h2, h3, h4, .font-heading {
   color: #FFFFFF;
 }
 .nav-tile.active-tile {
-  box-shadow: 0 0 0 2.5px #FFFFFF, 0 0 0 4.5px var(--primary);
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--primary);
 }
 
-/* Ambient Hero Glow */
-.hero-glow {
-  background: radial-gradient(circle at 50% 50%, rgba(34, 160, 107, 0.16) 0%, rgba(232, 245, 238, 0.4) 45%, rgba(255, 255, 255, 0) 75%);
+/* Signature Detail: Passing Grade Threshold Tick on Progress Bar */
+.pg-track {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background-color: var(--surface-raised);
+}
+.pg-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: transform 320ms var(--ease-out);
+}
+.pg-marker {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background-color: var(--text-primary);
+  border-radius: 1px;
 }
 
-/* Skeleton Shimmer */
+/* Skeleton Loader */
 .skeleton {
-  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background: linear-gradient(90deg, #EFF1F0 25%, #E4E7E6 50%, #EFF1F0 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.2s infinite;
-  border-radius: 10px;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
 }
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
-/* Toast Notifications */
+/* Toast Notifications (4px grid: 16px offset, 8px gap) */
 #toast-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 16px;
+  right: 16px;
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   max-width: 360px;
 }
 .toast-item {
-  animation: slideIn 0.2s ease-out;
+  animation: toastEnter 180ms var(--ease-out);
 }
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(-10px) scale(0.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes toastEnter {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Mobile Bottom Sheet Drawer */
+/* Modal & Mobile Bottom Sheet Drawer */
 .bottom-sheet-backdrop {
-  background: rgba(17, 24, 39, 0.45);
-  backdrop-filter: blur(4px);
+  background: rgba(17, 24, 28, 0.44);
+  backdrop-filter: blur(2px);
 }
 .bottom-sheet-panel {
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
-  animation: sheetUp 0.22s ease-out;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  animation: sheetUp 220ms var(--ease-out);
 }
 @keyframes sheetUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-/* Admin Sidebar Active Link */
+/* Admin Sidebar Active Link (Quiet surface step + subtle top hairline) */
 .admin-nav-link {
-  transition: background-color 0.15s ease, color 0.15s ease;
+  height: 36px;
+  border-radius: 8px;
+  transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out);
 }
 .admin-nav-link.active {
   background: rgba(255, 255, 255, 0.12);
   color: #FFFFFF;
-  border-left: 3px solid var(--accent-bright);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
-/* Focus Accessibility */
-button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+/* Keyboard Focus Ring */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -238,5 +315,5 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 @media print {
   .no-print { display: none !important; }
   body { background: #FFFFFF !important; }
-  .card-stitch { box-shadow: none !important; border: 1px solid #CBD5E1 !important; break-inside: avoid; }
+  .card-stitch { box-shadow: none !important; border: 1px solid #D6DBD9 !important; break-inside: avoid; }
 }
