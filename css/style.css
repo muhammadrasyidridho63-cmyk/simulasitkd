@@ -1,265 +1,258 @@
 /* ============================================================================
- * SimulasiTKD Pro — Design System Stylesheet
- * Tinted Neutral Ramp, Nested Radius Math, Tabular Mono Figures, Quiet Chrome
+ * SimulasiTKD Pro — Swiss International Typographic System
+ * Anchor: Swiss
+ * Surface: Pure White #FFFFFF & Neutral #F7F7F8
+ * Typography: Single Family ('Helvetica Neue', 'Akzidenz-Grotesk', 'Söhne', Helvetica, Arial, sans-serif)
+ * Accent: International Orange #FF4F00
+ * Structure: Exposed 1px hairline grid rules, left-aligned asymmetric balance, condensed folio numerals
  * ============================================================================ */
 
 :root {
-  /* Brand & Accent */
-  --primary: #0E3B2C;
-  --primary-deep: #09291E;
-  --accent: #166E48;
+  /* Swiss Surfaces */
+  --surface-white: #FFFFFF;
+  --surface-neutral: #F7F7F8;
+  --surface-ink: #111111;
 
-  /* One Tinted Neutral Ramp (Cool Sage-Graphite) */
-  --surface-canvas: #FFFFFF;
-  --surface-page: #F6F7F6;
-  --surface-raised: #EFF1F0;
-  --surface-mint: #EAF3EE;
+  /* Single Deliberate Accent: International Orange */
+  --accent: #FF4F00;
+  --accent-hover: #E04500;
 
-  /* Three Strict Text Roles */
-  --text-primary: #11181C;
-  --text-secondary: #4B5358;
-  --text-muted: #687076;
+  /* Text Hierarchy */
+  --text-primary: #111111;
+  --text-secondary: #52525B;
+  --text-muted: #71717A;
 
-  /* Quiet Hairlines */
-  --border-subtle: rgba(17, 24, 28, 0.08);
-  --border-strong: rgba(17, 24, 28, 0.16);
-  --border-solid: #E4E7E6;
+  /* 1px Hairline Rules */
+  --rule-strong: #111111;
+  --rule-hairline: #DCDCE0;
 
-  /* Toned Semantic CAT Statuses */
-  --passed-bg: #E8F5EE;
-  --passed-text: #166534;
-  --passed-accent: #16A34A;
+  /* Single Sans Family */
+  --font-swiss: 'Helvetica Neue', 'Akzidenz-Grotesk', 'Söhne', Helvetica, Arial, sans-serif;
 
-  --doubt-bg: #FEF3C7;
-  --doubt-text: #92400E;
-  --doubt-accent: #D97706;
-
-  --failed-bg: #FEE2E2;
-  --failed-text: #991B1B;
-  --failed-accent: #DC2626;
-
-  --unanswered-bg: #EFF1F0;
-  --unanswered-text: #4B5358;
-
-  /* Single Easing Curve */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Motion */
+  --ease-swiss: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  border-radius: 0;
 }
 
 html, body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: var(--surface-page);
+  font-family: var(--font-swiss);
+  background-color: var(--surface-white);
   color: var(--text-primary);
+  text-align: left;
   scroll-behavior: smooth;
 }
 
-h1, h2, h3, h4, .font-heading {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+h1, h2, h3, h4, .font-heading, .font-mono-num {
+  font-family: var(--font-swiss);
 }
 
 .font-mono-num, .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-.font-mono-num {
-  font-family: 'IBM Plex Mono', monospace;
+/* Signature Differentiator: Condensed Sans Folio & Composition Numerals */
+.swiss-folio {
+  font-family: var(--font-swiss);
+  font-stretch: condensed;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
 }
 
-/* Cards & Panels — Nested Radius (Card: 12px, Inner Controls: 8px, Tags: 6px) */
+/* Swiss Grid Panels (1px hairline rule, flat architectural surface, zero blur shadow) */
 .card-stitch {
-  background: var(--surface-canvas);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: border-color 150ms var(--ease-out), background-color 150ms var(--ease-out);
+  background: var(--surface-white);
+  border: 1px solid var(--rule-hairline);
+  transition: border-color 140ms var(--ease-swiss), background-color 140ms var(--ease-swiss);
 }
 
 .card-stitch-hover:hover {
-  border-color: var(--border-strong);
+  border-color: var(--rule-strong);
 }
 
-/* Controls & Buttons (8px radius, 4px grid heights, zero colored glow) */
+.swiss-hairline-grid {
+  border-top: 1px solid var(--rule-hairline);
+  border-left: 1px solid var(--rule-hairline);
+}
+
+.swiss-hairline-cell {
+  border-right: 1px solid var(--rule-hairline);
+  border-bottom: 1px solid var(--rule-hairline);
+}
+
+/* Controls & Buttons (Sharp 0px Swiss geometry, 1px rules) */
 .btn-primary {
-  background-color: var(--primary);
-  color: #FFFFFF;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--surface-ink);
+  color: var(--surface-white);
+  border: 1px solid var(--surface-ink);
+  font-family: var(--font-swiss);
   font-weight: 500;
-  transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+  transition: background-color 140ms var(--ease-swiss), border-color 140ms var(--ease-swiss), color 140ms var(--ease-swiss);
 }
 .btn-primary:hover {
-  background-color: var(--primary-deep);
-}
-.btn-primary:active {
-  transform: scale(0.98);
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: var(--surface-white);
 }
 
-/* Secondary / Quiet Accent Button (mapped to primary or surface to keep 1 accent in chrome) */
 .btn-accent {
-  background-color: var(--primary);
-  color: #FFFFFF;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--accent);
+  color: var(--surface-white);
+  border: 1px solid var(--accent);
+  font-family: var(--font-swiss);
   font-weight: 500;
-  transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+  transition: background-color 140ms var(--ease-swiss), border-color 140ms var(--ease-swiss);
 }
 .btn-accent:hover {
-  background-color: var(--primary-deep);
-}
-.btn-accent:active {
-  transform: scale(0.98);
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
-/* Off-white button for dark banner surfaces */
 .btn-on-dark {
-  background-color: #FFFFFF;
-  color: var(--primary);
-  border: 1px solid transparent;
-  border-radius: 8px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--accent);
+  color: var(--surface-white);
+  border: 1px solid var(--accent);
+  font-family: var(--font-swiss);
   font-weight: 500;
-  transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+  transition: background-color 140ms var(--ease-swiss), color 140ms var(--ease-swiss);
 }
 .btn-on-dark:hover {
-  background-color: #EFF1F0;
-}
-.btn-on-dark:active {
-  transform: scale(0.98);
+  background-color: var(--surface-white);
+  border-color: var(--surface-white);
+  color: var(--surface-ink);
 }
 
 .btn-outline {
-  background-color: var(--surface-canvas);
+  background-color: var(--surface-white);
   color: var(--text-primary);
-  border: 1px solid var(--border-strong);
-  border-radius: 8px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  border: 1px solid var(--rule-strong);
+  font-family: var(--font-swiss);
   font-weight: 500;
-  transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), transform 120ms var(--ease-out);
+  transition: background-color 140ms var(--ease-swiss), border-color 140ms var(--ease-swiss), color 140ms var(--ease-swiss);
 }
 .btn-outline:hover {
-  background-color: var(--surface-raised);
-}
-.btn-outline:active {
-  transform: scale(0.98);
+  background-color: var(--surface-neutral);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* Form Inputs & Selects */
 .input-control {
   height: 40px;
   padding: 0 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-strong);
-  background-color: var(--surface-canvas);
+  border: 1px solid var(--rule-strong);
+  background-color: var(--surface-white);
   color: var(--text-primary);
+  font-family: var(--font-swiss);
   font-size: 14px;
-  transition: border-color 150ms var(--ease-out), background-color 150ms var(--ease-out);
+  transition: border-color 140ms var(--ease-swiss), background-color 140ms var(--ease-swiss);
 }
 .input-control::placeholder {
   color: var(--text-muted);
 }
-.input-control:hover {
-  border-color: rgba(17, 24, 28, 0.26);
+.input-control:focus {
+  border-color: var(--accent);
+  outline: none;
 }
 
-/* CAT Exam Option Rows (52px on 4px grid, explicit transitions) */
+/* CAT Exam Option Rows (1px border-collapsed matrix rows) */
 .cat-option {
   min-height: 52px;
-  border-radius: 8px;
-  border: 1px solid var(--border-strong);
-  background: var(--surface-canvas);
-  transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out);
+  border: 1px solid var(--rule-hairline);
+  background: var(--surface-white);
+  transition: background-color 140ms var(--ease-swiss), border-color 140ms var(--ease-swiss);
   cursor: pointer;
 }
 .cat-option:hover {
-  background: var(--surface-page);
+  background: var(--surface-neutral);
+  border-color: var(--rule-strong);
 }
 .cat-option.selected {
-  background: var(--surface-mint);
+  background: var(--surface-neutral);
   border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 .cat-option.selected .opt-badge {
-  background: var(--primary);
-  color: #FFFFFF;
-  border-color: var(--primary);
+  background: var(--accent);
+  color: var(--surface-white);
+  border-color: var(--accent);
 }
 
-/* CAT Question Navigator Tiles (36x36px on 4px grid, 6px nested radius) */
+/* CAT Question Navigator Matrix Tiles (36x36px sharp 1px grid cells) */
 .nav-tile {
   width: 36px;
   height: 36px;
-  border-radius: 6px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--font-swiss);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-left: 6px;
+  border: 1px solid var(--rule-hairline);
   cursor: pointer;
-  transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 150ms var(--ease-out);
+  transition: background-color 140ms var(--ease-swiss), border-color 140ms var(--ease-swiss), color 140ms var(--ease-swiss);
   user-select: none;
 }
-.nav-tile:active {
-  transform: scale(0.97);
-}
 .nav-tile.unanswered {
-  background: var(--unanswered-bg);
-  color: var(--unanswered-text);
+  background: var(--surface-white);
+  color: var(--text-secondary);
 }
 .nav-tile.answered {
-  background: var(--passed-accent);
-  color: #FFFFFF;
+  background: var(--surface-ink);
+  color: var(--surface-white);
+  border-color: var(--surface-ink);
 }
 .nav-tile.doubtful {
-  background: var(--doubt-accent);
-  color: #FFFFFF;
+  background: var(--surface-neutral);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 .nav-tile.active-tile {
-  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--primary);
+  background: var(--accent);
+  color: var(--surface-white);
+  border-color: var(--accent);
 }
 
-/* Signature Detail: Passing Grade Threshold Tick on Progress Bar */
+/* Signature Detail: Swiss Hairline Passing Grade Ruler & Threshold Tick */
 .pg-track {
   position: relative;
-  height: 8px;
-  border-radius: 4px;
-  background-color: var(--surface-raised);
+  height: 6px;
+  background-color: var(--surface-neutral);
+  border: 1px solid var(--rule-hairline);
 }
 .pg-fill {
   height: 100%;
-  border-radius: 4px;
-  transition: transform 320ms var(--ease-out);
+  transition: width 280ms var(--ease-swiss);
 }
 .pg-marker {
   position: absolute;
-  top: -3px;
-  bottom: -3px;
+  top: -5px;
+  bottom: -5px;
   width: 2px;
-  background-color: var(--text-primary);
-  border-radius: 1px;
+  background-color: var(--accent);
 }
 
 /* Skeleton Loader */
 .skeleton {
-  background: linear-gradient(90deg, #EFF1F0 25%, #E4E7E6 50%, #EFF1F0 75%);
+  background: linear-gradient(90deg, #F7F7F8 25%, #DCDCE0 50%, #F7F7F8 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
-  border-radius: 8px;
 }
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
-/* Toast Notifications (4px grid: 16px offset, 8px gap) */
+/* Toast Notifications */
 #toast-container {
   position: fixed;
   top: 16px;
@@ -271,49 +264,47 @@ h1, h2, h3, h4, .font-heading {
   max-width: 360px;
 }
 .toast-item {
-  animation: toastEnter 180ms var(--ease-out);
+  animation: toastEnter 160ms var(--ease-swiss);
 }
 @keyframes toastEnter {
-  from { opacity: 0; transform: translateY(-8px); }
+  from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 /* Modal & Mobile Bottom Sheet Drawer */
 .bottom-sheet-backdrop {
-  background: rgba(17, 24, 28, 0.44);
-  backdrop-filter: blur(2px);
+  background: rgba(17, 17, 17, 0.55);
 }
 .bottom-sheet-panel {
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  animation: sheetUp 220ms var(--ease-out);
+  border-top: 2px solid var(--rule-strong);
+  animation: sheetUp 200ms var(--ease-swiss);
 }
 @keyframes sheetUp {
   from { transform: translateY(12px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* Admin Sidebar Active Link (Quiet surface step + subtle top hairline) */
+/* Admin Sidebar Active Link (Swiss 1px grid rule + International Orange indicator) */
 .admin-nav-link {
-  height: 36px;
-  border-radius: 8px;
-  transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out);
+  height: 40px;
+  border-bottom: 1px solid var(--rule-hairline);
+  transition: background-color 140ms var(--ease-swiss), color 140ms var(--ease-swiss);
 }
 .admin-nav-link.active {
-  background: rgba(255, 255, 255, 0.12);
-  color: #FFFFFF;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  background: var(--surface-neutral);
+  color: var(--surface-ink);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 /* Keyboard Focus Ring */
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
 
 /* Print / Rapor PDF Styling */
 @media print {
   .no-print { display: none !important; }
   body { background: #FFFFFF !important; }
-  .card-stitch { box-shadow: none !important; border: 1px solid #D6DBD9 !important; break-inside: avoid; }
+  .card-stitch { box-shadow: none !important; border: 1px solid #111111 !important; break-inside: avoid; }
 }

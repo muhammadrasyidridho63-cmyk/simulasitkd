@@ -6,32 +6,25 @@
   <title>SimulasiTKD Pro — Simulasi Ujian CAT Standar BKN</title>
   <meta name="description" content="Platform simulasi dan evaluasi ujian CAT TKD (TWK, TIU, TKP) berstandar BKN untuk seleksi CPNS, BUMN, dan Sekolah Kedinasan." />
 
-  <!-- Fonts: Plus Jakarta Sans (400-600), Inter (400-600), IBM Plex Mono (400-500) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS CDN (Swiss Anchor: 1 Sans Family, #FFFFFF / #F7F7F8 Surface, International Orange #FF4F00) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            emeraldDeep: '#0E3B2C',
-            emeraldDark: '#09291E',
-            emeraldAccent: '#166E48',
-            sageBg: '#F6F7F6',
-            surfaceRaised: '#EFF1F0',
-            mintTint: '#EAF3EE',
-            inkPrimary: '#11181C',
-            inkSecondary: '#4B5358',
-            inkMuted: '#687076'
+            swissWhite: '#FFFFFF',
+            swissNeutral: '#F7F7F8',
+            swissInk: '#111111',
+            swissMuted: '#52525B',
+            swissSubtle: '#71717A',
+            swissRule: '#DCDCE0',
+            swissAccent: '#FF4F00'
           },
           fontFamily: {
-            heading: ['"Plus Jakarta Sans"', 'sans-serif'],
-            sans: ['Inter', 'sans-serif'],
-            mono: ['"IBM Plex Mono"', 'monospace']
+            sans: ['"Helvetica Neue"', '"Akzidenz-Grotesk"', '"Söhne"', 'Helvetica', 'Arial', 'sans-serif'],
+            heading: ['"Helvetica Neue"', '"Akzidenz-Grotesk"', '"Söhne"', 'Helvetica', 'Arial', 'sans-serif'],
+            mono: ['"Helvetica Neue"', '"Akzidenz-Grotesk"', '"Söhne"', 'Helvetica', 'Arial', 'sans-serif']
           }
         }
       }
@@ -43,10 +36,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <!-- Design System CSS -->
+  <!-- Swiss Design System CSS -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body class="bg-[#F6F7F6] text-[#11181C] antialiased selection:bg-[#EAF3EE] selection:text-[#0E3B2C]">
+<body class="bg-[#FFFFFF] text-[#111111] antialiased selection:bg-[#FF4F00] selection:text-[#FFFFFF]">
 
   <!-- Toast Container -->
   <div id="toast-container" class="no-print"></div>
@@ -56,12 +49,12 @@
 
   <!-- Main SPA App Root -->
   <div id="app" class="min-h-screen flex flex-col">
-    <div class="max-w-6xl mx-auto w-full px-6 py-12 space-y-6">
-      <div class="skeleton h-12 w-full"></div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="skeleton h-40"></div>
-        <div class="skeleton h-40"></div>
-        <div class="skeleton h-40"></div>
+    <div class="max-w-7xl mx-auto w-full px-6 py-12 border-x border-[#DCDCE0]">
+      <div class="skeleton h-12 w-full mb-6"></div>
+      <div class="grid grid-cols-1 md:grid-cols-3 border-t border-l border-[#DCDCE0]">
+        <div class="skeleton h-40 border-r border-b border-[#DCDCE0]"></div>
+        <div class="skeleton h-40 border-r border-b border-[#DCDCE0]"></div>
+        <div class="skeleton h-40 border-r border-b border-[#DCDCE0]"></div>
       </div>
     </div>
   </div>

@@ -1,8 +1,9 @@
 /**
  * ============================================================================
  * SimulasiTKD Pro — js/app.js
- * Core SPA Controller (0ms Instant Routing, Unslop Redline Polish)
- * Screens: Landing & Auth | Dashboard Peserta | Ruang Ujian CAT | Evaluasi & Peringkat | Admin
+ * Swiss International Typographic System (Anchor: Swiss)
+ * Surface: #FFFFFF / #F7F7F8 | Ink: #111111 | Accent: International Orange #FF4F00
+ * Structure: Exposed 1px hairline grid, left-aligned asymmetric typography, condensed folio numerals
  * ============================================================================
  */
 
@@ -38,18 +39,22 @@ const App = (function () {
     }
   }
 
+  function pad2(n) {
+    return String(n).padStart(2, '0');
+  }
+
   function toast(msg, type) {
     type = type || 'info';
     const colors = {
-      success: 'bg-[#0E3B2C] text-white border-[#09291E]',
-      error: 'bg-[#991B1B] text-white border-[#7F1D1D]',
-      warning: 'bg-[#FEF3C7] text-[#92400E] border-[#F59E0B]',
-      info: 'bg-white text-[#11181C] border-[#E4E7E6]'
+      success: 'bg-[#111111] text-[#FFFFFF] border-[#111111]',
+      error: 'bg-[#FF4F00] text-[#FFFFFF] border-[#FF4F00]',
+      warning: 'bg-[#F7F7F8] text-[#111111] border-[#FF4F00]',
+      info: 'bg-[#FFFFFF] text-[#111111] border-[#111111]'
     };
     const box = document.getElementById('toast-container');
     if (!box) return;
     const el = document.createElement('div');
-    el.className = 'toast-item px-4 py-3 rounded-lg border shadow-sm text-xs font-medium flex items-center gap-2 ' + (colors[type] || colors.info);
+    el.className = 'toast-item px-4 py-3 border text-xs font-medium flex items-center justify-between gap-3 ' + (colors[type] || colors.info);
     el.textContent = msg;
     box.appendChild(el);
     setTimeout(function () { el.remove(); }, 3600);
@@ -59,14 +64,14 @@ const App = (function () {
     const root = document.getElementById('modal-root');
     root.innerHTML = `
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bottom-sheet-backdrop" onclick="if(event.target===this) App.closeModal()">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-[0_8px_24px_rgba(0,0,0,0.08)] border border-[#E4E7E6] space-y-4 max-h-[90vh] overflow-y-auto">
-          <div class="flex items-center justify-between gap-4">
-            <h3 class="font-heading font-semibold text-base text-[#11181C]">${esc(title)}</h3>
-            <button type="button" onclick="App.closeModal()" class="w-8 h-8 rounded-lg hover:bg-[#EFF1F0] text-[#687076] inline-flex items-center justify-center transition-colors duration-150">
+        <div class="bg-[#FFFFFF] max-w-md w-full border border-[#111111] max-h-[90vh] overflow-y-auto">
+          <div class="px-5 py-4 border-b border-[#DCDCE0] flex items-center justify-between gap-4">
+            <h3 class="font-semibold text-base text-[#111111] tracking-[-0.015em]">${esc(title)}</h3>
+            <button type="button" onclick="App.closeModal()" class="w-8 h-8 border border-[#DCDCE0] hover:border-[#111111] text-[#52525B] hover:text-[#111111] inline-flex items-center justify-center transition-colors">
               <i data-lucide="x" class="w-4 h-4"></i>
             </button>
           </div>
-          <div>${bodyHtml}</div>
+          <div class="p-5">${bodyHtml}</div>
         </div>
       </div>`;
     refreshIcons();
@@ -179,42 +184,40 @@ const App = (function () {
   }
 
   // ==========================================================================
-  // SHARED PARTICIPANT NAVBAR (Quiet Chrome, Z-40 Sticky Safe)
+  // SHARED PARTICIPANT NAVBAR (Swiss 1px Hairline Header)
   // ==========================================================================
   function renderNavbar(active) {
     const u = state.user;
     return `
-      <header class="h-16 bg-white/95 backdrop-blur-md border-b border-[#E4E7E6] sticky top-0 z-40 no-print">
-        <div class="max-w-6xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-4">
-          <button type="button" onclick="App.go('${u ? 'dashboard' : 'landing'}')" class="inline-flex items-center gap-2 font-heading font-semibold text-[#11181C] text-base tracking-[-0.01em]">
-            <span class="w-7 h-7 rounded-md bg-[#0E3B2C] text-white flex items-center justify-center shrink-0">
-              <i data-lucide="shield-check" class="w-4 h-4"></i>
-            </span>
+      <header class="h-14 bg-[#FFFFFF] border-b border-[#111111] sticky top-0 z-40 no-print">
+        <div class="max-w-7xl mx-auto h-full border-x border-[#DCDCE0] flex items-stretch justify-between">
+          <button type="button" onclick="App.go('${u ? 'dashboard' : 'landing'}')" class="px-4 sm:px-6 border-r border-[#DCDCE0] inline-flex items-center gap-3 font-semibold text-[#111111] text-sm tracking-[-0.02em] hover:bg-[#F7F7F8] transition-colors">
+            <span class="w-2.5 h-2.5 bg-[#FF4F00] inline-block shrink-0"></span>
             <span>SimulasiTKD Pro</span>
           </button>
 
-          <nav class="hidden md:flex items-center gap-6 text-sm text-[#4B5358]">
+          <nav class="hidden md:flex items-stretch text-xs font-medium text-[#52525B]">
             ${u ? `
-              <button type="button" onclick="App.go('dashboard')" class="transition-colors duration-150 ${active === 'dashboard' ? 'text-[#11181C] font-medium' : 'hover:text-[#11181C]'}">Paket simulasi</button>
-              <button type="button" onclick="App.go('result')" class="transition-colors duration-150 ${active === 'result' ? 'text-[#11181C] font-medium' : 'hover:text-[#11181C]'}">Evaluasi &amp; peringkat</button>
-              ${u.role === 'Admin' ? `<button type="button" onclick="App.go('admin')" class="text-[#166E48] font-medium hover:underline">Panel admin</button>` : ''}
+              <button type="button" onclick="App.go('dashboard')" class="px-5 border-r border-[#DCDCE0] inline-flex items-center transition-colors ${active === 'dashboard' ? 'bg-[#F7F7F8] text-[#111111] shadow-[inset_0_-2px_0_#FF4F00]' : 'hover:text-[#111111] hover:bg-[#F7F7F8]'}">Paket simulasi</button>
+              <button type="button" onclick="App.go('result')" class="px-5 border-r border-[#DCDCE0] inline-flex items-center transition-colors ${active === 'result' ? 'bg-[#F7F7F8] text-[#111111] shadow-[inset_0_-2px_0_#FF4F00]' : 'hover:text-[#111111] hover:bg-[#F7F7F8]'}">Evaluasi &amp; peringkat</button>
+              ${u.role === 'Admin' ? `<button type="button" onclick="App.go('admin')" class="px-5 border-r border-[#DCDCE0] inline-flex items-center text-[#FF4F00] font-semibold hover:bg-[#F7F7F8]">Panel admin</button>` : ''}
             ` : `
-              <a href="#pilar" class="hover:text-[#11181C] transition-colors duration-150">Materi</a>
-              <a href="#cara-kerja" class="hover:text-[#11181C] transition-colors duration-150">Alur latihan</a>
-              <a href="#auth-section" class="hover:text-[#11181C] transition-colors duration-150">Akses akun</a>
+              <a href="#pilar" class="px-5 border-r border-[#DCDCE0] inline-flex items-center hover:text-[#111111] hover:bg-[#F7F7F8] transition-colors">01 / Komponen SKD</a>
+              <a href="#cara-kerja" class="px-5 border-r border-[#DCDCE0] inline-flex items-center hover:text-[#111111] hover:bg-[#F7F7F8] transition-colors">02 / Tahapan</a>
+              <a href="#auth-section" class="px-5 border-r border-[#DCDCE0] inline-flex items-center hover:text-[#111111] hover:bg-[#F7F7F8] transition-colors">03 / Akun</a>
             `}
           </nav>
 
-          <div class="flex items-center gap-3">
+          <div class="flex items-stretch">
             ${u ? `
-              <button type="button" onclick="App.openProfileMenu()" class="h-9 pl-2 pr-3 rounded-lg border border-[#E4E7E6] bg-white hover:bg-[#EFF1F0] inline-flex items-center gap-2 transition-colors duration-150">
-                <span class="w-6 h-6 rounded-md bg-[#0E3B2C] text-white text-xs font-medium flex items-center justify-center">${esc((u.nama_lengkap || 'U').slice(0, 1).toUpperCase())}</span>
-                <span class="hidden sm:inline text-xs font-medium text-[#11181C] max-w-[120px] truncate">${esc(u.nama_lengkap)}</span>
-                <i data-lucide="chevron-down" class="w-4 h-4 text-[#687076]"></i>
+              <button type="button" onclick="App.openProfileMenu()" class="px-4 sm:px-5 border-l border-[#DCDCE0] bg-[#FFFFFF] hover:bg-[#F7F7F8] inline-flex items-center gap-2.5 transition-colors">
+                <span class="w-6 h-6 bg-[#111111] text-[#FFFFFF] text-xs font-semibold flex items-center justify-center">${esc((u.nama_lengkap || 'U').slice(0, 1).toUpperCase())}</span>
+                <span class="hidden sm:inline text-xs font-medium text-[#111111] max-w-[140px] truncate">${esc(u.nama_lengkap)}</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-[#71717A]"></i>
               </button>
             ` : `
-              <a href="#auth-section" onclick="App.setAuthTab('login')" class="hidden sm:inline-flex items-center h-9 px-3 text-sm text-[#4B5358] hover:text-[#11181C] transition-colors duration-150">Masuk</a>
-              <a href="#auth-section" onclick="App.setAuthTab('register')" class="btn-primary h-9 px-4 text-xs inline-flex items-center">Daftar gratis</a>
+              <a href="#auth-section" onclick="App.setAuthTab('login')" class="hidden sm:inline-flex items-center px-5 border-l border-[#DCDCE0] text-xs font-medium text-[#111111] hover:bg-[#F7F7F8] transition-colors">Masuk</a>
+              <a href="#auth-section" onclick="App.setAuthTab('register')" class="px-5 bg-[#FF4F00] hover:bg-[#111111] text-[#FFFFFF] text-xs font-medium inline-flex items-center transition-colors">Daftar</a>
             `}
           </div>
         </div>
@@ -223,190 +226,199 @@ const App = (function () {
   }
 
   // ==========================================================================
-  // SCREEN 1: LANDING PAGE & AUTH
+  // SCREEN 1: LANDING PAGE & AUTH (Swiss Exposed Hairline Grid & Folio Numerals)
   // ==========================================================================
   function renderLanding(root) {
     root.innerHTML = `
       ${renderNavbar('landing')}
-      <main class="flex-1 bg-white relative z-0 isolate">
-        <!-- Hero Section: Asymmetric Split + Real CAT Workspace Window -->
-        <section class="max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-16 lg:pt-20 lg:pb-24 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div class="lg:col-span-6 space-y-6">
-            <div class="inline-flex items-center gap-2 text-xs font-mono-num text-[#687076]">
-              <span class="w-2 h-2 rounded-full bg-[#166E48]"></span>
-              <span>Standar SKD BKN · TWK, TIU, TKP${ApiClient.isDemoMode() ? ' · Mode pratinjau lokal' : ''}</span>
-            </div>
-            <h1 class="text-4xl sm:text-5xl font-heading font-medium leading-[1.08] tracking-[-0.02em] text-[#11181C]">
-              Simulasi ujian CAT untuk seleksi CPNS, BUMN, dan Kedinasan
-            </h1>
-            <p class="text-base text-[#4B5358] leading-relaxed max-w-xl">
-              Latih kecepatan menjawab 110 butir soal berwaktu nyata, ukur capaian ambang batas tiap subtes, dan pelajari pembahasan resmi per butir soal
-            </p>
-            <div class="flex flex-wrap items-center gap-3 pt-1">
-              <a href="#auth-section" onclick="App.setAuthTab('register')" class="btn-primary h-11 px-5 text-sm inline-flex items-center gap-2">
-                <span>Mulai latihan gratis</span>
-                <i data-lucide="arrow-right" class="w-4 h-4"></i>
-              </a>
-              <a href="#auth-section" onclick="App.setAuthTab('login')" class="btn-outline h-11 px-5 text-sm inline-flex items-center">
-                Masuk akun
-              </a>
-            </div>
-            <div class="grid grid-cols-3 gap-6 pt-6 border-t border-[#E4E7E6] max-w-md">
-              <div>
-                <div class="font-mono-num font-medium text-lg text-[#11181C]">110 butir</div>
-                <div class="text-xs text-[#687076] mt-1">Komposisi SKD resmi</div>
+      <main class="flex-1 bg-[#FFFFFF]">
+        <!-- Hero Section: Exposed 12-Col Swiss Hairline Grid -->
+        <section class="max-w-7xl mx-auto border-x border-b border-[#111111] grid grid-cols-1 lg:grid-cols-12">
+          <!-- Left 7 Cols: Asymmetric Typography + Oversized Numeric Composition -->
+          <div class="lg:col-span-7 border-b lg:border-b-0 lg:border-r border-[#111111] flex flex-col justify-between">
+            <div class="p-6 sm:p-10 lg:p-12 space-y-6">
+              <div class="flex items-center justify-between border-b border-[#DCDCE0] pb-3 text-xs font-medium text-[#52525B] tabular-nums">
+                <span>SKD BKN · TWK / TIU / TKP</span>
+                <span class="text-[#FF4F00] font-semibold">${ApiClient.isDemoMode() ? 'PRATINJAU LOKAL' : 'CAT STANDAR BKN'}</span>
               </div>
-              <div>
-                <div class="font-mono-num font-medium text-lg text-[#11181C]">100 menit</div>
-                <div class="text-xs text-[#687076] mt-1">Hitung mundur presisi</div>
+              <h1 class="text-4xl sm:text-5xl lg:text-[54px] font-semibold leading-[1.02] tracking-[-0.03em] text-[#111111]">
+                Simulasi ujian CAT untuk seleksi CPNS, BUMN, dan Kedinasan
+              </h1>
+              <p class="text-base text-[#52525B] leading-relaxed max-w-xl">
+                Latih kecepatan menjawab 110 butir soal berwaktu nyata, ukur capaian ambang batas tiap subtes, dan pelajari pembahasan resmi per butir soal.
+              </p>
+              <div class="flex flex-wrap items-center gap-3 pt-2">
+                <a href="#auth-section" onclick="App.setAuthTab('register')" class="btn-accent h-11 px-6 text-xs uppercase tracking-[0.04em] inline-flex items-center gap-3">
+                  <span>Daftar akun latihan</span>
+                  <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+                <a href="#auth-section" onclick="App.setAuthTab('login')" class="btn-outline h-11 px-6 text-xs uppercase tracking-[0.04em] inline-flex items-center">
+                  Masuk
+                </a>
               </div>
-              <div>
-                <div class="font-mono-num font-medium text-lg text-[#11181C]">3 ambang</div>
-                <div class="text-xs text-[#687076] mt-1">Evaluasi PG otomatis</div>
+            </div>
+
+            <!-- Numeric Folio Bar (3 Hairline Cells) -->
+            <div class="grid grid-cols-3 border-t border-[#111111] divide-x divide-[#DCDCE0] bg-[#F7F7F8]">
+              <div class="p-5 sm:p-6 space-y-1">
+                <div class="swiss-folio text-3xl sm:text-4xl font-semibold text-[#111111]">110</div>
+                <div class="text-xs text-[#52525B]">Butir soal SKD</div>
+              </div>
+              <div class="p-5 sm:p-6 space-y-1">
+                <div class="swiss-folio text-3xl sm:text-4xl font-semibold text-[#111111]">100</div>
+                <div class="text-xs text-[#52525B]">Menit durasi</div>
+              </div>
+              <div class="p-5 sm:p-6 space-y-1">
+                <div class="swiss-folio text-3xl sm:text-4xl font-semibold text-[#FF4F00]">550</div>
+                <div class="text-xs text-[#52525B]">Skor maksimum</div>
               </div>
             </div>
           </div>
 
-          <!-- Right Product Preview: Real CAT Exam Sheet Window (Moment #1) -->
-          <div class="lg:col-span-6">
-            <div class="rounded-2xl bg-[#F6F7F6] p-4 sm:p-5 border border-[#E4E7E6] shadow-[0_8px_24px_rgba(0,0,0,0.06)] space-y-4">
-              <!-- Window Header -->
-              <div class="bg-white rounded-xl border border-[#E4E7E6] px-4 py-3 flex items-center justify-between gap-3">
-                <div class="flex items-center gap-2 min-w-0">
-                  <span class="px-2 py-0.5 rounded-md bg-[#EAF3EE] text-[#0E3B2C] text-xs font-mono-num font-medium">TIU</span>
-                  <span class="text-xs font-medium text-[#11181C] truncate">Tryout Nasional SKD #01</span>
+          <!-- Right 5 Cols: Real SOAL-001 from PKT-001 (Zero Fabricated Content) -->
+          <div class="lg:col-span-5 bg-[#F7F7F8] flex flex-col justify-between">
+            <div class="px-6 py-4 bg-[#FFFFFF] border-b border-[#DCDCE0] flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="px-2 py-0.5 bg-[#111111] text-[#FFFFFF] text-xs font-semibold tabular-nums">TWK</span>
+                <span class="text-xs font-medium text-[#111111] truncate">Tryout Mini SKD CPNS #01</span>
+              </div>
+              <span class="text-xs font-semibold tabular-nums text-[#FF4F00]">PKT-001</span>
+            </div>
+
+            <div class="p-6 sm:p-8 space-y-5 flex-1">
+              <div class="flex items-baseline justify-between border-b border-[#DCDCE0] pb-3">
+                <div class="flex items-baseline gap-3">
+                  <span class="swiss-folio text-3xl font-semibold text-[#111111]">01</span>
+                  <span class="text-xs text-[#71717A] tabular-nums">/ 06 · Pilar Negara</span>
                 </div>
-                <div class="px-2.5 py-1 rounded-md bg-[#EFF1F0] text-[#11181C] text-xs font-mono-num font-medium inline-flex items-center gap-1.5 shrink-0">
-                  <i data-lucide="clock" class="w-3.5 h-3.5 text-[#687076]"></i>
-                  <span>01:12:45</span>
-                </div>
+                <span class="text-xs font-medium text-[#52525B] tabular-nums">Benar +5</span>
               </div>
 
-              <!-- Question Body -->
-              <div class="bg-white rounded-xl border border-[#E4E7E6] p-4 sm:p-5 space-y-4">
-                <div class="flex items-center justify-between text-xs text-[#687076]">
-                  <span class="font-mono-num text-[#11181C] font-medium">Soal 24 / 110</span>
-                  <span>Penalaran analitis · Bobot +5</span>
-                </div>
-                <p class="text-sm text-[#11181C] leading-relaxed">
-                  Lima peserta ujian duduk berjajar satu baris. Budi duduk tepat di sebelah Andi, tetapi tidak bersebelahan dengan Citra. Jika Dewi duduk di ujung kiri, pasangan yang duduk berdampingan adalah...
-                </p>
-                <div class="space-y-2 text-xs">
-                  <div class="px-3 py-2.5 rounded-lg border border-[#E4E7E6] text-[#4B5358] flex items-center gap-3">
-                    <span class="w-6 h-6 rounded-md bg-[#EFF1F0] text-[#11181C] font-mono-num font-medium flex items-center justify-center shrink-0">A</span>
-                    <span>Andi dan Dewi</span>
-                  </div>
-                  <div class="px-3 py-2.5 rounded-lg border border-[#166E48] bg-[#EAF3EE] text-[#11181C] font-medium flex items-center gap-3">
-                    <span class="w-6 h-6 rounded-md bg-[#0E3B2C] text-white font-mono-num font-medium flex items-center justify-center shrink-0">B</span>
-                    <span>Budi dan Eko</span>
-                  </div>
-                  <div class="px-3 py-2.5 rounded-lg border border-[#E4E7E6] text-[#4B5358] flex items-center gap-3">
-                    <span class="w-6 h-6 rounded-md bg-[#EFF1F0] text-[#11181C] font-mono-num font-medium flex items-center justify-center shrink-0">C</span>
-                    <span>Citra dan Andi</span>
-                  </div>
-                </div>
-              </div>
+              <p class="text-sm text-[#111111] leading-relaxed">
+                Dalam konteks menjaga keutuhan NKRI, implementasi nilai-nilai Pancasila sila ketiga di lingkungan kerja ASN dapat diwujudkan melalui...
+              </p>
 
-              <!-- Navigator Strip & Passing Grade Signature Bar -->
-              <div class="bg-white rounded-xl border border-[#E4E7E6] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-                <div class="flex items-center gap-1.5 font-mono-num text-xs">
-                  <span class="w-7 h-7 rounded-md bg-[#16A34A] text-white flex items-center justify-center">21</span>
-                  <span class="w-7 h-7 rounded-md bg-[#16A34A] text-white flex items-center justify-center">22</span>
-                  <span class="w-7 h-7 rounded-md bg-[#D97706] text-white flex items-center justify-center">23</span>
-                  <span class="w-7 h-7 rounded-md bg-[#16A34A] text-white ring-2 ring-[#0E3B2C] ring-offset-1 flex items-center justify-center">24</span>
-                  <span class="w-7 h-7 rounded-md bg-[#EFF1F0] text-[#4B5358] flex items-center justify-center">25</span>
-                  <span class="w-7 h-7 rounded-md bg-[#EFF1F0] text-[#4B5358] flex items-center justify-center">26</span>
+              <div class="space-y-2 text-xs">
+                <div class="p-3 bg-[#FFFFFF] border border-[#DCDCE0] text-[#52525B] flex items-start gap-3">
+                  <span class="w-6 h-6 border border-[#DCDCE0] text-[#111111] font-semibold tabular-nums flex items-center justify-center shrink-0">A</span>
+                  <span>Mengutamakan kepentingan golongan di atas kepentingan umum</span>
                 </div>
-                <div class="flex items-center gap-2 text-xs">
-                  <span class="px-2 py-0.5 rounded-md bg-[#E8F5EE] text-[#166534] font-medium">Lulus PG</span>
-                  <span class="font-mono-num text-[#4B5358]">422 / 550</span>
+                <div class="p-3 bg-[#FFFFFF] border border-[#FF4F00] shadow-[inset_3px_0_0_#FF4F00] text-[#111111] font-medium flex items-start gap-3">
+                  <span class="w-6 h-6 bg-[#FF4F00] text-[#FFFFFF] font-semibold tabular-nums flex items-center justify-center shrink-0">B</span>
+                  <span>Menjaga netralitas dan tidak diskriminatif dalam pelayanan publik</span>
+                </div>
+                <div class="p-3 bg-[#FFFFFF] border border-[#DCDCE0] text-[#52525B] flex items-start gap-3">
+                  <span class="w-6 h-6 border border-[#DCDCE0] text-[#111111] font-semibold tabular-nums flex items-center justify-center shrink-0">C</span>
+                  <span>Menolak bekerja sama dengan rekan dari latar belakang berbeda</span>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
 
-        <!-- 4 Pilar Kelulusan -->
-        <section id="pilar" class="bg-[#F6F7F6] py-16 lg:py-20 border-t border-[#E4E7E6]">
-          <div class="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div class="space-y-1">
-                <div class="text-xs font-medium text-[#166E48]">Materi terstruktur</div>
-                <h2 class="text-2xl sm:text-3xl font-heading font-medium text-[#11181C] tracking-[-0.015em]">Empat komponen evaluasi ujian</h2>
+            <!-- Navigator Strip & Official Passing Grade Thresholds -->
+            <div class="px-6 py-4 bg-[#FFFFFF] border-t border-[#DCDCE0] flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-1 tabular-nums text-xs">
+                <span class="w-7 h-7 bg-[#FF4F00] text-[#FFFFFF] font-semibold flex items-center pl-1.5">01</span>
+                <span class="w-7 h-7 bg-[#111111] text-[#FFFFFF] font-semibold flex items-center pl-1.5">02</span>
+                <span class="w-7 h-7 bg-[#111111] text-[#FFFFFF] font-semibold flex items-center pl-1.5">03</span>
+                <span class="w-7 h-7 bg-[#FFFFFF] border border-[#DCDCE0] text-[#52525B] font-semibold flex items-center pl-1.5">04</span>
+                <span class="w-7 h-7 bg-[#FFFFFF] border border-[#DCDCE0] text-[#52525B] font-semibold flex items-center pl-1.5">05</span>
+                <span class="w-7 h-7 bg-[#FFFFFF] border border-[#DCDCE0] text-[#52525B] font-semibold flex items-center pl-1.5">06</span>
               </div>
-              <p class="text-sm text-[#4B5358] max-w-md">Setiap paket disusun mengikuti kisi-kisi terbaru lengkap dengan bobot penilaian resmi dan pembahasan per butir soal</p>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              ${[
-                { code: 'TWK · PG 65', icon: 'landmark', title: 'Tes Wawasan Kebangsaan', desc: 'Nasionalisme, integritas, bela negara, dan pilar negara berbasis studi kasus penalaran.' },
-                { code: 'TIU · PG 80', icon: 'calculator', title: 'Tes Intelegensia Umum', desc: 'Kemampuan verbal, numerik, deret angka, silogisme, dan analitis untuk ketepatan logika.' },
-                { code: 'TKP · PG 166', icon: 'users', title: 'Tes Karakteristik Pribadi', desc: 'Pelayanan publik, jejaring kerja, sosial budaya, profesionalisme, dan anti-radikalisme berskala 1–5.' },
-                { code: 'Rapor · PDF', icon: 'bar-chart-2', title: 'Analisis Ambang Batas', desc: 'Pemetaan skor subtes terhadap passing grade, tren percobaan, dan peringkat peserta nasional.' }
-              ].map(function (c) {
-                return `
-                  <div class="card-stitch card-stitch-hover p-6 flex flex-col justify-between space-y-6">
-                    <div class="space-y-3">
-                      <div class="flex items-center justify-between text-xs text-[#687076]">
-                        <span class="font-mono-num">${c.code}</span>
-                        <i data-lucide="${c.icon}" class="w-4 h-4 text-[#687076]"></i>
-                      </div>
-                      <h3 class="font-heading font-medium text-base text-[#11181C]">${c.title}</h3>
-                      <p class="text-xs text-[#4B5358] leading-relaxed">${c.desc}</p>
-                    </div>
-                    <a href="#auth-section" class="inline-flex items-center gap-2 text-xs font-medium text-[#166E48] hover:text-[#0E3B2C] transition-colors duration-150">
-                      <span>Mulai latihan</span>
-                      <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </a>
-                  </div>`;
-              }).join('')}
+              <div class="text-xs font-medium tabular-nums text-[#52525B]">
+                PG: TWK 65 · TIU 80 · TKP 166
+              </div>
             </div>
           </div>
         </section>
 
-        <!-- 3 Langkah + Dark CTA Panel -->
-        <section id="cara-kerja" class="max-w-6xl mx-auto px-4 sm:px-6 py-16 lg:py-20 space-y-12">
-          <div class="space-y-1">
-            <div class="text-xs font-medium text-[#166E48]">Alur latihan</div>
-            <h2 class="text-2xl sm:text-3xl font-heading font-medium text-[#11181C] tracking-[-0.015em]">Tiga tahap persiapan terukur</h2>
+        <!-- Section 01: Empat Komponen Evaluasi Ujian -->
+        <section id="pilar" class="max-w-7xl mx-auto border-x border-b border-[#111111]">
+          <div class="grid grid-cols-1 lg:grid-cols-12 border-b border-[#DCDCE0]">
+            <div class="lg:col-span-2 p-6 sm:p-8 border-b lg:border-b-0 lg:border-r border-[#DCDCE0] bg-[#F7F7F8]">
+              <div class="swiss-folio text-4xl font-semibold text-[#FF4F00]">01</div>
+            </div>
+            <div class="lg:col-span-6 p-6 sm:p-8 border-b lg:border-b-0 lg:border-r border-[#DCDCE0]">
+              <h2 class="text-2xl sm:text-3xl font-semibold text-[#111111] tracking-[-0.02em]">Empat komponen evaluasi ujian</h2>
+            </div>
+            <div class="lg:col-span-4 p-6 sm:p-8 flex items-center">
+              <p class="text-xs text-[#52525B] leading-relaxed">Setiap paket disusun mengikuti kisi-kisi terbaru lengkap dengan bobot penilaian resmi dan pembahasan per butir soal.</p>
+            </div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[#DCDCE0]">
             ${[
-              { n: '01', t: 'Buat akun latihan', d: 'Daftar menggunakan email atau Google untuk menyimpan riwayat pengerjaan dan membuka paket latihan dasar.' },
-              { n: '02', t: 'Kerjakan simulasi berwaktu', d: 'Jawab soal dengan antarmuka CAT berwaktu nyata, penanda ragu-ragu, dan penyimpanan jawaban otomatis.' },
-              { n: '03', t: 'Evaluasi skor dan pembahasan', d: 'Periksa rincian skor TWK, TIU, TKP terhadap ambang batas resmi serta pelajari pembahasan tiap soal.' }
+              { folio: '65', code: 'TWK · 30 SOAL', title: 'Tes Wawasan Kebangsaan', desc: 'Nasionalisme, integritas, bela negara, dan pilar negara berbasis studi kasus penalaran.' },
+              { folio: '80', code: 'TIU · 35 SOAL', title: 'Tes Intelegensia Umum', desc: 'Kemampuan verbal, numerik, deret angka, silogisme, dan analitis untuk ketepatan logika.' },
+              { folio: '166', code: 'TKP · 45 SOAL', title: 'Tes Karakteristik Pribadi', desc: 'Pelayanan publik, jejaring kerja, sosial budaya, profesionalisme, dan anti-radikalisme berskala 1–5.' },
+              { folio: '550', code: 'RAPOR · PDF', title: 'Analisis Ambang Batas', desc: 'Pemetaan skor subtes terhadap passing grade, tren percobaan, dan peringkat peserta nasional.' }
+            ].map(function (c) {
+              return `
+                <div class="p-6 sm:p-8 flex flex-col justify-between space-y-8 bg-[#FFFFFF] hover:bg-[#F7F7F8] transition-colors">
+                  <div class="space-y-4">
+                    <div class="flex items-baseline justify-between border-b border-[#DCDCE0] pb-3">
+                      <span class="text-xs font-semibold text-[#52525B] tabular-nums">${c.code}</span>
+                      <span class="swiss-folio text-2xl font-semibold text-[#111111]">PG ${c.folio}</span>
+                    </div>
+                    <h3 class="font-semibold text-base text-[#111111] tracking-[-0.01em]">${c.title}</h3>
+                    <p class="text-xs text-[#52525B] leading-relaxed">${c.desc}</p>
+                  </div>
+                  <a href="#auth-section" class="inline-flex items-center gap-2 text-xs font-semibold text-[#FF4F00] hover:text-[#111111] transition-colors">
+                    <span>Mulai latihan</span>
+                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                  </a>
+                </div>`;
+            }).join('')}
+          </div>
+        </section>
+
+        <!-- Section 02: Tiga Tahap Persiapan Terukur -->
+        <section id="cara-kerja" class="max-w-7xl mx-auto border-x border-b border-[#111111]">
+          <div class="grid grid-cols-1 lg:grid-cols-12 border-b border-[#DCDCE0]">
+            <div class="lg:col-span-2 p-6 sm:p-8 border-b lg:border-b-0 lg:border-r border-[#DCDCE0] bg-[#F7F7F8]">
+              <div class="swiss-folio text-4xl font-semibold text-[#FF4F00]">02</div>
+            </div>
+            <div class="lg:col-span-10 p-6 sm:p-8">
+              <h2 class="text-2xl sm:text-3xl font-semibold text-[#111111] tracking-[-0.02em]">Tiga tahap persiapan terukur</h2>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#DCDCE0]">
+            ${[
+              { n: '02.1', t: 'Buat akun latihan', d: 'Daftar menggunakan email atau Google untuk menyimpan riwayat pengerjaan dan membuka paket latihan dasar.' },
+              { n: '02.2', t: 'Kerjakan simulasi berwaktu', d: 'Jawab soal dengan antarmuka CAT berwaktu nyata, penanda ragu-ragu, dan penyimpanan jawaban otomatis.' },
+              { n: '02.3', t: 'Evaluasi skor dan pembahasan', d: 'Periksa rincian skor TWK, TIU, TKP terhadap ambang batas resmi serta pelajari pembahasan tiap soal.' }
             ].map(function (s) {
-              return `<div class="p-6 rounded-xl bg-[#F6F7F6] border border-[#E4E7E6] space-y-3">
-                <div class="font-mono-num text-xs font-medium text-[#687076]">${s.n}</div>
-                <h3 class="font-heading font-medium text-base text-[#11181C]">${s.t}</h3>
-                <p class="text-xs text-[#4B5358] leading-relaxed">${s.d}</p>
+              return `<div class="p-6 sm:p-8 bg-[#FFFFFF] space-y-4">
+                <div class="swiss-folio text-2xl font-semibold text-[#111111] border-b border-[#DCDCE0] pb-2">${s.n}</div>
+                <h3 class="font-semibold text-base text-[#111111]">${s.t}</h3>
+                <p class="text-xs text-[#52525B] leading-relaxed">${s.d}</p>
               </div>`;
             }).join('')}
           </div>
 
-          <div class="rounded-2xl bg-[#0E3B2C] text-white p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div class="bg-[#111111] text-[#FFFFFF] p-6 sm:p-10 border-t border-[#111111] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div class="space-y-2 max-w-xl">
-              <div class="text-xs font-mono-num text-white/70">Akses penuh paket simulasi</div>
-              <h3 class="text-xl sm:text-2xl font-heading font-medium tracking-[-0.01em]">Buka seluruh paket tryout SKD, BUMN, dan pembahasan lengkap</h3>
-              <p class="text-xs sm:text-sm text-white/75">Termasuk simulasi 110 soal penuh, kunci pembahasan tiap butir soal, rapor PDF, dan papan peringkat nasional</p>
+              <h3 class="text-xl sm:text-2xl font-semibold tracking-[-0.02em]">Buka seluruh paket tryout SKD, BUMN, dan pembahasan lengkap</h3>
+              <p class="text-xs sm:text-sm text-[#DCDCE0]">Termasuk simulasi 110 soal penuh, kunci pembahasan tiap butir soal, rapor PDF, dan papan peringkat nasional.</p>
             </div>
-            <a href="#auth-section" onclick="App.setAuthTab('register')" class="btn-on-dark h-11 px-5 text-sm inline-flex items-center gap-2 shrink-0">
+            <a href="#auth-section" onclick="App.setAuthTab('register')" class="btn-on-dark h-11 px-6 text-xs uppercase tracking-[0.04em] inline-flex items-center gap-3 shrink-0">
               <span>Daftar &amp; upgrade Pro</span>
               <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
           </div>
         </section>
 
-        <!-- Auth Section (Proportioned Split + Max-Width Form Card) -->
-        <section id="auth-section" class="bg-[#F6F7F6] py-16 lg:py-20 border-t border-[#E4E7E6]">
-          <div class="max-w-5xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-center">
-            <div class="md:col-span-6 space-y-4">
-              <div class="text-xs font-medium text-[#166E48]">Akses peserta &amp; admin</div>
-              <h2 class="text-2xl sm:text-3xl font-heading font-medium text-[#11181C] tracking-[-0.015em]">Masuk atau buat akun latihan</h2>
-              <p class="text-sm text-[#4B5358] leading-relaxed">Simpan seluruh riwayat pengerjaan, pantau perkembangan skor TWK, TIU, dan TKP, serta buka pembahasan soal dari satu akun</p>
+        <!-- Section 03: Auth Section -->
+        <section id="auth-section" class="max-w-7xl mx-auto border-x border-b border-[#111111] bg-[#F7F7F8]">
+          <div class="grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-[#DCDCE0]">
+            <div class="md:col-span-6 p-6 sm:p-10 lg:p-12 space-y-6">
+              <div class="swiss-folio text-4xl font-semibold text-[#FF4F00]">03</div>
+              <h2 class="text-2xl sm:text-3xl font-semibold text-[#111111] tracking-[-0.02em]">Masuk atau buat akun latihan</h2>
+              <p class="text-sm text-[#52525B] leading-relaxed">Simpan seluruh riwayat pengerjaan, pantau perkembangan skor TWK, TIU, dan TKP, serta buka pembahasan soal dari satu akun.</p>
               ${ApiClient.isDemoMode() ? `
-                <div class="p-4 rounded-xl bg-white border border-[#E4E7E6] text-xs space-y-2">
-                  <div class="font-medium text-[#11181C]">Akun uji coba mode pratinjau lokal</div>
-                  <div class="space-y-1 text-[#4B5358] font-mono-num">
+                <div class="p-4 bg-[#FFFFFF] border border-[#111111] text-xs space-y-2">
+                  <div class="font-semibold text-[#111111]">Akun uji coba mode pratinjau lokal</div>
+                  <div class="space-y-1 text-[#52525B] tabular-nums">
                     <div>Peserta latihan: budi@demo.id / demo123</div>
                     <div>Peserta Pro: raka@demo.id / demo123</div>
                     <div>Administrator: admin@demo.id / admin123</div>
@@ -415,73 +427,78 @@ const App = (function () {
               ` : ''}
             </div>
 
-            <div class="md:col-span-6 w-full max-w-[440px] mx-auto md:ml-auto md:mr-0">
-              <div class="card-stitch p-6 space-y-5">
-                <div class="grid grid-cols-2 p-1 rounded-lg bg-[#EFF1F0] text-xs font-medium">
-                  <button type="button" onclick="App.setAuthTab('login')" class="h-9 rounded-md transition-colors duration-150 ${state.authTab === 'login' ? 'bg-white text-[#11181C] shadow-sm' : 'text-[#687076] hover:text-[#11181C]'}">Masuk</button>
-                  <button type="button" onclick="App.setAuthTab('register')" class="h-9 rounded-md transition-colors duration-150 ${state.authTab === 'register' ? 'bg-white text-[#11181C] shadow-sm' : 'text-[#687076] hover:text-[#11181C]'}">Daftar akun</button>
+            <div class="md:col-span-6 p-6 sm:p-10 lg:p-12 bg-[#FFFFFF]">
+              <div class="max-w-[440px] space-y-5">
+                <div class="grid grid-cols-2 border border-[#111111] text-xs font-semibold">
+                  <button type="button" onclick="App.setAuthTab('login')" class="h-10 px-4 text-left transition-colors ${state.authTab === 'login' ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#F7F7F8] text-[#52525B] hover:text-[#111111]'}">01 · Masuk</button>
+                  <button type="button" onclick="App.setAuthTab('register')" class="h-10 px-4 text-left border-l border-[#111111] transition-colors ${state.authTab === 'register' ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#F7F7F8] text-[#52525B] hover:text-[#111111]'}">02 · Daftar</button>
                 </div>
 
                 ${state.authTab !== 'emergency' ? `
                   <div id="google-oauth-wrap" class="hidden space-y-3">
-                    <div id="google-signin-btn" class="flex justify-center"></div>
-                    <div class="relative flex items-center py-1">
-                      <div class="flex-grow border-t border-[#E4E7E6]"></div>
-                      <span class="mx-3 text-xs text-[#687076]">atau gunakan email</span>
-                      <div class="flex-grow border-t border-[#E4E7E6]"></div>
-                    </div>
+                    <div id="google-signin-btn" class="flex justify-start"></div>
+                    <div class="border-b border-[#DCDCE0] pb-2 text-xs text-[#71717A]">Atau masuk dengan email</div>
                   </div>
                 ` : ''}
 
                 ${state.authTab === 'login' ? `
                   <form onsubmit="App.handleLogin(event)" class="space-y-4">
                     <div>
-                      <label class="text-xs font-medium text-[#4B5358]">Email</label>
+                      <label class="text-xs font-medium text-[#52525B]">Email</label>
                       <input type="email" id="auth-email" required placeholder="nama@email.com" value="${ApiClient.isDemoMode() ? 'budi@demo.id' : ''}" class="input-control mt-1 w-full" />
                     </div>
                     <div>
-                      <label class="text-xs font-medium text-[#4B5358]">Kata sandi</label>
+                      <label class="text-xs font-medium text-[#52525B]">Kata sandi</label>
                       <input type="password" id="auth-pass" required placeholder="Kata sandi akun" value="${ApiClient.isDemoMode() ? 'demo123' : ''}" class="input-control mt-1 w-full" />
                     </div>
-                    <button type="submit" id="btn-auth-submit" class="btn-primary w-full h-11 text-sm">Masuk ke dashboard</button>
-                    <div class="text-center">
-                      <button type="button" onclick="App.setAuthTab('emergency')" class="text-xs text-[#687076] hover:text-[#11181C] underline transition-colors duration-150">Akses darurat administrator</button>
+                    <button type="submit" id="btn-auth-submit" class="btn-primary w-full h-11 px-4 text-xs uppercase tracking-[0.04em] text-left flex items-center justify-between">
+                      <span>Masuk</span>
+                      <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                    <div class="pt-1">
+                      <button type="button" onclick="App.setAuthTab('emergency')" class="text-xs text-[#71717A] hover:text-[#FF4F00] underline transition-colors">Akses darurat administrator</button>
                     </div>
                   </form>
                 ` : state.authTab === 'register' ? `
                   <form onsubmit="App.handleRegister(event)" class="space-y-3">
                     <div>
-                      <label class="text-xs font-medium text-[#4B5358]">Nama lengkap</label>
+                      <label class="text-xs font-medium text-[#52525B]">Nama lengkap</label>
                       <input type="text" id="reg-nama" required placeholder="Nama sesuai identitas" class="input-control mt-1 w-full" />
                     </div>
                     <div>
-                      <label class="text-xs font-medium text-[#4B5358]">Email</label>
+                      <label class="text-xs font-medium text-[#52525B]">Email</label>
                       <input type="email" id="reg-email" required placeholder="nama@email.com" class="input-control mt-1 w-full" />
                     </div>
                     <div>
-                      <label class="text-xs font-medium text-[#4B5358]">Nomor WhatsApp</label>
+                      <label class="text-xs font-medium text-[#52525B]">Nomor WhatsApp</label>
                       <input type="tel" id="reg-wa" required placeholder="0812xxxxxxxx" class="input-control mt-1 w-full" />
                     </div>
                     <div>
-                      <label class="text-xs font-medium text-[#4B5358]">Kata sandi (minimal 6 karakter)</label>
+                      <label class="text-xs font-medium text-[#52525B]">Kata sandi (minimal 6 karakter)</label>
                       <input type="password" id="reg-pass" required minlength="6" placeholder="Buat kata sandi" class="input-control mt-1 w-full" />
                     </div>
-                    <button type="submit" id="btn-auth-submit" class="btn-primary w-full h-11 text-sm">Buat akun latihan</button>
+                    <button type="submit" id="btn-auth-submit" class="btn-accent w-full h-11 px-4 text-xs uppercase tracking-[0.04em] text-left flex items-center justify-between">
+                      <span>Daftar</span>
+                      <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
                   </form>
                 ` : `
                   <form onsubmit="App.handleEmergencyLogin(event)" class="space-y-4">
-                    <div class="p-3 rounded-lg bg-[#FEF3C7] text-[#92400E] text-xs">Login darurat memakai kredensial Script Properties (maksimal 5 percobaan)</div>
+                    <div class="p-3 bg-[#F7F7F8] border-l-2 border-[#FF4F00] text-[#111111] text-xs">Login darurat memakai kredensial Script Properties (maksimal 5 percobaan).</div>
                     <div>
-                      <label class="text-xs font-medium text-[#4B5358]">Username darurat</label>
+                      <label class="text-xs font-medium text-[#52525B]">Username darurat</label>
                       <input type="text" id="em-user" required value="darurat" class="input-control mt-1 w-full" />
                     </div>
                     <div>
-                      <label class="text-xs font-medium text-[#4B5358]">Sandi darurat</label>
+                      <label class="text-xs font-medium text-[#52525B]">Sandi darurat</label>
                       <input type="password" id="em-pass" required placeholder="Sandi dari log setup" class="input-control mt-1 w-full" />
                     </div>
-                    <button type="submit" class="btn-primary w-full h-11 text-sm">Masuk panel admin</button>
-                    <div class="text-center">
-                      <button type="button" onclick="App.setAuthTab('login')" class="text-xs text-[#687076] hover:text-[#11181C] underline">Kembali ke login reguler</button>
+                    <button type="submit" class="btn-primary w-full h-11 px-4 text-xs uppercase tracking-[0.04em] text-left flex items-center justify-between">
+                      <span>Masuk panel admin</span>
+                      <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                    <div>
+                      <button type="button" onclick="App.setAuthTab('login')" class="text-xs text-[#71717A] hover:text-[#111111] underline">Kembali ke login reguler</button>
                     </div>
                   </form>
                 `}
@@ -490,8 +507,9 @@ const App = (function () {
           </div>
         </section>
       </main>
-      <footer class="bg-white border-t border-[#E4E7E6] py-6 text-center text-xs text-[#687076]">
-        © 2026 SimulasiTKD Pro · Platform simulasi CAT CPNS, BUMN, dan Kedinasan
+      <footer class="max-w-7xl mx-auto w-full border-x border-b border-[#DCDCE0] bg-[#FFFFFF] px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#71717A]">
+        <span>© 2026 SimulasiTKD Pro</span>
+        <span>Platform simulasi CAT CPNS, BUMN, dan Kedinasan</span>
       </footer>
     `;
     refreshIcons();
@@ -513,142 +531,158 @@ const App = (function () {
 
     root.innerHTML = `
       ${renderNavbar('dashboard')}
-      <main class="max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8 flex-1">
-        <!-- Context Page Title (No Greeting Headline) -->
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div class="space-y-1">
-            <div class="flex flex-wrap items-center gap-2 text-xs text-[#687076]">
-              <span>${esc(u.nama_lengkap || 'Peserta')}</span>
-              <span>·</span>
-              <span class="px-2 py-0.5 rounded-md font-medium ${isPro ? 'bg-[#E8F5EE] text-[#166534]' : 'bg-[#EFF1F0] text-[#4B5358]'}">
-                ${isPro ? 'Akun Pro' : 'Akun Latihan'}
+      <main class="max-w-7xl mx-auto w-full border-x border-b border-[#DCDCE0] flex-1 bg-[#FFFFFF]">
+        <!-- Header Bar -->
+        <div class="p-6 sm:p-8 border-b border-[#111111] flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div class="space-y-2">
+            <div class="flex flex-wrap items-center gap-2 text-xs text-[#52525B]">
+              <span class="font-medium text-[#111111]">${esc(u.nama_lengkap || 'Peserta')}</span>
+              <span>/</span>
+              <span class="px-2 py-0.5 font-semibold ${isPro ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#F7F7F8] border border-[#DCDCE0] text-[#111111]'}">
+                ${isPro ? 'AKUN PRO' : 'AKUN LATIHAN'}
               </span>
-              ${isPending ? `<span class="px-2 py-0.5 rounded-md bg-[#FEF3C7] text-[#92400E] font-medium">Menunggu verifikasi admin</span>` : ''}
+              ${isPending ? `<span class="px-2 py-0.5 bg-[#FF4F00] text-[#FFFFFF] font-semibold">VERIFIKASI TERTUNDA</span>` : ''}
             </div>
-            <h1 class="text-2xl sm:text-3xl font-heading font-medium text-[#11181C] tracking-[-0.015em]">Ringkasan latihan</h1>
+            <h1 class="text-2xl sm:text-3xl font-semibold text-[#111111] tracking-[-0.02em]">Ringkasan latihan</h1>
           </div>
           ${!isPro ? `
-            <button type="button" onclick="App.openUpgradeModal()" class="btn-primary h-10 px-4 text-xs inline-flex items-center gap-2 self-start sm:self-auto">
+            <button type="button" onclick="App.openUpgradeModal()" class="btn-accent h-10 px-5 text-xs uppercase tracking-[0.04em] inline-flex items-center gap-2 self-start sm:self-auto">
               <span>${isPending ? 'Status pengajuan Pro' : 'Upgrade ke Akun Pro'}</span>
               <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </button>
           ` : ''}
         </div>
 
-        <!-- 3 KPI Stat Cards (Numbers Only, Zero Decorative Icon Boxes) -->
-        ${!d ? `<div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="skeleton h-28"></div><div class="skeleton h-28"></div><div class="skeleton h-28"></div></div>` : `
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="card-stitch p-5 space-y-2">
-              <div class="text-xs text-[#687076]">Simulasi diselesaikan</div>
-              <div class="text-3xl font-mono-num font-medium text-[#11181C]">${d.kpi.tryoutSelesai}</div>
-              <div class="text-xs text-[#4B5358]">Tersimpan pada riwayat akun</div>
+        <!-- 3 KPI Folio Cells -->
+        ${!d ? `<div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#DCDCE0] border-b border-[#DCDCE0]"><div class="skeleton h-32"></div><div class="skeleton h-32"></div><div class="skeleton h-32"></div></div>` : `
+          <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#DCDCE0] border-b border-[#111111]">
+            <div class="p-6 sm:p-8 space-y-2 bg-[#FFFFFF]">
+              <div class="flex items-center justify-between text-xs text-[#71717A]">
+                <span>Simulasi diselesaikan</span>
+                <span class="tabular-nums font-semibold">01</span>
+              </div>
+              <div class="swiss-folio text-4xl sm:text-5xl font-semibold text-[#111111]">${d.kpi.tryoutSelesai}</div>
+              <div class="text-xs text-[#52525B]">Tersimpan pada riwayat akun</div>
             </div>
-            <div class="card-stitch p-5 space-y-2">
-              <div class="text-xs text-[#687076]">Skor tertinggi</div>
-              <div class="text-3xl font-mono-num font-medium text-[#11181C]">${d.kpi.skorTertinggi}</div>
-              <div class="text-xs text-[#4B5358]">Dari batas maksimum 550 poin</div>
+            <div class="p-6 sm:p-8 space-y-2 bg-[#FFFFFF]">
+              <div class="flex items-center justify-between text-xs text-[#71717A]">
+                <span>Skor tertinggi</span>
+                <span class="tabular-nums font-semibold">02</span>
+              </div>
+              <div class="swiss-folio text-4xl sm:text-5xl font-semibold text-[#111111]">${d.kpi.skorTertinggi}</div>
+              <div class="text-xs text-[#52525B]">Dari batas maksimum 550 poin</div>
             </div>
-            <div class="card-stitch p-5 space-y-2">
-              <div class="text-xs text-[#687076]">Percobaan terakhir</div>
+            <div class="p-6 sm:p-8 space-y-2 bg-[#F7F7F8]">
+              <div class="flex items-center justify-between text-xs text-[#71717A]">
+                <span>Percobaan terakhir</span>
+                <span class="tabular-nums font-semibold">03</span>
+              </div>
               ${d.kpi.terakhir ? `
                 <div>
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${d.kpi.terakhir.status_kelulusan === 'Lulus' ? 'bg-[#E8F5EE] text-[#166534]' : 'bg-[#FEE2E2] text-[#991B1B]'}">
-                    ${d.kpi.terakhir.status_kelulusan === 'Lulus' ? 'Lulus ambang batas' : 'Belum lulus ambang batas'}
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold ${d.kpi.terakhir.status_kelulusan === 'Lulus' ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FF4F00] text-[#FFFFFF]'}">
+                    ${d.kpi.terakhir.status_kelulusan === 'Lulus' ? 'LULUS AMBANG BATAS' : 'BELUM LULUS AMBANG BATAS'}
                   </span>
                 </div>
-                <div class="text-xs font-mono-num text-[#4B5358]">TWK ${d.kpi.terakhir.skor_twk} · TIU ${d.kpi.terakhir.skor_tiu} · TKP ${d.kpi.terakhir.skor_tkp}</div>
-              ` : `<div class="text-sm font-medium text-[#687076] pt-1">Belum ada percobaan</div>`}
+                <div class="text-xs tabular-nums font-medium text-[#111111] pt-1">TWK ${d.kpi.terakhir.skor_twk} · TIU ${d.kpi.terakhir.skor_tiu} · TKP ${d.kpi.terakhir.skor_tkp}</div>
+              ` : `<div class="text-sm font-medium text-[#71717A] pt-1">Belum ada percobaan</div>`}
             </div>
           </div>
         `}
 
-        <!-- Banner Upgrade Pro (Quiet Tinted Surface) -->
+        <!-- Banner Upgrade Pro -->
         ${!isPro ? `
-          <div class="rounded-xl bg-white border border-[#E4E7E6] p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="bg-[#F7F7F8] border-b border-[#DCDCE0] p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div class="space-y-1 max-w-2xl">
-              <div class="text-xs font-medium text-[#166E48]">Akses penuh simulasi</div>
-              <h2 class="font-heading font-medium text-base text-[#11181C]">Buka seluruh paket tryout penuh dan pembahasan tiap soal</h2>
-              <p class="text-xs text-[#4B5358]">Akses paket SKD CPNS, BUMN, dan Kedinasan 110 soal beserta pembahasan resmi dan rapor PDF</p>
+              <h2 class="font-semibold text-base text-[#111111]">Buka seluruh paket tryout penuh dan pembahasan tiap soal</h2>
+              <p class="text-xs text-[#52525B]">Akses paket SKD CPNS, BUMN, dan Kedinasan 110 soal beserta pembahasan resmi dan rapor PDF.</p>
             </div>
             <button type="button" onclick="App.openUpgradeModal()" class="btn-outline h-9 px-4 text-xs inline-flex items-center gap-2 shrink-0">
               <span>${isPending ? 'Lihat status verifikasi' : 'Pelajari paket Pro'}</span>
-              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </button>
           </div>
         ` : ''}
 
         <!-- Katalog Paket Tryout -->
-        <div class="space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-            <div class="space-y-1">
-              <div class="text-xs font-medium text-[#166E48]">Katalog simulasi</div>
-              <h2 class="text-xl font-heading font-medium text-[#11181C]">Pilih paket ujian CAT</h2>
-            </div>
-            <div class="inline-flex items-center p-1 rounded-lg bg-[#EFF1F0] gap-1 self-start sm:self-auto">
-              ${['Semua', 'Latihan', 'Pro'].map(function (f) {
-                const label = f === 'Semua' ? 'Semua' : f === 'Latihan' ? 'Latihan gratis' : 'Paket Pro';
-                const active = state.paketFilter === f;
-                return `<button type="button" onclick="App.setPaketFilter('${f}')" class="h-8 px-3 rounded-md text-xs font-medium transition-colors duration-150 ${active ? 'bg-white text-[#11181C] shadow-sm' : 'text-[#687076] hover:text-[#11181C]'}">${label}</button>`;
-              }).join('')}
-            </div>
+        <div class="p-6 sm:p-8 border-b border-[#DCDCE0] flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div class="flex items-baseline gap-3">
+            <span class="swiss-folio text-2xl font-semibold text-[#FF4F00]">01</span>
+            <h2 class="text-xl font-semibold text-[#111111] tracking-[-0.015em]">Pilih paket ujian CAT (${pakets.length})</h2>
           </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            ${pakets.map(function (p) {
-              const locked = p.tier_akses === 'Pro' && !isPro;
-              return `
-                <div class="card-stitch card-stitch-hover p-6 flex flex-col justify-between space-y-6">
-                  <div class="space-y-3">
-                    <div class="flex items-center justify-between text-xs">
-                      <span class="px-2 py-0.5 rounded-md font-medium ${p.tier_akses === 'Latihan' ? 'bg-[#E8F5EE] text-[#166534]' : 'bg-[#EFF1F0] text-[#4B5358]'}">
-                        ${p.tier_akses === 'Latihan' ? 'Latihan gratis' : 'Paket Pro'}
-                      </span>
-                      <span class="text-[#687076] font-mono-num">${esc(p.kategori_label || 'SKD')}</span>
-                    </div>
-                    <h3 class="font-heading font-medium text-base text-[#11181C]">${esc(p.nama_paket)}</h3>
-                    <p class="text-xs text-[#4B5358] leading-relaxed">${esc(p.deskripsi)}</p>
-                    <div class="flex items-center gap-4 text-xs font-mono-num text-[#687076] pt-1">
-                      <span class="inline-flex items-center gap-1.5"><i data-lucide="clock" class="w-4 h-4"></i> ${p.durasi_menit} menit</span>
-                      <span class="inline-flex items-center gap-1.5"><i data-lucide="file-text" class="w-4 h-4"></i> ${p.jumlah_soal} soal</span>
-                    </div>
-                  </div>
-                  ${locked ? `
-                    <button type="button" onclick="App.openUpgradeModal()" class="btn-outline w-full h-10 text-xs inline-flex items-center justify-center gap-2">
-                      <i data-lucide="lock" class="w-4 h-4 text-[#687076]"></i>
-                      <span>Buka dengan Pro</span>
-                    </button>
-                  ` : `
-                    <button type="button" onclick="App.confirmStartExam('${esc(p.paket_id)}')" class="btn-primary w-full h-10 text-xs inline-flex items-center justify-center gap-2">
-                      <span>Mulai simulasi</span>
-                      <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </button>
-                  `}
-                </div>`;
+          <div class="inline-flex items-center border border-[#111111] self-start sm:self-auto">
+            ${['Semua', 'Latihan', 'Pro'].map(function (f, i) {
+              const label = f === 'Semua' ? 'Semua' : f === 'Latihan' ? 'Latihan' : 'Pro';
+              const active = state.paketFilter === f;
+              return `<button type="button" onclick="App.setPaketFilter('${f}')" class="h-8 px-3.5 text-xs font-medium transition-colors ${i > 0 ? 'border-l border-[#111111]' : ''} ${active ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FFFFFF] text-[#52525B] hover:text-[#111111]'}">${label}</button>`;
             }).join('')}
           </div>
         </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#DCDCE0] border-b border-[#111111]">
+          ${pakets.map(function (p, idx) {
+            const locked = p.tier_akses === 'Pro' && !isPro;
+            return `
+              <div class="p-6 sm:p-8 flex flex-col justify-between space-y-6 bg-[#FFFFFF] hover:bg-[#F7F7F8] transition-colors">
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between border-b border-[#DCDCE0] pb-3 text-xs">
+                    <span class="swiss-folio text-2xl font-semibold text-[#111111]">${pad2(idx + 1)}</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[#71717A] tabular-nums">${esc(p.kategori_label || 'SKD')}</span>
+                      <span class="px-2 py-0.5 font-semibold ${p.tier_akses === 'Latihan' ? 'bg-[#F7F7F8] border border-[#DCDCE0] text-[#111111]' : 'bg-[#111111] text-[#FFFFFF]'}">
+                        ${p.tier_akses === 'Latihan' ? 'LATIHAN' : 'PRO'}
+                      </span>
+                    </div>
+                  </div>
+                  <h3 class="font-semibold text-base text-[#111111] tracking-[-0.01em]">${esc(p.nama_paket)}</h3>
+                  <p class="text-xs text-[#52525B] leading-relaxed">${esc(p.deskripsi)}</p>
+                  <div class="flex items-center gap-4 text-xs tabular-nums font-medium text-[#111111] pt-1">
+                    <span>${p.durasi_menit} menit</span>
+                    <span>·</span>
+                    <span>${p.jumlah_soal} butir soal</span>
+                  </div>
+                </div>
+                ${locked ? `
+                  <button type="button" onclick="App.openUpgradeModal()" class="btn-outline w-full h-10 px-4 text-xs inline-flex items-center justify-between">
+                    <span>Buka dengan Pro</span>
+                    <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                  </button>
+                ` : `
+                  <button type="button" onclick="App.confirmStartExam('${esc(p.paket_id)}')" class="btn-primary w-full h-10 px-4 text-xs inline-flex items-center justify-between">
+                    <span>Mulai simulasi</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                  </button>
+                `}
+              </div>`;
+          }).join('')}
+        </div>
+
         <!-- Riwayat Terakhir -->
         ${d && d.riwayat && d.riwayat.length ? `
-          <div class="card-stitch p-6 space-y-4">
-            <div class="flex items-center justify-between gap-4">
-              <h3 class="font-heading font-medium text-base text-[#11181C]">Riwayat pengerjaan terakhir</h3>
-              <button type="button" onclick="App.go('result')" class="inline-flex items-center gap-1.5 text-xs font-medium text-[#166E48] hover:text-[#0E3B2C]">
+          <div class="p-6 sm:p-8 space-y-4">
+            <div class="flex items-center justify-between gap-4 border-b border-[#111111] pb-3">
+              <div class="flex items-baseline gap-3">
+                <span class="swiss-folio text-2xl font-semibold text-[#FF4F00]">02</span>
+                <h3 class="font-semibold text-base text-[#111111]">Riwayat pengerjaan terakhir</h3>
+              </div>
+              <button type="button" onclick="App.go('result')" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#FF4F00] hover:text-[#111111]">
                 <span>Evaluasi lengkap</span>
-                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
               </button>
             </div>
-            <div class="divide-y divide-[#E4E7E6]">
-              ${d.riwayat.slice(0, 5).map(function (r) {
+            <div class="divide-y divide-[#DCDCE0]">
+              ${d.riwayat.slice(0, 5).map(function (r, idx) {
                 const ok = r.status_kelulusan === 'Lulus';
                 return `
-                  <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div class="space-y-1">
-                      <div class="font-medium text-sm text-[#11181C]">${esc(r.nama_paket)}</div>
-                      <div class="text-xs font-mono-num text-[#687076]">TWK ${r.skor_twk} · TIU ${r.skor_tiu} · TKP ${r.skor_tkp} · Total <span class="text-[#11181C] font-medium">${r.skor_total}</span></div>
+                  <div class="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-baseline gap-4">
+                      <span class="swiss-folio text-lg font-semibold text-[#71717A] w-6">${pad2(idx + 1)}</span>
+                      <div class="space-y-0.5">
+                        <div class="font-semibold text-sm text-[#111111]">${esc(r.nama_paket)}</div>
+                        <div class="text-xs tabular-nums text-[#52525B]">TWK ${r.skor_twk} · TIU ${r.skor_tiu} · TKP ${r.skor_tkp} · Total <span class="text-[#111111] font-semibold">${r.skor_total}</span></div>
+                      </div>
                     </div>
                     <div class="flex items-center gap-2">
-                      <span class="px-2.5 py-1 rounded-md text-xs font-medium ${ok ? 'bg-[#E8F5EE] text-[#166534]' : 'bg-[#FEE2E2] text-[#991B1B]'}">${esc(r.status_kelulusan)}</span>
+                      <span class="px-2 py-0.5 text-xs font-semibold ${ok ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FF4F00] text-[#FFFFFF]'}">${esc(r.status_kelulusan).toUpperCase()}</span>
                       <button type="button" onclick="App.go('result', { hasil_id: '${esc(r.hasil_id)}' })" class="btn-outline h-8 px-3 text-xs">Rincian</button>
                     </div>
                   </div>`;
@@ -662,7 +696,7 @@ const App = (function () {
   }
 
   // ==========================================================================
-  // SCREEN 3: RUANG UJIAN CAT REAL-TIME
+  // SCREEN 3: RUANG UJIAN CAT REAL-TIME (Swiss Hairline Examination Sheet)
   // ==========================================================================
   function saveExamLocal() {
     if (state.exam) localStorage.setItem(EXAM_STORAGE_KEY, JSON.stringify(state.exam));
@@ -677,93 +711,89 @@ const App = (function () {
     const isDoubtful = !!ex.doubtful[q.soal_id];
     const picked = ex.answers[q.soal_id] || '';
     const remSec = Math.max(0, Math.floor((ex.endAt - Date.now()) / 1000));
-    const timerCls = remSec < 600 ? 'bg-[#FEE2E2] text-[#991B1B]' : remSec < 900 ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#EFF1F0] text-[#11181C]';
+    const timerCls = remSec < 600 ? 'bg-[#FF4F00] text-[#FFFFFF]' : 'bg-[#F7F7F8] text-[#111111] border-x border-[#DCDCE0]';
 
     const navTilesHtml = ex.soal.map(function (item, i) {
       const st = ex.doubtful[item.soal_id] ? 'doubtful' : ex.answers[item.soal_id] ? 'answered' : 'unanswered';
       const active = i === ex.idx ? 'active-tile' : '';
-      return `<button type="button" onclick="App.jumpSoal(${i})" class="nav-tile ${st} ${active}">${i + 1}</button>`;
+      return `<button type="button" onclick="App.jumpSoal(${i})" class="nav-tile ${st} ${active}">${pad2(i + 1)}</button>`;
     }).join('');
 
     root.innerHTML = `
       <!-- Sticky Top Bar -->
-      <header class="h-16 bg-white border-b border-[#E4E7E6] sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-3">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-8 h-8 rounded-lg bg-[#0E3B2C] text-white hidden sm:flex items-center justify-center shrink-0">
-              <i data-lucide="file-check-2" class="w-4 h-4"></i>
-            </span>
-            <span class="font-heading font-medium text-sm sm:text-base text-[#11181C] truncate">${esc(ex.paket.nama_paket)}</span>
-            <span class="px-2 py-0.5 rounded-md bg-[#EAF3EE] text-[#0E3B2C] text-xs font-mono-num font-medium shrink-0">${esc(q.subtes)}</span>
+      <header class="h-14 bg-[#FFFFFF] border-b border-[#111111] sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto h-full border-x border-[#DCDCE0] flex items-stretch justify-between">
+          <div class="px-4 sm:px-6 flex items-center gap-3 min-w-0">
+            <span class="px-2 py-0.5 bg-[#111111] text-[#FFFFFF] text-xs font-semibold tabular-nums shrink-0">${esc(q.subtes)}</span>
+            <span class="font-semibold text-sm text-[#111111] truncate">${esc(ex.paket.nama_paket)}</span>
           </div>
 
-          <div id="exam-timer-pill" class="h-9 px-3 rounded-lg font-mono-num font-medium text-xs sm:text-sm inline-flex items-center gap-2 ${timerCls}">
-            <i data-lucide="clock" class="w-4 h-4"></i>
-            <span id="exam-timer-text">${fmtTimer(remSec)}</span>
-          </div>
+          <div class="flex items-stretch">
+            <div id="exam-timer-pill" class="px-4 sm:px-5 tabular-nums font-semibold text-xs sm:text-sm inline-flex items-center gap-2 ${timerCls}">
+              <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+              <span id="exam-timer-text">${fmtTimer(remSec)}</span>
+            </div>
 
-          <button type="button" onclick="App.confirmFinishExam()" class="h-9 px-3 rounded-lg bg-[#FEE2E2] text-[#991B1B] hover:bg-red-200 text-xs font-medium inline-flex items-center gap-2 shrink-0 transition-colors duration-150">
-            <i data-lucide="flag" class="w-4 h-4 hidden sm:inline"></i>
-            <span>Selesai<span class="hidden sm:inline"> ujian</span></span>
-          </button>
+            <button type="button" onclick="App.confirmFinishExam()" class="px-4 sm:px-5 bg-[#111111] hover:bg-[#FF4F00] text-[#FFFFFF] text-xs font-semibold inline-flex items-center gap-2 shrink-0 transition-colors">
+              <span>Selesai<span class="hidden sm:inline"> ujian</span></span>
+            </button>
+          </div>
         </div>
       </header>
 
       <!-- Mobile Question Navigator Trigger -->
-      <div class="lg:hidden px-4 pt-4">
-        <button type="button" onclick="App.toggleMobileNavSheet(true)" class="w-full h-11 px-4 rounded-xl bg-white border border-[#E4E7E6] flex items-center justify-between text-xs font-medium">
-          <span class="inline-flex items-center gap-2 text-[#11181C]">
-            <i data-lucide="layout-grid" class="w-4 h-4 text-[#687076]"></i>
+      <div class="lg:hidden border-b border-[#DCDCE0] bg-[#F7F7F8]">
+        <button type="button" onclick="App.toggleMobileNavSheet(true)" class="w-full h-11 px-4 flex items-center justify-between text-xs font-semibold">
+          <span class="inline-flex items-center gap-2 text-[#111111]">
             <span>Navigasi soal</span>
-            <span class="px-2 py-0.5 rounded-md bg-[#E8F5EE] text-[#166534] font-mono-num">${answeredCount}/${total}</span>
+            <span class="px-2 py-0.5 bg-[#111111] text-[#FFFFFF] tabular-nums">${answeredCount}/${total}</span>
           </span>
-          <span class="text-[#687076] inline-flex items-center gap-1">
-            <span>Buka kisi</span>
+          <span class="text-[#52525B] inline-flex items-center gap-1">
+            <span>Buka matriks</span>
             <i data-lucide="chevron-down" class="w-4 h-4"></i>
           </span>
         </button>
       </div>
 
-      <!-- Main Split Content -->
-      <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-4 sm:py-6 pb-24 lg:pb-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start flex-1">
-        <!-- Left 8 Cols: Question Card -->
-        <div class="lg:col-span-8 space-y-4">
-          <div class="card-stitch p-5 sm:p-6 space-y-5">
-            <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-[#E4E7E6]">
-              <div class="flex items-center gap-2 text-xs sm:text-sm font-medium text-[#11181C]">
-                <span class="font-mono-num">Soal ${ex.idx + 1} / ${total}</span>
-                <span class="text-[#687076]">·</span>
-                <span class="px-2 py-0.5 rounded-md bg-[#EAF3EE] text-[#0E3B2C] text-xs font-medium">Subtes ${esc(q.subtes)}</span>
+      <!-- Main Split Content (Exposed Hairline Grid) -->
+      <main class="max-w-7xl mx-auto w-full border-x border-b border-[#111111] pb-20 lg:pb-0 grid grid-cols-1 lg:grid-cols-12 flex-1 bg-[#FFFFFF]">
+        <!-- Left 8 Cols: Question Sheet -->
+        <div class="lg:col-span-8 border-b lg:border-b-0 lg:border-r border-[#111111] flex flex-col justify-between">
+          <div class="p-6 sm:p-8 lg:p-10 space-y-6">
+            <div class="flex items-baseline justify-between flex-wrap gap-2 pb-4 border-b border-[#111111]">
+              <div class="flex items-baseline gap-3">
+                <span class="swiss-folio text-4xl font-semibold text-[#111111]">${pad2(ex.idx + 1)}</span>
+                <span class="text-xs font-semibold text-[#71717A] tabular-nums">/ ${pad2(total)} · SUBTES ${esc(q.subtes)}</span>
               </div>
-              <span class="text-xs text-[#687076] font-mono-num">${esc(q.topik ? q.topik + ' · ' : '')}${q.subtes === 'TKP' ? 'Skala 1–5' : 'Benar +5'}</span>
+              <span class="text-xs text-[#52525B] tabular-nums">${esc(q.topik ? q.topik + ' · ' : '')}${q.subtes === 'TKP' ? 'Skala 1–5' : 'Benar +5'}</span>
             </div>
 
-            <div class="text-sm sm:text-base text-[#11181C] leading-relaxed max-w-[70ch] whitespace-pre-line">${esc(q.pertanyaan)}</div>
+            <div class="text-sm sm:text-base text-[#111111] leading-relaxed max-w-[70ch] whitespace-pre-line">${esc(q.pertanyaan)}</div>
 
-            ${q.image_url ? `<div class="rounded-xl overflow-hidden border border-[#E4E7E6] bg-[#F6F7F6] p-3"><img src="${esc(q.image_url)}" alt="Ilustrasi soal nomor ${ex.idx + 1}" class="max-h-72 mx-auto object-contain rounded-lg" /></div>` : ''}
+            ${q.image_url ? `<div class="border border-[#DCDCE0] bg-[#F7F7F8] p-3"><img src="${esc(q.image_url)}" alt="Ilustrasi soal nomor ${ex.idx + 1}" class="max-h-72 object-contain" /></div>` : ''}
 
-            <div class="space-y-2 pt-1">
+            <div class="space-y-2 pt-2">
               ${['A', 'B', 'C', 'D', 'E'].map(function (opt) {
                 const txt = q.opsi && q.opsi[opt];
                 if (!txt) return '';
                 const sel = picked === opt;
                 return `
                   <div onclick="App.selectAnswer('${esc(q.soal_id)}', '${opt}')" class="cat-option ${sel ? 'selected' : ''} px-4 py-3 flex items-center gap-3">
-                    <span class="opt-badge w-7 h-7 rounded-md border border-[#E4E7E6] bg-[#EFF1F0] text-[#11181C] text-xs font-mono-num font-medium flex items-center justify-center shrink-0">${opt}</span>
-                    <span class="text-sm text-[#11181C] leading-snug flex-1">${esc(txt)}</span>
+                    <span class="opt-badge w-7 h-7 border border-[#DCDCE0] bg-[#F7F7F8] text-[#111111] text-xs tabular-nums font-semibold flex items-center justify-center shrink-0">${opt}</span>
+                    <span class="text-sm text-[#111111] leading-snug flex-1">${esc(txt)}</span>
                   </div>`;
               }).join('')}
             </div>
           </div>
 
           <!-- Desktop Action Bar -->
-          <div class="hidden lg:flex card-stitch p-4 items-center justify-between">
+          <div class="hidden lg:flex border-t border-[#111111] bg-[#F7F7F8] p-4 items-center justify-between">
             <button type="button" onclick="App.moveSoal(-1)" ${ex.idx === 0 ? 'disabled class="opacity-40 cursor-not-allowed btn-outline h-10 px-4 text-xs inline-flex items-center gap-2"' : 'class="btn-outline h-10 px-4 text-xs inline-flex items-center gap-2"'}>
               <i data-lucide="arrow-left" class="w-4 h-4"></i>
               <span>Sebelumnya</span>
             </button>
             <div class="flex items-center gap-3">
-              <button type="button" onclick="App.toggleDoubtful('${esc(q.soal_id)}')" class="h-10 px-4 rounded-lg text-xs font-medium inline-flex items-center gap-2 transition-colors duration-150 ${isDoubtful ? 'bg-[#D97706] text-white' : 'bg-[#FEF3C7] text-[#92400E] hover:bg-[#FDE68A]'}">
+              <button type="button" onclick="App.toggleDoubtful('${esc(q.soal_id)}')" class="h-10 px-4 border text-xs font-semibold inline-flex items-center gap-2 transition-colors ${isDoubtful ? 'bg-[#FF4F00] border-[#FF4F00] text-[#FFFFFF]' : 'bg-[#FFFFFF] border-[#111111] text-[#111111] hover:border-[#FF4F00] hover:text-[#FF4F00]'}">
                 <i data-lucide="bookmark" class="w-4 h-4"></i>
                 <span>${isDoubtful ? 'Ragu-ragu aktif' : 'Tandai ragu-ragu'}</span>
               </button>
@@ -775,29 +805,29 @@ const App = (function () {
           </div>
         </div>
 
-        <!-- Right 4 Cols: Desktop Question Navigator -->
-        <aside class="hidden lg:block lg:col-span-4 card-stitch p-5 sticky top-20 space-y-4">
-          <div class="flex items-center justify-between">
-            <h3 class="font-heading font-medium text-sm text-[#11181C]">Navigasi soal</h3>
-            <span class="px-2 py-0.5 rounded-md bg-[#EAF3EE] text-[#166534] text-xs font-mono-num font-medium">${answeredCount} / ${total}</span>
+        <!-- Right 4 Cols: Desktop Question Navigator Matrix -->
+        <aside class="hidden lg:block lg:col-span-4 bg-[#F7F7F8] p-6 space-y-5">
+          <div class="flex items-baseline justify-between border-b border-[#111111] pb-3">
+            <h3 class="font-semibold text-sm text-[#111111]">Matriks nomor soal</h3>
+            <span class="text-xs tabular-nums font-semibold text-[#111111]">${pad2(answeredCount)} / ${pad2(total)}</span>
           </div>
-          <div class="grid grid-cols-6 gap-2 max-h-[384px] overflow-y-auto p-1">${navTilesHtml}</div>
-          <div class="flex items-center justify-between pt-3 border-t border-[#E4E7E6] text-xs text-[#4B5358]">
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-[#16A34A]"></span> Dijawab</span>
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-[#D97706]"></span> Ragu-ragu</span>
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-[#EFF1F0] border border-[#E4E7E6]"></span> Kosong</span>
+          <div class="grid grid-cols-6 gap-1.5 max-h-[384px] overflow-y-auto">${navTilesHtml}</div>
+          <div class="flex items-center justify-between pt-3 border-t border-[#DCDCE0] text-xs text-[#52525B]">
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-[#111111]"></span> Dijawab</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 border border-[#FF4F00] bg-[#F7F7F8]"></span> Ragu</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-[#FFFFFF] border border-[#DCDCE0]"></span> Kosong</span>
           </div>
         </aside>
       </main>
 
       <!-- Mobile Sticky Bottom Action Bar -->
-      <div class="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-[#E4E7E6] px-4 py-3 z-30 flex items-center justify-between gap-2">
+      <div class="lg:hidden fixed bottom-0 inset-x-0 bg-[#FFFFFF] border-t border-[#111111] px-4 py-3 z-30 flex items-center justify-between gap-2">
         <button type="button" onclick="App.moveSoal(-1)" ${ex.idx === 0 ? 'disabled' : ''} class="btn-outline h-10 px-3 text-xs inline-flex items-center gap-1 disabled:opacity-40">
           <i data-lucide="arrow-left" class="w-4 h-4"></i>
           <span>Sebelumnya</span>
         </button>
-        <button type="button" onclick="App.toggleDoubtful('${esc(q.soal_id)}')" class="h-10 px-3 rounded-lg text-xs font-medium ${isDoubtful ? 'bg-[#D97706] text-white' : 'bg-[#FEF3C7] text-[#92400E]'}">Ragu</button>
-        <button type="button" onclick="${ex.idx < total - 1 ? 'App.moveSoal(1)' : 'App.confirmFinishExam()'}" class="btn-primary flex-1 h-10 px-4 text-xs inline-flex items-center justify-center gap-1.5">
+        <button type="button" onclick="App.toggleDoubtful('${esc(q.soal_id)}')" class="h-10 px-3 border text-xs font-semibold ${isDoubtful ? 'bg-[#FF4F00] border-[#FF4F00] text-[#FFFFFF]' : 'bg-[#FFFFFF] border-[#111111] text-[#111111]'}">Ragu</button>
+        <button type="button" onclick="${ex.idx < total - 1 ? 'App.moveSoal(1)' : 'App.confirmFinishExam()'}" class="btn-primary flex-1 h-10 px-4 text-xs inline-flex items-center justify-between">
           <span>${ex.idx < total - 1 ? 'Simpan & lanjut' : 'Kumpulkan'}</span>
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
@@ -806,12 +836,12 @@ const App = (function () {
       <!-- Mobile Bottom Sheet Drawer -->
       ${state.mobileNavSheetOpen ? `
         <div class="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bottom-sheet-backdrop" onclick="if(event.target===this) App.toggleMobileNavSheet(false)">
-          <div class="bg-white bottom-sheet-panel p-5 max-h-[75vh] flex flex-col space-y-4">
-            <div class="flex items-center justify-between">
-              <h3 class="font-heading font-medium text-base text-[#11181C]">Kisi nomor soal (${answeredCount}/${total})</h3>
-              <button type="button" onclick="App.toggleMobileNavSheet(false)" class="w-8 h-8 rounded-lg bg-[#EFF1F0] inline-flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+          <div class="bg-[#FFFFFF] bottom-sheet-panel p-5 max-h-[75vh] flex flex-col space-y-4">
+            <div class="flex items-center justify-between border-b border-[#DCDCE0] pb-3">
+              <h3 class="font-semibold text-base text-[#111111]">Matriks nomor soal (${answeredCount}/${total})</h3>
+              <button type="button" onclick="App.toggleMobileNavSheet(false)" class="w-8 h-8 border border-[#DCDCE0] inline-flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            <div class="grid grid-cols-6 gap-2 overflow-y-auto p-1">${navTilesHtml}</div>
+            <div class="grid grid-cols-6 gap-1.5 overflow-y-auto">${navTilesHtml}</div>
           </div>
         </div>
       ` : ''}
@@ -859,7 +889,7 @@ const App = (function () {
   // SCREEN 4: EVALUASI, GRAFIK, PEMBAHASAN & PERINGKAT
   // ==========================================================================
   function renderResultSkeleton(root) {
-    root.innerHTML = `${renderNavbar('result')}<main class="max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6"><div class="skeleton h-36"></div><div class="grid grid-cols-1 lg:grid-cols-12 gap-4"><div class="lg:col-span-8 skeleton h-64"></div><div class="lg:col-span-4 skeleton h-64"></div></div></main>`;
+    root.innerHTML = `${renderNavbar('result')}<main class="max-w-7xl mx-auto w-full border-x border-[#DCDCE0] p-8 space-y-6"><div class="skeleton h-36"></div><div class="grid grid-cols-1 lg:grid-cols-12 gap-4"><div class="lg:col-span-8 skeleton h-64"></div><div class="lg:col-span-4 skeleton h-64"></div></div></main>`;
   }
 
   function renderResult(root) {
@@ -870,7 +900,6 @@ const App = (function () {
     const pgTwk = Number(p.pg_twk || 65), pgTiu = Number(p.pg_tiu || 80), pgTkp = Number(p.pg_tkp || 166);
     const lulus = h.status_kelulusan === 'Lulus';
 
-    // Signature Detail: Subtest card with exact Passing Grade threshold marker
     const subCard = function (label, val, pg, maxVal) {
       const ok = Number(val) >= pg;
       const pct = Math.min(100, Math.round((Number(val) / maxVal) * 100));
@@ -878,17 +907,17 @@ const App = (function () {
       const delta = Number(val) - pg;
       const deltaStr = (delta >= 0 ? '+' : '') + delta + ' dari PG ' + pg;
       return `
-        <div class="p-4 rounded-xl bg-[#F6F7F6] border border-[#E4E7E6] space-y-3">
-          <div class="flex items-center justify-between text-xs">
-            <span class="font-medium text-[#11181C]">${label}</span>
-            <span class="px-2 py-0.5 rounded-md font-medium ${ok ? 'bg-[#E8F5EE] text-[#166534]' : 'bg-[#FEE2E2] text-[#991B1B]'}">${ok ? 'Lulus' : 'Belum lulus'}</span>
+        <div class="p-6 bg-[#FFFFFF] space-y-3">
+          <div class="flex items-center justify-between text-xs border-b border-[#DCDCE0] pb-2">
+            <span class="font-semibold text-[#111111]">${label}</span>
+            <span class="px-2 py-0.5 font-semibold ${ok ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FF4F00] text-[#FFFFFF]'}">${ok ? 'LULUS' : 'BELUM LULUS'}</span>
           </div>
           <div class="flex items-baseline justify-between gap-2">
-            <span class="text-2xl font-mono-num font-medium text-[#11181C]">${val}</span>
-            <span class="text-xs font-mono-num text-[#687076]">${deltaStr}</span>
+            <span class="swiss-folio text-4xl font-semibold text-[#111111]">${val}</span>
+            <span class="text-xs tabular-nums text-[#52525B]">${deltaStr}</span>
           </div>
           <div class="pg-track">
-            <div class="pg-fill ${ok ? 'bg-[#0E3B2C]' : 'bg-[#DC2626]'}" style="width:${pct}%"></div>
+            <div class="pg-fill ${ok ? 'bg-[#111111]' : 'bg-[#FF4F00]'}" style="width:${pct}%"></div>
             <span class="pg-marker" style="left:${pgPct}%" title="Passing grade ${pg}"></span>
           </div>
         </div>`;
@@ -896,35 +925,35 @@ const App = (function () {
 
     root.innerHTML = `
       ${renderNavbar('result')}
-      <main class="max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6 flex-1">
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <main class="max-w-7xl mx-auto w-full border-x border-b border-[#111111] flex-1 bg-[#FFFFFF]">
+        <!-- Header Bar -->
+        <div class="p-6 sm:p-8 border-b border-[#111111] flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div class="space-y-1">
-            <div class="text-xs font-medium text-[#166E48]">Hasil evaluasi simulasi</div>
-            <h1 class="text-2xl sm:text-3xl font-heading font-medium text-[#11181C] tracking-[-0.015em]">${esc(h.nama_paket)}</h1>
-            <p class="text-xs font-mono-num text-[#687076]">Durasi pengerjaan: ${fmtDurasi(h.durasi_pakai_detik)}</p>
+            <h1 class="text-2xl sm:text-3xl font-semibold text-[#111111] tracking-[-0.02em]">${esc(h.nama_paket)}</h1>
+            <p class="text-xs tabular-nums text-[#52525B]">Durasi pengerjaan: ${fmtDurasi(h.durasi_pakai_detik)}</p>
           </div>
           <div class="flex items-center gap-2 no-print">
             <button type="button" onclick="window.print()" class="btn-outline h-10 px-4 text-xs inline-flex items-center gap-2">
-              <i data-lucide="download" class="w-4 h-4 text-[#687076]"></i>
+              <i data-lucide="download" class="w-4 h-4"></i>
               <span>Unduh rapor PDF</span>
             </button>
             <button type="button" onclick="App.go('dashboard')" class="btn-primary h-10 px-4 text-xs">Kembali ke paket</button>
           </div>
         </div>
 
-        <!-- Score Summary Panel -->
-        <div class="card-stitch p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          <div class="lg:col-span-4 space-y-2">
-            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${lulus ? 'bg-[#E8F5EE] text-[#166534]' : 'bg-[#FEE2E2] text-[#991B1B]'}">
-              ${lulus ? 'Lulus ambang batas' : 'Belum lulus ambang batas'}
+        <!-- Score Summary Hairline Matrix -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 border-b border-[#111111] divide-y lg:divide-y-0 lg:divide-x divide-[#DCDCE0]">
+          <div class="lg:col-span-4 p-6 sm:p-8 bg-[#F7F7F8] space-y-2">
+            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold ${lulus ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FF4F00] text-[#FFFFFF]'}">
+              ${lulus ? 'LULUS AMBANG BATAS' : 'BELUM LULUS AMBANG BATAS'}
             </span>
-            <div class="text-xs text-[#687076] pt-1">Total skor akhir</div>
+            <div class="text-xs text-[#52525B] pt-2">Total skor akhir</div>
             <div class="flex items-baseline gap-2">
-              <span class="text-5xl font-mono-num font-semibold text-[#11181C] tracking-[-0.02em]">${h.skor_total}</span>
-              <span class="text-sm font-mono-num text-[#687076]">/ 550</span>
+              <span class="swiss-folio text-6xl font-semibold text-[#111111]">${h.skor_total}</span>
+              <span class="text-sm tabular-nums text-[#71717A]">/ 550</span>
             </div>
           </div>
-          <div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#DCDCE0]">
             ${subCard('TWK', h.skor_twk, pgTwk, 150)}
             ${subCard('TIU', h.skor_tiu, pgTiu, 175)}
             ${subCard('TKP', h.skor_tkp, pgTkp, 225)}
@@ -932,61 +961,61 @@ const App = (function () {
         </div>
 
         <!-- Asymmetric Chart Hierarchy (8 cols Main Chart + 4 cols Trend) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
-          <div class="card-stitch p-6 lg:col-span-8 flex flex-col justify-between space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="grid grid-cols-1 lg:grid-cols-12 border-b border-[#111111] divide-y lg:divide-y-0 lg:divide-x divide-[#DCDCE0]">
+          <div class="p-6 sm:p-8 lg:col-span-8 flex flex-col justify-between space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#DCDCE0] pb-3">
               <div>
-                <h3 class="font-heading font-medium text-base text-[#11181C]">Perbandingan skor terhadap ambang batas</h3>
-                <p class="text-xs text-[#687076]">Skor perolehan subtes dibandingkan standar kelulusan minimum BKN</p>
+                <h3 class="font-semibold text-base text-[#111111]">Perbandingan skor terhadap ambang batas</h3>
+                <p class="text-xs text-[#52525B]">Skor perolehan subtes dibandingkan standar kelulusan minimum BKN</p>
               </div>
-              <div class="flex items-center gap-4 text-xs text-[#687076]">
-                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#0E3B2C]"></span> Skor Anda</span>
-                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#D6DBD9]"></span> Ambang PG</span>
+              <div class="flex items-center gap-4 text-xs text-[#52525B]">
+                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-[#111111]"></span> Skor Anda</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-[#FF4F00]"></span> Ambang PG</span>
               </div>
             </div>
             <div class="h-64"><canvas id="chartResultSubtes"></canvas></div>
           </div>
-          <div class="card-stitch p-6 lg:col-span-4 flex flex-col justify-between space-y-4">
-            <div>
-              <h3 class="font-heading font-medium text-base text-[#11181C]">Tren total skor</h3>
-              <p class="text-xs text-[#687076]">Riwayat skor antar percobaan</p>
+          <div class="p-6 sm:p-8 lg:col-span-4 flex flex-col justify-between space-y-4">
+            <div class="border-b border-[#DCDCE0] pb-3">
+              <h3 class="font-semibold text-base text-[#111111]">Tren total skor</h3>
+              <p class="text-xs text-[#52525B]">Riwayat skor antar percobaan</p>
             </div>
             <div class="h-64"><canvas id="chartResultTrend"></canvas></div>
           </div>
         </div>
 
         <!-- Tabs Pembahasan & Papan Peringkat -->
-        <div class="space-y-4">
-          <div class="inline-flex items-center p-1 rounded-lg bg-[#EFF1F0] gap-1 no-print">
-            <button type="button" onclick="App.setResultTab('pembahasan')" class="h-9 px-4 rounded-md text-xs font-medium transition-colors duration-150 ${state.resultTab === 'pembahasan' ? 'bg-white text-[#11181C] shadow-sm' : 'text-[#687076] hover:text-[#11181C]'}">Pembahasan soal</button>
-            <button type="button" onclick="App.setResultTab('peringkat')" class="h-9 px-4 rounded-md text-xs font-medium transition-colors duration-150 ${state.resultTab === 'peringkat' ? 'bg-white text-[#11181C] shadow-sm' : 'text-[#687076] hover:text-[#11181C]'}">Papan peringkat (${state.leaderboard.length})</button>
+        <div class="p-6 sm:p-8 space-y-6">
+          <div class="inline-flex items-center border border-[#111111] no-print">
+            <button type="button" onclick="App.setResultTab('pembahasan')" class="h-9 px-4 text-xs font-semibold transition-colors ${state.resultTab === 'pembahasan' ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FFFFFF] text-[#52525B] hover:text-[#111111]'}">01 · Pembahasan soal</button>
+            <button type="button" onclick="App.setResultTab('peringkat')" class="h-9 px-4 border-l border-[#111111] text-xs font-semibold transition-colors ${state.resultTab === 'peringkat' ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FFFFFF] text-[#52525B] hover:text-[#111111]'}">02 · Papan peringkat (${state.leaderboard.length})</button>
           </div>
 
           ${state.resultTab === 'pembahasan' ? `
-            <div class="space-y-3">
+            <div class="border-t border-l border-[#DCDCE0]">
               ${d.pembahasan.filter(function (x) { return !x.locked; }).map(function (item, i) {
                 const open = !!state.openAccordion[i];
-                const badgeCls = item.poin >= 5 ? 'bg-[#E8F5EE] text-[#166534]' : item.poin > 0 ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#FEE2E2] text-[#991B1B]';
+                const badgeCls = item.poin >= 5 ? 'bg-[#111111] text-[#FFFFFF]' : item.poin > 0 ? 'bg-[#F7F7F8] border border-[#111111] text-[#111111]' : 'bg-[#FF4F00] text-[#FFFFFF]';
                 return `
-                  <div class="card-stitch p-5 space-y-3">
-                    <div onclick="App.toggleAccordion(${i})" class="flex items-start justify-between gap-3 cursor-pointer">
-                      <div class="flex items-start gap-3">
-                        <span class="w-7 h-7 rounded-md bg-[#EFF1F0] text-[#11181C] text-xs font-mono-num font-medium flex items-center justify-center shrink-0">${item.nomor_urut}</span>
+                  <div class="border-r border-b border-[#DCDCE0] p-5 space-y-3 bg-[#FFFFFF]">
+                    <div onclick="App.toggleAccordion(${i})" class="flex items-start justify-between gap-4 cursor-pointer">
+                      <div class="flex items-start gap-4">
+                        <span class="swiss-folio text-2xl font-semibold text-[#111111] w-8 shrink-0">${pad2(item.nomor_urut)}</span>
                         <div>
-                          <div class="text-xs text-[#687076]">${esc(item.subtes)}${item.topik ? ' · ' + esc(item.topik) : ''}</div>
-                          <div class="text-sm font-medium text-[#11181C] mt-1">${esc(item.pertanyaan)}</div>
+                          <div class="text-xs font-semibold text-[#71717A]">${esc(item.subtes)}${item.topik ? ' · ' + esc(item.topik) : ''}</div>
+                          <div class="text-sm font-medium text-[#111111] mt-1">${esc(item.pertanyaan)}</div>
                         </div>
                       </div>
-                      <span class="px-2.5 py-1 rounded-md text-xs font-mono-num font-medium shrink-0 ${badgeCls}">${item.subtes === 'TKP' ? '+' + item.poin + ' poin' : (item.benar ? '+5 benar' : '0 salah')}</span>
+                      <span class="px-2.5 py-1 text-xs tabular-nums font-semibold shrink-0 ${badgeCls}">${item.subtes === 'TKP' ? '+' + item.poin + ' POIN' : (item.benar ? '+5 BENAR' : '0 SALAH')}</span>
                     </div>
                     ${open ? `
-                      <div class="pl-10 space-y-3 pt-3 border-t border-[#E4E7E6]">
-                        <div class="flex flex-wrap gap-2 text-xs font-mono-num">
-                          <span class="px-2.5 py-1 rounded-md bg-[#F6F7F6] border border-[#E4E7E6] text-[#4B5358]">Jawaban Anda: <strong class="font-medium text-[#11181C]">${esc(item.jawaban_user || 'Kosong')}</strong></span>
-                          <span class="px-2.5 py-1 rounded-md bg-[#E8F5EE] text-[#166534]">Kunci / bobot: <strong class="font-medium">${esc(item.kunci_atau_bobot)}</strong></span>
+                      <div class="pl-12 space-y-3 pt-3 border-t border-[#DCDCE0]">
+                        <div class="flex flex-wrap gap-2 text-xs tabular-nums">
+                          <span class="px-2.5 py-1 bg-[#F7F7F8] border border-[#DCDCE0] text-[#52525B]">Jawaban Anda: <strong class="font-semibold text-[#111111]">${esc(item.jawaban_user || 'Kosong')}</strong></span>
+                          <span class="px-2.5 py-1 bg-[#111111] text-[#FFFFFF]">Kunci / bobot: <strong class="font-semibold">${esc(item.kunci_atau_bobot)}</strong></span>
                         </div>
-                        <div class="p-4 rounded-lg bg-[#F6F7F6] text-xs text-[#4B5358] leading-relaxed">
-                          <div class="font-medium text-[#11181C] mb-1">Pembahasan resmi</div>
+                        <div class="p-4 bg-[#F7F7F8] border-l-2 border-[#FF4F00] text-xs text-[#52525B] leading-relaxed">
+                          <div class="font-semibold text-[#111111] mb-1">Pembahasan resmi</div>
                           ${esc(item.pembahasan || 'Pembahasan belum tersedia')}
                         </div>
                       </div>
@@ -995,43 +1024,40 @@ const App = (function () {
               }).join('')}
 
               ${d.lockedCount > 0 ? `
-                <div class="card-stitch p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 no-print">
-                  <div class="flex items-start gap-3">
-                    <span class="w-10 h-10 rounded-lg bg-[#EFF1F0] flex items-center justify-center text-[#4B5358] shrink-0"><i data-lucide="lock" class="w-4 h-4"></i></span>
-                    <div>
-                      <div class="font-heading font-medium text-base text-[#11181C]">${d.lockedCount} pembahasan soal lainnya terkunci</div>
-                      <div class="text-xs text-[#4B5358] mt-0.5">Upgrade ke Akun Pro untuk membuka seluruh kunci pembahasan dan paket simulasi 110 soal</div>
-                    </div>
+                <div class="border-r border-b border-[#111111] bg-[#F7F7F8] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 no-print">
+                  <div class="space-y-1">
+                    <div class="font-semibold text-base text-[#111111]">${d.lockedCount} pembahasan soal lainnya terkunci</div>
+                    <div class="text-xs text-[#52525B]">Upgrade ke Akun Pro untuk membuka seluruh kunci pembahasan dan paket simulasi 110 soal.</div>
                   </div>
-                  <button type="button" onclick="App.openUpgradeModal()" class="btn-primary h-10 px-4 text-xs shrink-0">Upgrade ke Akun Pro</button>
+                  <button type="button" onclick="App.openUpgradeModal()" class="btn-accent h-10 px-5 text-xs shrink-0">Upgrade ke Akun Pro</button>
                 </div>
               ` : ''}
             </div>
           ` : `
-            <div class="card-stitch p-5 overflow-x-auto">
+            <div class="border border-[#111111] overflow-x-auto">
               <table class="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr class="border-b border-[#E4E7E6] text-xs text-[#687076]">
-                    <th class="py-3 px-4 font-medium">Peringkat</th>
-                    <th class="py-3 px-4 font-medium">Peserta</th>
-                    <th class="py-3 px-3 text-right font-medium">TWK</th>
-                    <th class="py-3 px-3 text-right font-medium">TIU</th>
-                    <th class="py-3 px-3 text-right font-medium">TKP</th>
-                    <th class="py-3 px-3 text-right font-medium">Total</th>
-                    <th class="py-3 px-4 text-right font-medium">Status</th>
+                  <tr class="border-b border-[#111111] bg-[#F7F7F8] text-xs text-[#52525B]">
+                    <th class="py-3 px-4 font-semibold">Peringkat</th>
+                    <th class="py-3 px-4 font-semibold">Peserta</th>
+                    <th class="py-3 px-3 font-semibold">TWK</th>
+                    <th class="py-3 px-3 font-semibold">TIU</th>
+                    <th class="py-3 px-3 font-semibold">TKP</th>
+                    <th class="py-3 px-3 font-semibold">Total</th>
+                    <th class="py-3 px-4 font-semibold">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${state.leaderboard.map(function (lb) {
                     const ok = lb.status_kelulusan === 'Lulus';
-                    return `<tr class="border-b border-[#E4E7E6] last:border-b-0 hover:bg-[#F6F7F6] transition-colors duration-150">
-                      <td class="py-3 px-4 font-mono-num text-xs text-[#687076]">#${lb.rank}</td>
-                      <td class="py-3 px-4 font-medium text-[#11181C]">${esc(lb.nama_user)}</td>
-                      <td class="py-3 px-3 text-right font-mono-num text-[#4B5358]">${lb.skor_twk}</td>
-                      <td class="py-3 px-3 text-right font-mono-num text-[#4B5358]">${lb.skor_tiu}</td>
-                      <td class="py-3 px-3 text-right font-mono-num text-[#4B5358]">${lb.skor_tkp}</td>
-                      <td class="py-3 px-3 text-right font-mono-num font-medium text-[#11181C]">${lb.skor_total}</td>
-                      <td class="py-3 px-4 text-right"><span class="px-2 py-0.5 rounded-md text-xs font-medium ${ok ? 'bg-[#E8F5EE] text-[#166534]' : 'bg-[#FEE2E2] text-[#991B1B]'}">${esc(lb.status_kelulusan)}</span></td>
+                    return `<tr class="border-b border-[#DCDCE0] last:border-b-0 hover:bg-[#F7F7F8] transition-colors">
+                      <td class="py-3 px-4 swiss-folio text-lg font-semibold text-[#111111]">${pad2(lb.rank)}</td>
+                      <td class="py-3 px-4 font-medium text-[#111111]">${esc(lb.nama_user)}</td>
+                      <td class="py-3 px-3 tabular-nums text-[#52525B]">${lb.skor_twk}</td>
+                      <td class="py-3 px-3 tabular-nums text-[#52525B]">${lb.skor_tiu}</td>
+                      <td class="py-3 px-3 tabular-nums text-[#52525B]">${lb.skor_tkp}</td>
+                      <td class="py-3 px-3 tabular-nums font-semibold text-[#111111]">${lb.skor_total}</td>
+                      <td class="py-3 px-4"><span class="px-2 py-0.5 text-xs font-semibold ${ok ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FF4F00] text-[#FFFFFF]'}">${esc(lb.status_kelulusan).toUpperCase()}</span></td>
                     </tr>`;
                   }).join('')}
                 </tbody>
@@ -1048,9 +1074,9 @@ const App = (function () {
     if (!state.resultData || !window.Chart) return;
     const h = state.resultData.hasil;
     const p = state.resultData.paket || {};
-    const monoFont = { family: "'IBM Plex Mono', monospace", size: 11 };
-    const gridColor = 'rgba(17, 24, 28, 0.06)';
-    const tickColor = '#687076';
+    const swissFont = { family: "'Helvetica Neue', 'Akzidenz-Grotesk', 'Söhne', Helvetica, Arial, sans-serif", size: 11 };
+    const gridColor = '#DCDCE0';
+    const tickColor = '#52525B';
 
     const ctx1 = document.getElementById('chartResultSubtes');
     if (ctx1) {
@@ -1059,8 +1085,8 @@ const App = (function () {
         data: {
           labels: ['TWK', 'TIU', 'TKP'],
           datasets: [
-            { label: 'Skor Anda', data: [h.skor_twk, h.skor_tiu, h.skor_tkp], backgroundColor: '#0E3B2C', borderRadius: 4, barPercentage: 0.6 },
-            { label: 'Ambang PG', data: [p.pg_twk || 65, p.pg_tiu || 80, p.pg_tkp || 166], backgroundColor: '#D6DBD9', borderRadius: 4, barPercentage: 0.6 }
+            { label: 'Skor Anda', data: [h.skor_twk, h.skor_tiu, h.skor_tkp], backgroundColor: '#111111', borderRadius: 0, barPercentage: 0.6 },
+            { label: 'Ambang PG', data: [p.pg_twk || 65, p.pg_tiu || 80, p.pg_tkp || 166], backgroundColor: '#FF4F00', borderRadius: 0, barPercentage: 0.6 }
           ]
         },
         options: {
@@ -1068,8 +1094,8 @@ const App = (function () {
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            y: { beginAtZero: true, grid: { color: gridColor }, border: { display: false }, ticks: { color: tickColor, font: monoFont } },
-            x: { grid: { display: false }, border: { display: false }, ticks: { color: tickColor, font: monoFont } }
+            y: { beginAtZero: true, grid: { color: gridColor }, border: { display: false }, ticks: { color: tickColor, font: swissFont } },
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: tickColor, font: swissFont } }
           }
         }
       }));
@@ -1084,13 +1110,13 @@ const App = (function () {
           datasets: [{
             label: 'Total skor',
             data: tr.map(function (t) { return t.total; }),
-            borderColor: '#0E3B2C',
+            borderColor: '#FF4F00',
             borderWidth: 2,
-            backgroundColor: 'rgba(14, 59, 44, 0.06)',
+            backgroundColor: 'rgba(255, 79, 0, 0.08)',
             fill: true,
-            tension: 0.3,
+            tension: 0,
             pointRadius: 3,
-            pointBackgroundColor: '#0E3B2C'
+            pointBackgroundColor: '#111111'
           }]
         },
         options: {
@@ -1098,8 +1124,8 @@ const App = (function () {
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            y: { beginAtZero: true, grid: { color: gridColor }, border: { display: false }, ticks: { color: tickColor, font: monoFont } },
-            x: { grid: { display: false }, border: { display: false }, ticks: { color: tickColor, font: monoFont } }
+            y: { beginAtZero: true, grid: { color: gridColor }, border: { display: false }, ticks: { color: tickColor, font: swissFont } },
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: tickColor, font: swissFont } }
           }
         }
       }));
@@ -1129,10 +1155,11 @@ const App = (function () {
     if (cfg.demoOAuth || ApiClient.isDemoMode()) {
       slot.innerHTML = `
         <button type="button" onclick="App.handleDemoGoogleLogin()"
-          class="w-full h-10 px-4 rounded-lg border border-[#E4E7E6] bg-white hover:bg-[#EFF1F0] text-xs sm:text-sm font-medium text-[#11181C] inline-flex items-center justify-center gap-2 transition-colors duration-150">
-          <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.3h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.26-2.08 3.56-5.15 3.56-8.65z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.93-2.91l-3.87-3c-1.07.72-2.44 1.14-4.06 1.14-3.12 0-5.77-2.11-6.72-4.95H1.29v3.09A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.28 14.28A7.18 7.18 0 0 1 4.9 12c0-.79.14-1.56.38-2.28V6.63H1.29A12 12 0 0 0 0 12c0 1.94.46 3.77 1.29 5.37l3.99-3.09z"/><path fill="#EA4335" d="M12 4.77c1.76 0 3.34.61 4.58 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.29 6.63l3.99 3.09C6.23 6.88 8.88 4.77 12 4.77z"/></svg>
-          <span>Lanjutkan dengan Google (mode pratinjau)</span>
+          class="w-full h-10 px-4 border border-[#111111] bg-[#FFFFFF] hover:bg-[#F7F7F8] text-xs font-semibold text-[#111111] inline-flex items-center justify-between transition-colors">
+          <span>Lanjutkan dengan Google (pratinjau)</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>`;
+      refreshIcons();
       return;
     }
 
@@ -1263,13 +1290,13 @@ const App = (function () {
       const u = state.user || {};
       openModal('Profil akun', `
         <div class="space-y-4 text-sm">
-          <div class="p-4 rounded-xl bg-[#F6F7F6] border border-[#E4E7E6] space-y-1">
-            <div class="font-medium text-base text-[#11181C]">${esc(u.nama_lengkap)}</div>
-            <div class="text-xs text-[#687076]">${esc(u.email)}</div>
-            <div class="pt-2"><span class="px-2 py-0.5 rounded-md text-xs font-medium bg-[#E8F5EE] text-[#166534]">Peran: ${esc(u.role)}</span></div>
+          <div class="p-4 bg-[#F7F7F8] border border-[#DCDCE0] space-y-1">
+            <div class="font-semibold text-base text-[#111111]">${esc(u.nama_lengkap)}</div>
+            <div class="text-xs text-[#52525B]">${esc(u.email)}</div>
+            <div class="pt-2"><span class="px-2 py-0.5 text-xs font-semibold bg-[#111111] text-[#FFFFFF]">PERAN: ${esc(u.role).toUpperCase()}</span></div>
           </div>
-          ${u.role === 'Admin' ? `<button type="button" onclick="App.closeModal(); App.go('admin')" class="btn-primary w-full h-10 text-xs">Buka panel kontrol admin</button>` : ''}
-          <button type="button" onclick="App.logout()" class="w-full h-10 rounded-lg bg-[#FEE2E2] text-[#991B1B] hover:bg-red-200 font-medium text-xs transition-colors duration-150">Keluar dari akun</button>
+          ${u.role === 'Admin' ? `<button type="button" onclick="App.closeModal(); App.go('admin')" class="btn-primary w-full h-10 px-4 text-xs text-left">Buka panel kontrol admin</button>` : ''}
+          <button type="button" onclick="App.logout()" class="w-full h-10 px-4 bg-[#FF4F00] text-[#FFFFFF] font-semibold text-xs text-left transition-colors">Keluar dari akun</button>
         </div>
       `);
     },
@@ -1278,19 +1305,19 @@ const App = (function () {
       const set = (state.dashData && state.dashData.settings) || {};
       openModal('Upgrade ke Akun Pro', `
         <form onsubmit="App.submitUpgrade(event)" class="space-y-4 text-sm">
-          <div class="p-4 rounded-xl bg-[#EAF3EE] text-[#0E3B2C] text-xs space-y-1">
-            <div class="font-medium">Biaya aktivasi: ${esc(set.HARGA_PRO || 'Rp 99.000 / 6 bulan')}</div>
-            <div>Tujuan transfer: <span class="font-mono-num font-medium">${esc(set.INFO_REKENING_PRO || 'BCA 7410 8829 14 a.n. PT Simulasi Edukasi Nusantara')}</span></div>
+          <div class="p-4 bg-[#F7F7F8] border-l-2 border-[#FF4F00] text-[#111111] text-xs space-y-1">
+            <div class="font-semibold">Biaya aktivasi: ${esc(set.HARGA_PRO || 'Rp 99.000 / 6 bulan')}</div>
+            <div>Tujuan transfer: <span class="tabular-nums font-semibold">${esc(set.INFO_REKENING_PRO || 'BCA 7410 8829 14 a.n. PT Simulasi Edukasi Nusantara')}</span></div>
           </div>
           <div>
-            <label class="text-xs font-medium text-[#4B5358]">Bukti transfer (JPG/PNG, maksimal 2MB)</label>
-            <input type="file" id="upg-file" accept="image/*" class="mt-1 w-full text-xs p-3 rounded-lg border border-dashed border-[#D6DBD9] bg-[#F6F7F6]" />
+            <label class="text-xs font-medium text-[#52525B]">Bukti transfer (JPG/PNG, maksimal 2MB)</label>
+            <input type="file" id="upg-file" accept="image/*" class="mt-1 w-full text-xs p-3 border border-[#111111] bg-[#F7F7F8]" />
           </div>
           <div>
-            <label class="text-xs font-medium text-[#4B5358]">Catatan pengirim</label>
+            <label class="text-xs font-medium text-[#52525B]">Catatan pengirim</label>
             <input type="text" id="upg-note" required placeholder="Contoh: BCA a.n. Budi Santoso" class="input-control mt-1 w-full" />
           </div>
-          <button type="submit" class="btn-primary w-full h-10 text-xs">Kirim bukti aktivasi</button>
+          <button type="submit" class="btn-accent w-full h-10 px-4 text-xs text-left">Kirim bukti aktivasi</button>
         </form>
       `);
     },
@@ -1321,14 +1348,14 @@ const App = (function () {
       if (!p) return;
       openModal('Mulai simulasi CAT', `
         <div class="space-y-4 text-sm">
-          <div class="font-heading font-medium text-base text-[#11181C]">${esc(p.nama_paket)}</div>
-          <div class="grid grid-cols-2 gap-2 text-xs font-mono-num">
-            <div class="p-3 rounded-lg bg-[#F6F7F6] border border-[#E4E7E6]">Durasi: <strong class="font-medium text-[#11181C]">${p.durasi_menit} menit</strong></div>
-            <div class="p-3 rounded-lg bg-[#F6F7F6] border border-[#E4E7E6]">Jumlah: <strong class="font-medium text-[#11181C]">${p.jumlah_soal} soal</strong></div>
-            <div class="p-3 rounded-lg bg-[#F6F7F6] border border-[#E4E7E6] col-span-2">Ambang batas: <strong class="font-medium text-[#11181C]">TWK ${p.pg_twk} · TIU ${p.pg_tiu} · TKP ${p.pg_tkp}</strong></div>
+          <div class="font-semibold text-base text-[#111111]">${esc(p.nama_paket)}</div>
+          <div class="grid grid-cols-2 border-t border-l border-[#DCDCE0] text-xs tabular-nums">
+            <div class="p-3 bg-[#F7F7F8] border-r border-b border-[#DCDCE0]">Durasi: <strong class="font-semibold text-[#111111]">${p.durasi_menit} menit</strong></div>
+            <div class="p-3 bg-[#F7F7F8] border-r border-b border-[#DCDCE0]">Jumlah: <strong class="font-semibold text-[#111111]">${p.jumlah_soal} soal</strong></div>
+            <div class="p-3 bg-[#F7F7F8] border-r border-b border-[#DCDCE0] col-span-2">Ambang batas: <strong class="font-semibold text-[#111111]">TWK ${p.pg_twk} · TIU ${p.pg_tiu} · TKP ${p.pg_tkp}</strong></div>
           </div>
-          <p class="text-xs text-[#4B5358] leading-relaxed">Waktu langsung berjalan saat ujian dimulai dan jawaban tersimpan otomatis di peramban Anda.</p>
-          <button type="button" onclick="App.startExamNow('${esc(paketId)}')" class="btn-primary w-full h-11 text-sm">Mulai kerjakan</button>
+          <p class="text-xs text-[#52525B] leading-relaxed">Waktu langsung berjalan saat ujian dimulai dan jawaban tersimpan otomatis di peramban Anda.</p>
+          <button type="button" onclick="App.startExamNow('${esc(paketId)}')" class="btn-accent w-full h-11 px-4 text-xs uppercase tracking-[0.04em] text-left">Mulai kerjakan</button>
         </div>
       `);
     },
@@ -1390,14 +1417,14 @@ const App = (function () {
       const kosong = total - dijawab;
       openModal('Kumpulkan jawaban ujian', `
         <div class="space-y-4 text-sm">
-          <div class="p-4 rounded-xl bg-[#F6F7F6] border border-[#E4E7E6] text-xs font-mono-num space-y-1">
-            <div>Terjawab: <strong class="font-medium text-[#166534]">${dijawab} / ${total}</strong></div>
-            <div>Kosong: <strong class="font-medium ${kosong > 0 ? 'text-[#DC2626]' : 'text-[#166534]'}">${kosong}</strong></div>
+          <div class="p-4 bg-[#F7F7F8] border border-[#DCDCE0] text-xs tabular-nums space-y-1">
+            <div>Terjawab: <strong class="font-semibold text-[#111111]">${dijawab} / ${total}</strong></div>
+            <div>Kosong: <strong class="font-semibold ${kosong > 0 ? 'text-[#FF4F00]' : 'text-[#111111]'}">${kosong}</strong></div>
           </div>
-          <p class="text-xs text-[#4B5358] leading-relaxed">Setelah dikumpulkan, jawaban tidak dapat diubah dan skor TWK, TIU, TKP langsung dihitung.</p>
+          <p class="text-xs text-[#52525B] leading-relaxed">Setelah dikumpulkan, jawaban tidak dapat diubah dan skor TWK, TIU, TKP langsung dihitung.</p>
           <div class="flex gap-2">
-            <button type="button" onclick="App.closeModal()" class="btn-outline flex-1 h-10 text-xs">Periksa lagi</button>
-            <button type="button" onclick="App.closeModal(); App.finishExam()" class="btn-primary flex-1 h-10 text-xs">Kumpulkan</button>
+            <button type="button" onclick="App.closeModal()" class="btn-outline flex-1 h-10 px-4 text-xs text-left">Periksa lagi</button>
+            <button type="button" onclick="App.closeModal(); App.finishExam()" class="btn-accent flex-1 h-10 px-4 text-xs text-left">Kumpulkan</button>
           </div>
         </div>
       `);
