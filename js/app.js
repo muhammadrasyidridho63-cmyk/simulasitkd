@@ -1,14 +1,14 @@
 /**
  * ============================================================================
  * SimulasiTKD Pro — js/app.js
- * Swiss International Typographic System (Anchor: Swiss)
- * Surface: #FFFFFF / #F7F7F8 | Ink: #111111 | Accent: International Orange #FF4F00
- * Structure: Exposed 1px hairline grid, left-aligned asymmetric typography, condensed folio numerals
+ * Core SPA Controller (0ms Instant Routing, Stitch CAT Platform Design)
+ * Screens: Landing & Auth | Dashboard Peserta | Ruang Ujian CAT | Evaluasi & Peringkat | Admin
  * ============================================================================
  */
 
 const App = (function () {
   const EXAM_STORAGE_KEY = 'simtkd_active_exam_v1';
+  const STITCH_LOGO_URL = 'https://lh3.googleusercontent.com/aida/ALJJyrCgxoYmh_SaCEQ6oaX69rhrfi6NdUX3exxvaE7Q01NE8iAhadoxRdehu5cipWq8mbe0oBl1EIswChPRMDGzWBIdpxe2V3RtFkbts_cTywm2V9Z_YqHbLgb4yjLfvBmBaFX5fn5-LXfge_YQ9-motV6tIlAnsh4XtoJ452d4q8bPB_AjagRtW5HNYso5FG9mxcnRpj-6J-wEo8NSkoI4lQZR18NMhzRuzGNj5hzqk20';
 
   let state = {
     view: 'landing', // landing | dashboard | exam | result | admin
@@ -35,27 +35,29 @@ const App = (function () {
 
   function refreshIcons() {
     if (window.lucide) {
-      lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+      lucide.createIcons({ attrs: { 'stroke-width': 1.75 } });
     }
-  }
-
-  function pad2(n) {
-    return String(n).padStart(2, '0');
   }
 
   function toast(msg, type) {
     type = type || 'info';
     const colors = {
-      success: 'bg-[#111111] text-[#FFFFFF] border-[#111111]',
-      error: 'bg-[#FF4F00] text-[#FFFFFF] border-[#FF4F00]',
-      warning: 'bg-[#F7F7F8] text-[#111111] border-[#FF4F00]',
-      info: 'bg-[#FFFFFF] text-[#111111] border-[#111111]'
+      success: 'bg-primary-container text-on-primary shadow-lg',
+      error: 'bg-error text-on-error shadow-lg',
+      warning: 'bg-tertiary-fixed text-on-tertiary-fixed shadow-lg',
+      info: 'bg-surface-container-lowest text-on-surface border border-outline-variant/40 shadow-lg'
+    };
+    const icons = {
+      success: 'check_circle',
+      error: 'error',
+      warning: 'warning',
+      info: 'info'
     };
     const box = document.getElementById('toast-container');
     if (!box) return;
     const el = document.createElement('div');
-    el.className = 'toast-item px-4 py-3 border text-xs font-medium flex items-center justify-between gap-3 ' + (colors[type] || colors.info);
-    el.textContent = msg;
+    el.className = 'toast-item px-4 py-3 rounded-xl font-label-lg text-label-lg flex items-center gap-2.5 ' + (colors[type] || colors.info);
+    el.innerHTML = `<span class="material-symbols-outlined text-[18px] ${type === 'success' ? 'text-secondary-fixed' : ''}">${icons[type] || 'info'}</span><span>${esc(msg)}</span>`;
     box.appendChild(el);
     setTimeout(function () { el.remove(); }, 3600);
   }
@@ -64,14 +66,14 @@ const App = (function () {
     const root = document.getElementById('modal-root');
     root.innerHTML = `
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bottom-sheet-backdrop" onclick="if(event.target===this) App.closeModal()">
-        <div class="bg-[#FFFFFF] max-w-md w-full border border-[#111111] max-h-[90vh] overflow-y-auto">
-          <div class="px-5 py-4 border-b border-[#DCDCE0] flex items-center justify-between gap-4">
-            <h3 class="font-semibold text-base text-[#111111] tracking-[-0.015em]">${esc(title)}</h3>
-            <button type="button" onclick="App.closeModal()" class="w-8 h-8 border border-[#DCDCE0] hover:border-[#111111] text-[#52525B] hover:text-[#111111] inline-flex items-center justify-center transition-colors">
-              <i data-lucide="x" class="w-4 h-4"></i>
+        <div class="bg-surface-container-lowest rounded-xl shadow-xl max-w-[480px] w-full p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
+          <div class="flex items-start justify-between gap-4">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface">${esc(title)}</h3>
+            <button type="button" onclick="App.closeModal()" class="p-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-[20px]">close</span>
             </button>
           </div>
-          <div class="p-5">${bodyHtml}</div>
+          <div>${bodyHtml}</div>
         </div>
       </div>`;
     refreshIcons();
@@ -184,40 +186,47 @@ const App = (function () {
   }
 
   // ==========================================================================
-  // SHARED PARTICIPANT NAVBAR (Swiss 1px Hairline Header)
+  // SHARED PARTICIPANT NAVBAR & FOOTER (Stitch Glass Header)
   // ==========================================================================
   function renderNavbar(active) {
     const u = state.user;
+    const activeCls = 'transition-colors bg-primary-container text-on-primary-container font-bold rounded-lg px-3 py-1.5 font-label-lg text-label-lg';
+    const idleCls = 'font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors px-3 py-1.5';
+
     return `
-      <header class="h-14 bg-[#FFFFFF] border-b border-[#111111] sticky top-0 z-40 no-print">
-        <div class="max-w-7xl mx-auto h-full border-x border-[#DCDCE0] flex items-stretch justify-between">
-          <button type="button" onclick="App.go('${u ? 'dashboard' : 'landing'}')" class="px-4 sm:px-6 border-r border-[#DCDCE0] inline-flex items-center gap-3 font-semibold text-[#111111] text-sm tracking-[-0.02em] hover:bg-[#F7F7F8] transition-colors">
-            <span class="w-2.5 h-2.5 bg-[#FF4F00] inline-block shrink-0"></span>
-            <span>SimulasiTKD Pro</span>
+      <header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] no-print">
+        <div class="h-16 max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between gap-4">
+          <button type="button" onclick="App.go('${u ? 'dashboard' : 'landing'}')" class="flex items-center gap-3 cursor-pointer">
+            <img alt="SimulasiTKD Pro Logo" class="h-8 w-auto object-contain" src="${STITCH_LOGO_URL}" onerror="this.style.display='none'" />
+            <span class="font-title-lg text-title-lg text-primary">SimulasiTKD Pro</span>
           </button>
 
-          <nav class="hidden md:flex items-stretch text-xs font-medium text-[#52525B]">
+          <nav class="hidden md:flex items-center gap-4">
             ${u ? `
-              <button type="button" onclick="App.go('dashboard')" class="px-5 border-r border-[#DCDCE0] inline-flex items-center transition-colors ${active === 'dashboard' ? 'bg-[#F7F7F8] text-[#111111] shadow-[inset_0_-2px_0_#FF4F00]' : 'hover:text-[#111111] hover:bg-[#F7F7F8]'}">Paket simulasi</button>
-              <button type="button" onclick="App.go('result')" class="px-5 border-r border-[#DCDCE0] inline-flex items-center transition-colors ${active === 'result' ? 'bg-[#F7F7F8] text-[#111111] shadow-[inset_0_-2px_0_#FF4F00]' : 'hover:text-[#111111] hover:bg-[#F7F7F8]'}">Evaluasi &amp; peringkat</button>
-              ${u.role === 'Admin' ? `<button type="button" onclick="App.go('admin')" class="px-5 border-r border-[#DCDCE0] inline-flex items-center text-[#FF4F00] font-semibold hover:bg-[#F7F7F8]">Panel admin</button>` : ''}
+              <button type="button" onclick="App.go('dashboard')" class="cursor-pointer ${active === 'dashboard' ? activeCls : idleCls}">Ringkasan Latihan</button>
+              <button type="button" onclick="App.go('result')" class="cursor-pointer ${active === 'result' ? activeCls : idleCls}">Evaluasi &amp; Rapor</button>
+              ${u.role === 'Admin' ? `<button type="button" onclick="App.go('admin')" class="cursor-pointer font-label-lg text-label-lg text-secondary font-semibold hover:underline px-3 py-1.5">Panel Admin</button>` : ''}
             ` : `
-              <a href="#pilar" class="px-5 border-r border-[#DCDCE0] inline-flex items-center hover:text-[#111111] hover:bg-[#F7F7F8] transition-colors">01 / Komponen SKD</a>
-              <a href="#cara-kerja" class="px-5 border-r border-[#DCDCE0] inline-flex items-center hover:text-[#111111] hover:bg-[#F7F7F8] transition-colors">02 / Tahapan</a>
-              <a href="#auth-section" class="px-5 border-r border-[#DCDCE0] inline-flex items-center hover:text-[#111111] hover:bg-[#F7F7F8] transition-colors">03 / Akun</a>
+              <a href="#pilar" class="${active === 'landing' ? activeCls : idleCls}">Materi SKD</a>
+              <a href="#paket-pro" class="${idleCls}">Paket Pro</a>
+              <a href="#auth-section" class="${idleCls}">Portal Peserta</a>
             `}
           </nav>
 
-          <div class="flex items-stretch">
+          <div class="flex items-center gap-3">
             ${u ? `
-              <button type="button" onclick="App.openProfileMenu()" class="px-4 sm:px-5 border-l border-[#DCDCE0] bg-[#FFFFFF] hover:bg-[#F7F7F8] inline-flex items-center gap-2.5 transition-colors">
-                <span class="w-6 h-6 bg-[#111111] text-[#FFFFFF] text-xs font-semibold flex items-center justify-center">${esc((u.nama_lengkap || 'U').slice(0, 1).toUpperCase())}</span>
-                <span class="hidden sm:inline text-xs font-medium text-[#111111] max-w-[140px] truncate">${esc(u.nama_lengkap)}</span>
-                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-[#71717A]"></i>
+              <button type="button" onclick="App.openProfileMenu()" class="inline-flex items-center gap-2.5 px-2.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer">
+                <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                  <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+                </div>
+                <span class="hidden sm:inline font-label-lg text-label-lg text-on-surface max-w-[130px] truncate pr-1">${esc(u.nama_lengkap)}</span>
               </button>
             ` : `
-              <a href="#auth-section" onclick="App.setAuthTab('login')" class="hidden sm:inline-flex items-center px-5 border-l border-[#DCDCE0] text-xs font-medium text-[#111111] hover:bg-[#F7F7F8] transition-colors">Masuk</a>
-              <a href="#auth-section" onclick="App.setAuthTab('register')" class="px-5 bg-[#FF4F00] hover:bg-[#111111] text-[#FFFFFF] text-xs font-medium inline-flex items-center transition-colors">Daftar</a>
+              <a href="#auth-section" onclick="App.setAuthTab('login')" class="hidden sm:inline-flex items-center px-3 py-1.5 font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors">Masuk</a>
+              <a href="#auth-section" onclick="App.setAuthTab('register')" class="bg-primary text-on-primary hover:bg-primary-container transition-colors rounded-full px-5 py-2 font-label-md text-label-md shadow-sm">Daftar Gratis</a>
+              <a href="#auth-section" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+              </a>
             `}
           </div>
         </div>
@@ -225,298 +234,351 @@ const App = (function () {
     `;
   }
 
+  function renderFooter() {
+    return `
+      <footer class="w-full bg-surface-container-low py-12 mt-12 no-print">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4 text-on-surface-variant font-body-sm text-body-sm">
+          <span>© 2026 SimulasiTKD Pro. Platform Persiapan CAT CPNS, BUMN &amp; Sekolah Kedinasan.</span>
+          <div class="flex items-center gap-6">
+            <a class="hover:text-on-surface transition-colors" href="#pilar">Kurikulum SKD</a>
+            <a class="hover:text-on-surface transition-colors" href="#auth-section">Portal Peserta</a>
+          </div>
+        </div>
+      </footer>
+    `;
+  }
+
   // ==========================================================================
-  // SCREEN 1: LANDING PAGE & AUTH (Swiss Exposed Hairline Grid & Folio Numerals)
+  // SCREEN 1: LANDING PAGE & AUTH PORTAL (Exact Stitch Layout)
   // ==========================================================================
   function renderLanding(root) {
     root.innerHTML = `
       ${renderNavbar('landing')}
-      <main class="flex-1 bg-[#FFFFFF]">
-        <!-- Hero Section: Exposed 12-Col Swiss Hairline Grid -->
-        <section class="max-w-7xl mx-auto border-x border-b border-[#111111] grid grid-cols-1 lg:grid-cols-12">
-          <!-- Left 7 Cols: Asymmetric Typography + Oversized Numeric Composition -->
-          <div class="lg:col-span-7 border-b lg:border-b-0 lg:border-r border-[#111111] flex flex-col justify-between">
-            <div class="p-6 sm:p-10 lg:p-12 space-y-6">
-              <div class="flex items-center justify-between border-b border-[#DCDCE0] pb-3 text-xs font-medium text-[#52525B] tabular-nums">
-                <span>SKD BKN · TWK / TIU / TKP</span>
-                <span class="text-[#FF4F00] font-semibold">${ApiClient.isDemoMode() ? 'PRATINJAU LOKAL' : 'CAT STANDAR BKN'}</span>
-              </div>
-              <h1 class="text-4xl sm:text-5xl lg:text-[54px] font-semibold leading-[1.02] tracking-[-0.03em] text-[#111111]">
-                Simulasi ujian CAT untuk seleksi CPNS, BUMN, dan Kedinasan
-              </h1>
-              <p class="text-base text-[#52525B] leading-relaxed max-w-xl">
-                Latih kecepatan menjawab 110 butir soal berwaktu nyata, ukur capaian ambang batas tiap subtes, dan pelajari pembahasan resmi per butir soal.
-              </p>
-              <div class="flex flex-wrap items-center gap-3 pt-2">
-                <a href="#auth-section" onclick="App.setAuthTab('register')" class="btn-accent h-11 px-6 text-xs uppercase tracking-[0.04em] inline-flex items-center gap-3">
-                  <span>Daftar akun latihan</span>
-                  <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                </a>
-                <a href="#auth-section" onclick="App.setAuthTab('login')" class="btn-outline h-11 px-6 text-xs uppercase tracking-[0.04em] inline-flex items-center">
-                  Masuk
-                </a>
-              </div>
-            </div>
+      <main class="w-full pt-16 bg-surface flex-1">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+          <div class="flex flex-col w-full">
 
-            <!-- Numeric Folio Bar (3 Hairline Cells) -->
-            <div class="grid grid-cols-3 border-t border-[#111111] divide-x divide-[#DCDCE0] bg-[#F7F7F8]">
-              <div class="p-5 sm:p-6 space-y-1">
-                <div class="swiss-folio text-3xl sm:text-4xl font-semibold text-[#111111]">110</div>
-                <div class="text-xs text-[#52525B]">Butir soal SKD</div>
-              </div>
-              <div class="p-5 sm:p-6 space-y-1">
-                <div class="swiss-folio text-3xl sm:text-4xl font-semibold text-[#111111]">100</div>
-                <div class="text-xs text-[#52525B]">Menit durasi</div>
-              </div>
-              <div class="p-5 sm:p-6 space-y-1">
-                <div class="swiss-folio text-3xl sm:text-4xl font-semibold text-[#FF4F00]">550</div>
-                <div class="text-xs text-[#52525B]">Skor maksimum</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right 5 Cols: Real SOAL-001 from PKT-001 (Zero Fabricated Content) -->
-          <div class="lg:col-span-5 bg-[#F7F7F8] flex flex-col justify-between">
-            <div class="px-6 py-4 bg-[#FFFFFF] border-b border-[#DCDCE0] flex items-center justify-between gap-3">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <span class="px-2 py-0.5 bg-[#111111] text-[#FFFFFF] text-xs font-semibold tabular-nums">TWK</span>
-                <span class="text-xs font-medium text-[#111111] truncate">Tryout Mini SKD CPNS #01</span>
-              </div>
-              <span class="text-xs font-semibold tabular-nums text-[#FF4F00]">PKT-001</span>
-            </div>
-
-            <div class="p-6 sm:p-8 space-y-5 flex-1">
-              <div class="flex items-baseline justify-between border-b border-[#DCDCE0] pb-3">
-                <div class="flex items-baseline gap-3">
-                  <span class="swiss-folio text-3xl font-semibold text-[#111111]">01</span>
-                  <span class="text-xs text-[#71717A] tabular-nums">/ 06 · Pilar Negara</span>
-                </div>
-                <span class="text-xs font-medium text-[#52525B] tabular-nums">Benar +5</span>
-              </div>
-
-              <p class="text-sm text-[#111111] leading-relaxed">
-                Dalam konteks menjaga keutuhan NKRI, implementasi nilai-nilai Pancasila sila ketiga di lingkungan kerja ASN dapat diwujudkan melalui...
-              </p>
-
-              <div class="space-y-2 text-xs">
-                <div class="p-3 bg-[#FFFFFF] border border-[#DCDCE0] text-[#52525B] flex items-start gap-3">
-                  <span class="w-6 h-6 border border-[#DCDCE0] text-[#111111] font-semibold tabular-nums flex items-center justify-center shrink-0">A</span>
-                  <span>Mengutamakan kepentingan golongan di atas kepentingan umum</span>
-                </div>
-                <div class="p-3 bg-[#FFFFFF] border border-[#FF4F00] shadow-[inset_3px_0_0_#FF4F00] text-[#111111] font-medium flex items-start gap-3">
-                  <span class="w-6 h-6 bg-[#FF4F00] text-[#FFFFFF] font-semibold tabular-nums flex items-center justify-center shrink-0">B</span>
-                  <span>Menjaga netralitas dan tidak diskriminatif dalam pelayanan publik</span>
-                </div>
-                <div class="p-3 bg-[#FFFFFF] border border-[#DCDCE0] text-[#52525B] flex items-start gap-3">
-                  <span class="w-6 h-6 border border-[#DCDCE0] text-[#111111] font-semibold tabular-nums flex items-center justify-center shrink-0">C</span>
-                  <span>Menolak bekerja sama dengan rekan dari latar belakang berbeda</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Navigator Strip & Official Passing Grade Thresholds -->
-            <div class="px-6 py-4 bg-[#FFFFFF] border-t border-[#DCDCE0] flex flex-wrap items-center justify-between gap-3">
-              <div class="flex items-center gap-1 tabular-nums text-xs">
-                <span class="w-7 h-7 bg-[#FF4F00] text-[#FFFFFF] font-semibold flex items-center pl-1.5">01</span>
-                <span class="w-7 h-7 bg-[#111111] text-[#FFFFFF] font-semibold flex items-center pl-1.5">02</span>
-                <span class="w-7 h-7 bg-[#111111] text-[#FFFFFF] font-semibold flex items-center pl-1.5">03</span>
-                <span class="w-7 h-7 bg-[#FFFFFF] border border-[#DCDCE0] text-[#52525B] font-semibold flex items-center pl-1.5">04</span>
-                <span class="w-7 h-7 bg-[#FFFFFF] border border-[#DCDCE0] text-[#52525B] font-semibold flex items-center pl-1.5">05</span>
-                <span class="w-7 h-7 bg-[#FFFFFF] border border-[#DCDCE0] text-[#52525B] font-semibold flex items-center pl-1.5">06</span>
-              </div>
-              <div class="text-xs font-medium tabular-nums text-[#52525B]">
-                PG: TWK 65 · TIU 80 · TKP 166
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Section 01: Empat Komponen Evaluasi Ujian -->
-        <section id="pilar" class="max-w-7xl mx-auto border-x border-b border-[#111111]">
-          <div class="grid grid-cols-1 lg:grid-cols-12 border-b border-[#DCDCE0]">
-            <div class="lg:col-span-2 p-6 sm:p-8 border-b lg:border-b-0 lg:border-r border-[#DCDCE0] bg-[#F7F7F8]">
-              <div class="swiss-folio text-4xl font-semibold text-[#FF4F00]">01</div>
-            </div>
-            <div class="lg:col-span-6 p-6 sm:p-8 border-b lg:border-b-0 lg:border-r border-[#DCDCE0]">
-              <h2 class="text-2xl sm:text-3xl font-semibold text-[#111111] tracking-[-0.02em]">Empat komponen evaluasi ujian</h2>
-            </div>
-            <div class="lg:col-span-4 p-6 sm:p-8 flex items-center">
-              <p class="text-xs text-[#52525B] leading-relaxed">Setiap paket disusun mengikuti kisi-kisi terbaru lengkap dengan bobot penilaian resmi dan pembahasan per butir soal.</p>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[#DCDCE0]">
-            ${[
-              { folio: '65', code: 'TWK · 30 SOAL', title: 'Tes Wawasan Kebangsaan', desc: 'Nasionalisme, integritas, bela negara, dan pilar negara berbasis studi kasus penalaran.' },
-              { folio: '80', code: 'TIU · 35 SOAL', title: 'Tes Intelegensia Umum', desc: 'Kemampuan verbal, numerik, deret angka, silogisme, dan analitis untuk ketepatan logika.' },
-              { folio: '166', code: 'TKP · 45 SOAL', title: 'Tes Karakteristik Pribadi', desc: 'Pelayanan publik, jejaring kerja, sosial budaya, profesionalisme, dan anti-radikalisme berskala 1–5.' },
-              { folio: '550', code: 'RAPOR · PDF', title: 'Analisis Ambang Batas', desc: 'Pemetaan skor subtes terhadap passing grade, tren percobaan, dan peringkat peserta nasional.' }
-            ].map(function (c) {
-              return `
-                <div class="p-6 sm:p-8 flex flex-col justify-between space-y-8 bg-[#FFFFFF] hover:bg-[#F7F7F8] transition-colors">
-                  <div class="space-y-4">
-                    <div class="flex items-baseline justify-between border-b border-[#DCDCE0] pb-3">
-                      <span class="text-xs font-semibold text-[#52525B] tabular-nums">${c.code}</span>
-                      <span class="swiss-folio text-2xl font-semibold text-[#111111]">PG ${c.folio}</span>
+            <!-- 1. Hero Section (12-col asymmetric split) -->
+            <section class="py-12 lg:py-20">
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+                <!-- Left 6 cols -->
+                <div class="lg:col-span-6 flex flex-col items-start">
+                  <div class="bg-primary-fixed text-on-primary-fixed rounded-full px-4 py-1.5 inline-flex items-center gap-2 font-label-md text-label-md">
+                    <span class="material-symbols-outlined material-fill text-[16px]">verified</span>
+                    <span>Standar Resmi CAT BKN • TWK, TIU, TKP${ApiClient.isDemoMode() ? ' • Mode Pratinjau' : ''}</span>
+                  </div>
+                  <h1 class="font-headline-lg text-headline-lg text-on-surface mt-6">
+                    Simulasi CAT TKD untuk <span class="text-secondary">Masa Depan Lebih Pasti</span>
+                  </h1>
+                  <p class="font-body-lg text-body-lg text-on-surface-variant mt-5">
+                    Platform latihan terstruktur untuk menghadapi seleksi CPNS, BUMN, dan Sekolah Kedinasan dengan sistem penilaian ambang batas resmi serta analisis performa real-time.
+                  </p>
+                  <div class="flex flex-wrap items-center gap-4 mt-8">
+                    <a href="#auth-section" onclick="App.setAuthTab('register')" class="bg-primary text-on-primary hover:bg-primary-container transition-colors rounded-full px-7 py-3.5 font-label-lg text-label-lg inline-flex items-center gap-2 shadow-md">
+                      <span>Mulai Latihan Gratis</span>
+                      <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                    </a>
+                    <a href="#paket-pro" class="bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition-colors rounded-full px-7 py-3.5 font-label-lg text-label-lg shadow-sm">
+                      Lihat Fitur Pro
+                    </a>
+                  </div>
+                  <div class="grid grid-cols-3 gap-6 mt-10 w-full">
+                    <div class="flex flex-col">
+                      <span class="font-mono-timer text-mono-timer text-primary tabular-nums">110</span>
+                      <span class="font-body-sm text-body-sm text-on-surface-variant mt-1">Butir Standar SKD</span>
                     </div>
-                    <h3 class="font-semibold text-base text-[#111111] tracking-[-0.01em]">${c.title}</h3>
-                    <p class="text-xs text-[#52525B] leading-relaxed">${c.desc}</p>
-                  </div>
-                  <a href="#auth-section" class="inline-flex items-center gap-2 text-xs font-semibold text-[#FF4F00] hover:text-[#111111] transition-colors">
-                    <span>Mulai latihan</span>
-                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                  </a>
-                </div>`;
-            }).join('')}
-          </div>
-        </section>
-
-        <!-- Section 02: Tiga Tahap Persiapan Terukur -->
-        <section id="cara-kerja" class="max-w-7xl mx-auto border-x border-b border-[#111111]">
-          <div class="grid grid-cols-1 lg:grid-cols-12 border-b border-[#DCDCE0]">
-            <div class="lg:col-span-2 p-6 sm:p-8 border-b lg:border-b-0 lg:border-r border-[#DCDCE0] bg-[#F7F7F8]">
-              <div class="swiss-folio text-4xl font-semibold text-[#FF4F00]">02</div>
-            </div>
-            <div class="lg:col-span-10 p-6 sm:p-8">
-              <h2 class="text-2xl sm:text-3xl font-semibold text-[#111111] tracking-[-0.02em]">Tiga tahap persiapan terukur</h2>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#DCDCE0]">
-            ${[
-              { n: '02.1', t: 'Buat akun latihan', d: 'Daftar menggunakan email atau Google untuk menyimpan riwayat pengerjaan dan membuka paket latihan dasar.' },
-              { n: '02.2', t: 'Kerjakan simulasi berwaktu', d: 'Jawab soal dengan antarmuka CAT berwaktu nyata, penanda ragu-ragu, dan penyimpanan jawaban otomatis.' },
-              { n: '02.3', t: 'Evaluasi skor dan pembahasan', d: 'Periksa rincian skor TWK, TIU, TKP terhadap ambang batas resmi serta pelajari pembahasan tiap soal.' }
-            ].map(function (s) {
-              return `<div class="p-6 sm:p-8 bg-[#FFFFFF] space-y-4">
-                <div class="swiss-folio text-2xl font-semibold text-[#111111] border-b border-[#DCDCE0] pb-2">${s.n}</div>
-                <h3 class="font-semibold text-base text-[#111111]">${s.t}</h3>
-                <p class="text-xs text-[#52525B] leading-relaxed">${s.d}</p>
-              </div>`;
-            }).join('')}
-          </div>
-
-          <div class="bg-[#111111] text-[#FFFFFF] p-6 sm:p-10 border-t border-[#111111] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div class="space-y-2 max-w-xl">
-              <h3 class="text-xl sm:text-2xl font-semibold tracking-[-0.02em]">Buka seluruh paket tryout SKD, BUMN, dan pembahasan lengkap</h3>
-              <p class="text-xs sm:text-sm text-[#DCDCE0]">Termasuk simulasi 110 soal penuh, kunci pembahasan tiap butir soal, rapor PDF, dan papan peringkat nasional.</p>
-            </div>
-            <a href="#auth-section" onclick="App.setAuthTab('register')" class="btn-on-dark h-11 px-6 text-xs uppercase tracking-[0.04em] inline-flex items-center gap-3 shrink-0">
-              <span>Daftar &amp; upgrade Pro</span>
-              <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </a>
-          </div>
-        </section>
-
-        <!-- Section 03: Auth Section -->
-        <section id="auth-section" class="max-w-7xl mx-auto border-x border-b border-[#111111] bg-[#F7F7F8]">
-          <div class="grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-[#DCDCE0]">
-            <div class="md:col-span-6 p-6 sm:p-10 lg:p-12 space-y-6">
-              <div class="swiss-folio text-4xl font-semibold text-[#FF4F00]">03</div>
-              <h2 class="text-2xl sm:text-3xl font-semibold text-[#111111] tracking-[-0.02em]">Masuk atau buat akun latihan</h2>
-              <p class="text-sm text-[#52525B] leading-relaxed">Simpan seluruh riwayat pengerjaan, pantau perkembangan skor TWK, TIU, dan TKP, serta buka pembahasan soal dari satu akun.</p>
-              ${ApiClient.isDemoMode() ? `
-                <div class="p-4 bg-[#FFFFFF] border border-[#111111] text-xs space-y-2">
-                  <div class="font-semibold text-[#111111]">Akun uji coba mode pratinjau lokal</div>
-                  <div class="space-y-1 text-[#52525B] tabular-nums">
-                    <div>Peserta latihan: budi@demo.id / demo123</div>
-                    <div>Peserta Pro: raka@demo.id / demo123</div>
-                    <div>Administrator: admin@demo.id / admin123</div>
+                    <div class="flex flex-col">
+                      <span class="font-mono-timer text-mono-timer text-primary tabular-nums">100</span>
+                      <span class="font-body-sm text-body-sm text-on-surface-variant mt-1">Menit Timer Real-Time</span>
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="font-mono-timer text-mono-timer text-primary tabular-nums">3</span>
+                      <span class="font-body-sm text-body-sm text-on-surface-variant mt-1">Ambang Passing Grade</span>
+                    </div>
                   </div>
                 </div>
-              ` : ''}
-            </div>
 
-            <div class="md:col-span-6 p-6 sm:p-10 lg:p-12 bg-[#FFFFFF]">
-              <div class="max-w-[440px] space-y-5">
-                <div class="grid grid-cols-2 border border-[#111111] text-xs font-semibold">
-                  <button type="button" onclick="App.setAuthTab('login')" class="h-10 px-4 text-left transition-colors ${state.authTab === 'login' ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#F7F7F8] text-[#52525B] hover:text-[#111111]'}">01 · Masuk</button>
-                  <button type="button" onclick="App.setAuthTab('register')" class="h-10 px-4 text-left border-l border-[#111111] transition-colors ${state.authTab === 'register' ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#F7F7F8] text-[#52525B] hover:text-[#111111]'}">02 · Daftar</button>
+                <!-- Right 6 cols: Floating CAT Exam Window Mockup -->
+                <div class="lg:col-span-6 relative">
+                  <div class="bg-surface-container-lowest rounded-xl shadow-xl p-6 lg:p-7 flex flex-col">
+                    <!-- Mockup Header -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pb-4 bg-surface-container-low/50 rounded-lg px-4 py-3">
+                      <div class="flex items-center gap-2.5">
+                        <span class="bg-primary text-on-primary rounded-full px-3 py-1 font-label-md text-label-md">TIU</span>
+                        <span class="font-title-md text-title-md text-on-surface">Soal 14 / 110</span>
+                      </div>
+                      <div class="bg-primary-fixed text-on-primary-fixed rounded-full px-3.5 py-1 font-mono-timer text-mono-timer tabular-nums inline-flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[18px]">timer</span>
+                        <span>01:12:45</span>
+                      </div>
+                    </div>
+                    <!-- Question Stem -->
+                    <p class="font-body-md text-body-md text-on-surface mt-5">
+                      Semua peserta seleksi CPNS wajib mengikuti ujian CAT. Sebagian peserta yang mengikuti ujian CAT berasal dari jalur cumlaude. Simpulan yang paling tepat adalah...
+                    </p>
+                    <!-- 3 Answer Options -->
+                    <div class="flex flex-col gap-3 mt-5">
+                      <div class="bg-surface-container-low rounded-lg p-3.5 flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg bg-surface-container-lowest text-on-surface font-mono-score text-mono-score flex items-center justify-center shrink-0">A</span>
+                        <span class="font-body-sm text-body-sm text-on-surface">Semua peserta jalur cumlaude tidak mengikuti ujian CAT.</span>
+                      </div>
+                      <div class="bg-primary-fixed text-on-primary-fixed rounded-lg p-3.5 flex items-center justify-between gap-3 shadow-sm">
+                        <div class="flex items-center gap-3">
+                          <span class="w-7 h-7 rounded-lg bg-secondary text-on-secondary font-mono-score text-mono-score flex items-center justify-center shrink-0">B</span>
+                          <span class="font-body-sm text-body-sm font-medium">Sebagian peserta jalur cumlaude wajib mengikuti ujian CAT.</span>
+                        </div>
+                        <span class="material-symbols-outlined material-fill text-secondary text-[20px] shrink-0">check_circle</span>
+                      </div>
+                      <div class="bg-surface-container-low rounded-lg p-3.5 flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg bg-surface-container-lowest text-on-surface font-mono-score text-mono-score flex items-center justify-center shrink-0">C</span>
+                        <span class="font-body-sm text-body-sm text-on-surface">Tidak ada peserta seleksi CPNS yang berasal dari jalur cumlaude.</span>
+                      </div>
+                    </div>
+                    <!-- Mini 3-Color Question Navigator Strip -->
+                    <div class="mt-6 bg-surface-container-low rounded-lg p-3.5 flex flex-wrap items-center justify-between gap-3">
+                      <span class="font-label-md text-label-md text-on-surface-variant">Navigasi Cepat</span>
+                      <div class="flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-lg bg-secondary text-on-secondary font-mono-score text-mono-score flex items-center justify-center">11</span>
+                        <span class="w-8 h-8 rounded-lg bg-secondary text-on-secondary font-mono-score text-mono-score flex items-center justify-center">12</span>
+                        <span class="w-8 h-8 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed font-mono-score text-mono-score flex items-center justify-center">13</span>
+                        <span class="w-8 h-8 rounded-lg bg-primary text-on-primary font-mono-score text-mono-score flex items-center justify-center">14</span>
+                        <span class="w-8 h-8 rounded-lg bg-surface-container-high text-on-surface-variant font-mono-score text-mono-score flex items-center justify-center">15</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 2. 4-Card Feature & Subtest Grid -->
+            <section id="pilar" class="bg-surface-container-low rounded-xl py-16 px-6 lg:px-10 mt-8">
+              <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <span class="font-label-md text-label-md text-secondary uppercase tracking-wider">Modul &amp; Subtes SKD</span>
+                  <h2 class="font-headline-md text-headline-md text-on-surface mt-2">Kurikulum Lengkap Sesuai Kisi-Kisi Terbaru</h2>
+                </div>
+                <p class="font-body-sm text-body-sm text-on-surface-variant max-w-md">
+                  Setiap subtes dilengkapi ambang batas kelulusan (Passing Grade) resmi untuk mengukur kesiapan Anda secara objektif.
+                </p>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
+                ${[
+                  { code: 'TWK • PG 65', icon: 'account_balance', title: 'Tes Wawasan Kebangsaan', desc: 'Pilar negara, UUD 1945, nasionalisme, integritas, dan bela negara berbasis studi kasus.' },
+                  { code: 'TIU • PG 80', icon: 'psychology', title: 'Tes Intelegensia Umum', desc: 'Kemampuan verbal, numerik berhitung cepat, deret angka, serta penalaran logis & analitis.' },
+                  { code: 'TKP • PG 166', icon: 'diversity_3', title: 'Tes Karakteristik Pribadi', desc: 'Pelayanan publik, jejaring kerja, sosial budaya, TIK, profesionalisme, dan anti-radikalisme.' },
+                  { code: 'Rapor • PDF', icon: 'analytics', title: 'Evaluasi & Rapor Skor', desc: 'Pemetaan akurasi per sub-topik, manajemen waktu pengerjaan, dan unduh rapor evaluasi PDF.' }
+                ].map(function (c) {
+                  return `
+                    <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                      <div>
+                        <div class="flex items-center justify-between gap-2">
+                          <div class="w-11 h-11 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[22px]">${c.icon}</span>
+                          </div>
+                          <span class="bg-surface-container-low text-on-surface font-mono-score text-mono-score rounded-full px-3 py-1">${c.code}</span>
+                        </div>
+                        <h3 class="font-title-lg text-title-lg text-on-surface mt-5">${c.title}</h3>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant mt-2 line-clamp-2">${c.desc}</p>
+                      </div>
+                      <a href="#auth-section" class="font-label-lg text-label-lg text-secondary inline-flex items-center gap-1.5 mt-6 hover:gap-2.5 transition-all">
+                        <span>Coba Sekarang</span>
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                      </a>
+                    </div>`;
+                }).join('')}
+              </div>
+            </section>
+
+            <!-- 3. 3-Step Workflow Strip + Deep Forest Emerald Conversion Banner -->
+            <section id="paket-pro" class="mt-16">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col">
+                  <span class="font-mono-score text-mono-score text-secondary">01. LANGKAH PERTAMA</span>
+                  <h3 class="font-title-lg text-title-lg text-on-surface mt-2">Daftar Akun Latihan</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant mt-2">
+                    Buat akun gratis dalam 30 detik dan akses paket tryout dasar untuk mengukur kemampuan awal Anda.
+                  </p>
+                </div>
+                <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col">
+                  <span class="font-mono-score text-mono-score text-secondary">02. LANGKAH KEDUA</span>
+                  <h3 class="font-title-lg text-title-lg text-on-surface mt-2">Uji Simulasi CAT Real-Time</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant mt-2">
+                    Kerjakan 110 soal dalam 100 menit dengan antarmuka navigasi soal yang identik dengan ujian BKN.
+                  </p>
+                </div>
+                <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col">
+                  <span class="font-mono-score text-mono-score text-secondary">03. LANGKAH KETIGA</span>
+                  <h3 class="font-title-lg text-title-lg text-on-surface mt-2">Evaluasi &amp; Upgrade Pro</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant mt-2">
+                    Tinjau pembahasan lengkap setiap butir soal dan buka akses penuh ke seluruh bank soal HOTS.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Conversion Banner -->
+              <div class="bg-primary-container text-on-primary rounded-xl p-8 lg:p-12 mt-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 shadow-lg">
+                <div class="max-w-2xl">
+                  <span class="font-label-md text-label-md text-primary-fixed uppercase tracking-wider">Akses Penuh SimulasiTKD Pro</span>
+                  <h2 class="font-headline-md text-headline-md text-on-primary mt-2">Siap Tembus Passing Grade SKD Tahun Ini?</h2>
+                  <p class="font-body-md text-body-md text-primary-fixed mt-2">
+                    Dapatkan akses penuh paket Tryout Akbar, kunci pembahasan terstruktur per butir soal, rapor PDF, serta peringkat nasional real-time.
+                  </p>
+                </div>
+                <a href="#auth-section" onclick="App.setAuthTab('register')" class="bg-surface-container-lowest text-primary hover:bg-primary-fixed transition-colors rounded-full px-8 py-4 font-label-lg text-label-lg shrink-0 shadow-md">
+                  Upgrade ke Akun Pro
+                </a>
+              </div>
+            </section>
+
+            <!-- 4. Auth Split Card Section -->
+            <section id="auth-section" class="mt-16 mb-8 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              <!-- Left 6 cols: Freemium Benefits -->
+              <div class="lg:col-span-6 flex flex-col">
+                <span class="font-label-md text-label-md text-secondary uppercase tracking-wider">Portal Peserta</span>
+                <h2 class="font-headline-md text-headline-md text-on-surface mt-2">Mulai Perjalanan Anda Tanpa Biaya</h2>
+                <p class="font-body-md text-body-md text-on-surface-variant mt-3">
+                  Masuk ke dasbor latihan Anda atau daftarkan akun baru untuk langsung mengakses simulasi CAT TKD gratis.
+                </p>
+                <div class="flex flex-col gap-4 mt-8">
+                  <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined material-fill text-secondary text-[22px] shrink-0">check_circle</span>
+                    <div>
+                      <h4 class="font-title-md text-title-md text-on-surface">Paket Tryout SKD Gratis</h4>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">Soal standar BKN lengkap dengan timer hitung mundur real-time.</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined material-fill text-secondary text-[22px] shrink-0">check_circle</span>
+                    <div>
+                      <h4 class="font-title-md text-title-md text-on-surface">Skor &amp; Status Kelulusan Instan</h4>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">Lihat langsung apakah skor TWK, TIU, dan TKP Anda memenuhi ambang batas.</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined material-fill text-secondary text-[22px] shrink-0">check_circle</span>
+                    <div>
+                      <h4 class="font-title-md text-title-md text-on-surface">Riwayat Progres Tersimpan</h4>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">Pantau perkembangan nilai dari waktu ke waktu dalam satu dasbor tenang.</p>
+                    </div>
+                  </div>
                 </div>
 
-                ${state.authTab !== 'emergency' ? `
-                  <div id="google-oauth-wrap" class="hidden space-y-3">
-                    <div id="google-signin-btn" class="flex justify-start"></div>
-                    <div class="border-b border-[#DCDCE0] pb-2 text-xs text-[#71717A]">Atau masuk dengan email</div>
+                ${ApiClient.isDemoMode() ? `
+                  <div class="mt-6 p-4 rounded-xl bg-surface-container-lowest shadow-sm text-xs space-y-2">
+                    <div class="font-title-md text-title-md text-on-surface">Akun Uji Coba Mode Pratinjau Lokal</div>
+                    <div class="space-y-1 text-on-surface-variant font-mono-score">
+                      <div>Peserta Latihan: budi@demo.id / demo123</div>
+                      <div>Peserta Pro: raka@demo.id / demo123</div>
+                      <div>Administrator: admin@demo.id / admin123</div>
+                    </div>
                   </div>
                 ` : ''}
-
-                ${state.authTab === 'login' ? `
-                  <form onsubmit="App.handleLogin(event)" class="space-y-4">
-                    <div>
-                      <label class="text-xs font-medium text-[#52525B]">Email</label>
-                      <input type="email" id="auth-email" required placeholder="nama@email.com" value="${ApiClient.isDemoMode() ? 'budi@demo.id' : ''}" class="input-control mt-1 w-full" />
-                    </div>
-                    <div>
-                      <label class="text-xs font-medium text-[#52525B]">Kata sandi</label>
-                      <input type="password" id="auth-pass" required placeholder="Kata sandi akun" value="${ApiClient.isDemoMode() ? 'demo123' : ''}" class="input-control mt-1 w-full" />
-                    </div>
-                    <button type="submit" id="btn-auth-submit" class="btn-primary w-full h-11 px-4 text-xs uppercase tracking-[0.04em] text-left flex items-center justify-between">
-                      <span>Masuk</span>
-                      <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </button>
-                    <div class="pt-1">
-                      <button type="button" onclick="App.setAuthTab('emergency')" class="text-xs text-[#71717A] hover:text-[#FF4F00] underline transition-colors">Akses darurat administrator</button>
-                    </div>
-                  </form>
-                ` : state.authTab === 'register' ? `
-                  <form onsubmit="App.handleRegister(event)" class="space-y-3">
-                    <div>
-                      <label class="text-xs font-medium text-[#52525B]">Nama lengkap</label>
-                      <input type="text" id="reg-nama" required placeholder="Nama sesuai identitas" class="input-control mt-1 w-full" />
-                    </div>
-                    <div>
-                      <label class="text-xs font-medium text-[#52525B]">Email</label>
-                      <input type="email" id="reg-email" required placeholder="nama@email.com" class="input-control mt-1 w-full" />
-                    </div>
-                    <div>
-                      <label class="text-xs font-medium text-[#52525B]">Nomor WhatsApp</label>
-                      <input type="tel" id="reg-wa" required placeholder="0812xxxxxxxx" class="input-control mt-1 w-full" />
-                    </div>
-                    <div>
-                      <label class="text-xs font-medium text-[#52525B]">Kata sandi (minimal 6 karakter)</label>
-                      <input type="password" id="reg-pass" required minlength="6" placeholder="Buat kata sandi" class="input-control mt-1 w-full" />
-                    </div>
-                    <button type="submit" id="btn-auth-submit" class="btn-accent w-full h-11 px-4 text-xs uppercase tracking-[0.04em] text-left flex items-center justify-between">
-                      <span>Daftar</span>
-                      <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </button>
-                  </form>
-                ` : `
-                  <form onsubmit="App.handleEmergencyLogin(event)" class="space-y-4">
-                    <div class="p-3 bg-[#F7F7F8] border-l-2 border-[#FF4F00] text-[#111111] text-xs">Login darurat memakai kredensial Script Properties (maksimal 5 percobaan).</div>
-                    <div>
-                      <label class="text-xs font-medium text-[#52525B]">Username darurat</label>
-                      <input type="text" id="em-user" required value="darurat" class="input-control mt-1 w-full" />
-                    </div>
-                    <div>
-                      <label class="text-xs font-medium text-[#52525B]">Sandi darurat</label>
-                      <input type="password" id="em-pass" required placeholder="Sandi dari log setup" class="input-control mt-1 w-full" />
-                    </div>
-                    <button type="submit" class="btn-primary w-full h-11 px-4 text-xs uppercase tracking-[0.04em] text-left flex items-center justify-between">
-                      <span>Masuk panel admin</span>
-                      <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </button>
-                    <div>
-                      <button type="button" onclick="App.setAuthTab('login')" class="text-xs text-[#71717A] hover:text-[#111111] underline">Kembali ke login reguler</button>
-                    </div>
-                  </form>
-                `}
               </div>
-            </div>
+
+              <!-- Right 6 cols: 440px Auth Card -->
+              <div class="lg:col-span-6 flex justify-center lg:justify-end">
+                <div class="w-full max-w-[440px] bg-surface-container-lowest rounded-xl shadow-xl p-7 space-y-5">
+                  <!-- Segmented Tab Switcher -->
+                  <div class="bg-surface-container-low rounded-lg p-1 grid grid-cols-2 gap-1">
+                    <button type="button" onclick="App.setAuthTab('login')" class="${state.authTab === 'login' ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface'} rounded-lg py-2 font-label-lg text-label-lg transition-all cursor-pointer">
+                      Masuk
+                    </button>
+                    <button type="button" onclick="App.setAuthTab('register')" class="${state.authTab === 'register' ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface'} rounded-lg py-2 font-label-lg text-label-lg transition-all cursor-pointer">
+                      Daftar Akun
+                    </button>
+                  </div>
+
+                  ${state.authTab !== 'emergency' ? `
+                    <div id="google-oauth-wrap" class="hidden space-y-3">
+                      <div id="google-signin-btn" class="flex justify-center"></div>
+                      <div class="relative flex items-center py-1">
+                        <div class="flex-grow border-t border-outline-variant/40"></div>
+                        <span class="mx-3 font-label-md text-label-md text-on-surface-variant">atau gunakan email</span>
+                        <div class="flex-grow border-t border-outline-variant/40"></div>
+                      </div>
+                    </div>
+                  ` : ''}
+
+                  ${state.authTab === 'login' ? `
+                    <form onsubmit="App.handleLogin(event)" class="flex flex-col gap-4">
+                      <div class="flex flex-col gap-1.5">
+                        <label class="font-label-md text-label-md text-on-surface" for="auth-email">Alamat Email</label>
+                        <input type="email" id="auth-email" required placeholder="nama@email.com" value="${ApiClient.isDemoMode() ? 'budi@demo.id' : ''}" class="h-10 rounded-lg bg-surface-container-low px-3.5 font-body-sm text-body-sm text-on-surface w-full focus:outline-none focus:bg-surface-container" />
+                      </div>
+                      <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between">
+                          <label class="font-label-md text-label-md text-on-surface" for="auth-pass">Kata Sandi</label>
+                        </div>
+                        <input type="password" id="auth-pass" required placeholder="••••••••" value="${ApiClient.isDemoMode() ? 'demo123' : ''}" class="h-10 rounded-lg bg-surface-container-low px-3.5 font-body-sm text-body-sm text-on-surface w-full focus:outline-none focus:bg-surface-container" />
+                      </div>
+                      <button type="submit" id="btn-auth-submit" class="bg-primary text-on-primary hover:bg-primary-container transition-colors rounded-lg h-11 w-full font-label-lg text-label-lg mt-1 shadow-sm cursor-pointer">
+                        Masuk ke Akun
+                      </button>
+                      <div class="text-center pt-1">
+                        <button type="button" onclick="App.setAuthTab('emergency')" class="font-label-md text-label-md text-on-surface-variant hover:text-secondary underline cursor-pointer">
+                          Akses darurat administrator
+                        </button>
+                      </div>
+                    </form>
+                  ` : state.authTab === 'register' ? `
+                    <form onsubmit="App.handleRegister(event)" class="flex flex-col gap-3.5">
+                      <div class="flex flex-col gap-1.5">
+                        <label class="font-label-md text-label-md text-on-surface" for="reg-nama">Nama Lengkap</label>
+                        <input type="text" id="reg-nama" required placeholder="Contoh: Budi Santoso" class="h-10 rounded-lg bg-surface-container-low px-3.5 font-body-sm text-body-sm text-on-surface w-full focus:outline-none focus:bg-surface-container" />
+                      </div>
+                      <div class="flex flex-col gap-1.5">
+                        <label class="font-label-md text-label-md text-on-surface" for="reg-email">Alamat Email</label>
+                        <input type="email" id="reg-email" required placeholder="nama@email.com" class="h-10 rounded-lg bg-surface-container-low px-3.5 font-body-sm text-body-sm text-on-surface w-full focus:outline-none focus:bg-surface-container" />
+                      </div>
+                      <div class="flex flex-col gap-1.5">
+                        <label class="font-label-md text-label-md text-on-surface" for="reg-wa">Nomor WhatsApp</label>
+                        <input type="tel" id="reg-wa" required placeholder="0812xxxxxxxx" class="h-10 rounded-lg bg-surface-container-low px-3.5 font-body-sm text-body-sm text-on-surface w-full focus:outline-none focus:bg-surface-container" />
+                      </div>
+                      <div class="flex flex-col gap-1.5">
+                        <label class="font-label-md text-label-md text-on-surface" for="reg-pass">Kata Sandi (minimal 6 karakter)</label>
+                        <input type="password" id="reg-pass" required minlength="6" placeholder="Buat kata sandi" class="h-10 rounded-lg bg-surface-container-low px-3.5 font-body-sm text-body-sm text-on-surface w-full focus:outline-none focus:bg-surface-container" />
+                      </div>
+                      <button type="submit" id="btn-auth-submit" class="bg-primary text-on-primary hover:bg-primary-container transition-colors rounded-lg h-11 w-full font-label-lg text-label-lg mt-1 shadow-sm cursor-pointer">
+                        Daftar Akun Gratis
+                      </button>
+                    </form>
+                  ` : `
+                    <form onsubmit="App.handleEmergencyLogin(event)" class="flex flex-col gap-4">
+                      <div class="p-3 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed font-label-md text-label-md">
+                        Login darurat memakai kredensial Script Properties (maksimal 5 percobaan).
+                      </div>
+                      <div class="flex flex-col gap-1.5">
+                        <label class="font-label-md text-label-md text-on-surface" for="em-user">Username Darurat</label>
+                        <input type="text" id="em-user" required value="darurat" class="h-10 rounded-lg bg-surface-container-low px-3.5 font-body-sm text-body-sm text-on-surface w-full focus:outline-none" />
+                      </div>
+                      <div class="flex flex-col gap-1.5">
+                        <label class="font-label-md text-label-md text-on-surface" for="em-pass">Sandi Darurat</label>
+                        <input type="password" id="em-pass" required placeholder="Sandi dari log setup" class="h-10 rounded-lg bg-surface-container-low px-3.5 font-body-sm text-body-sm text-on-surface w-full focus:outline-none" />
+                      </div>
+                      <button type="submit" class="bg-primary text-on-primary hover:bg-primary-container transition-colors rounded-lg h-11 w-full font-label-lg text-label-lg shadow-sm cursor-pointer">
+                        Masuk Panel Admin
+                      </button>
+                      <div class="text-center">
+                        <button type="button" onclick="App.setAuthTab('login')" class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface underline cursor-pointer">
+                          Kembali ke login reguler
+                        </button>
+                      </div>
+                    </form>
+                  `}
+                </div>
+              </div>
+            </section>
+
           </div>
-        </section>
+        </div>
       </main>
-      <footer class="max-w-7xl mx-auto w-full border-x border-b border-[#DCDCE0] bg-[#FFFFFF] px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#71717A]">
-        <span>© 2026 SimulasiTKD Pro</span>
-        <span>Platform simulasi CAT CPNS, BUMN, dan Kedinasan</span>
-      </footer>
+      ${renderFooter()}
     `;
     refreshIcons();
   }
 
   // ==========================================================================
-  // SCREEN 2: DASHBOARD PESERTA & UPGRADE PRO
+  // SCREEN 2: DASHBOARD PESERTA & UPGRADE PRO (Exact Stitch Layout)
   // ==========================================================================
   function renderDashboard(root) {
     const u = state.user || {};
@@ -528,175 +590,177 @@ const App = (function () {
       if (state.paketFilter === 'Pro') return p.tier_akses === 'Pro';
       return true;
     });
+    const bestPct = d ? Math.min(100, Math.round((Number(d.kpi.skorTertinggi || 0) / 550) * 100)) : 0;
 
     root.innerHTML = `
       ${renderNavbar('dashboard')}
-      <main class="max-w-7xl mx-auto w-full border-x border-b border-[#DCDCE0] flex-1 bg-[#FFFFFF]">
-        <!-- Header Bar -->
-        <div class="p-6 sm:p-8 border-b border-[#111111] flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div class="space-y-2">
-            <div class="flex flex-wrap items-center gap-2 text-xs text-[#52525B]">
-              <span class="font-medium text-[#111111]">${esc(u.nama_lengkap || 'Peserta')}</span>
-              <span>/</span>
-              <span class="px-2 py-0.5 font-semibold ${isPro ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#F7F7F8] border border-[#DCDCE0] text-[#111111]'}">
-                ${isPro ? 'AKUN PRO' : 'AKUN LATIHAN'}
-              </span>
-              ${isPending ? `<span class="px-2 py-0.5 bg-[#FF4F00] text-[#FFFFFF] font-semibold">VERIFIKASI TERTUNDA</span>` : ''}
-            </div>
-            <h1 class="text-2xl sm:text-3xl font-semibold text-[#111111] tracking-[-0.02em]">Ringkasan latihan</h1>
-          </div>
-          ${!isPro ? `
-            <button type="button" onclick="App.openUpgradeModal()" class="btn-accent h-10 px-5 text-xs uppercase tracking-[0.04em] inline-flex items-center gap-2 self-start sm:self-auto">
-              <span>${isPending ? 'Status pengajuan Pro' : 'Upgrade ke Akun Pro'}</span>
-              <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </button>
-          ` : ''}
-        </div>
+      <main class="w-full pt-16 bg-surface flex-1">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+          <div class="flex flex-col w-full">
 
-        <!-- 3 KPI Folio Cells -->
-        ${!d ? `<div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#DCDCE0] border-b border-[#DCDCE0]"><div class="skeleton h-32"></div><div class="skeleton h-32"></div><div class="skeleton h-32"></div></div>` : `
-          <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#DCDCE0] border-b border-[#111111]">
-            <div class="p-6 sm:p-8 space-y-2 bg-[#FFFFFF]">
-              <div class="flex items-center justify-between text-xs text-[#71717A]">
-                <span>Simulasi diselesaikan</span>
-                <span class="tabular-nums font-semibold">01</span>
-              </div>
-              <div class="swiss-folio text-4xl sm:text-5xl font-semibold text-[#111111]">${d.kpi.tryoutSelesai}</div>
-              <div class="text-xs text-[#52525B]">Tersimpan pada riwayat akun</div>
-            </div>
-            <div class="p-6 sm:p-8 space-y-2 bg-[#FFFFFF]">
-              <div class="flex items-center justify-between text-xs text-[#71717A]">
-                <span>Skor tertinggi</span>
-                <span class="tabular-nums font-semibold">02</span>
-              </div>
-              <div class="swiss-folio text-4xl sm:text-5xl font-semibold text-[#111111]">${d.kpi.skorTertinggi}</div>
-              <div class="text-xs text-[#52525B]">Dari batas maksimum 550 poin</div>
-            </div>
-            <div class="p-6 sm:p-8 space-y-2 bg-[#F7F7F8]">
-              <div class="flex items-center justify-between text-xs text-[#71717A]">
-                <span>Percobaan terakhir</span>
-                <span class="tabular-nums font-semibold">03</span>
-              </div>
-              ${d.kpi.terakhir ? `
-                <div>
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold ${d.kpi.terakhir.status_kelulusan === 'Lulus' ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FF4F00] text-[#FFFFFF]'}">
-                    ${d.kpi.terakhir.status_kelulusan === 'Lulus' ? 'LULUS AMBANG BATAS' : 'BELUM LULUS AMBANG BATAS'}
+            <!-- Header Section -->
+            <section class="py-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div class="flex flex-col gap-2">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-label-lg text-label-lg text-on-surface-variant">${esc(u.nama_lengkap || 'Peserta')}</span>
+                  <span class="px-3 py-1 rounded-full font-label-md text-label-md ${isPro ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container text-on-surface-variant'}">
+                    ${isPro ? 'Akun Pro' : 'Akun Latihan'}
                   </span>
+                  ${isPending ? `<span class="px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-md text-label-md">Menunggu Verifikasi Admin</span>` : ''}
                 </div>
-                <div class="text-xs tabular-nums font-medium text-[#111111] pt-1">TWK ${d.kpi.terakhir.skor_twk} · TIU ${d.kpi.terakhir.skor_tiu} · TKP ${d.kpi.terakhir.skor_tkp}</div>
-              ` : `<div class="text-sm font-medium text-[#71717A] pt-1">Belum ada percobaan</div>`}
-            </div>
-          </div>
-        `}
+                <h1 class="font-headline-md text-headline-md text-on-surface">Ringkasan Latihan</h1>
+              </div>
+              ${!isPro ? `
+                <button type="button" onclick="App.openUpgradeModal()" class="inline-flex items-center justify-center gap-2 bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg px-5 py-3 rounded-lg shadow-sm transition-all cursor-pointer self-start md:self-auto">
+                  <span class="material-symbols-outlined text-[20px]">workspace_premium</span>
+                  <span>${isPending ? 'Status Pengajuan Pro' : 'Upgrade ke Akun Pro'}</span>
+                </button>
+              ` : ''}
+            </section>
 
-        <!-- Banner Upgrade Pro -->
-        ${!isPro ? `
-          <div class="bg-[#F7F7F8] border-b border-[#DCDCE0] p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div class="space-y-1 max-w-2xl">
-              <h2 class="font-semibold text-base text-[#111111]">Buka seluruh paket tryout penuh dan pembahasan tiap soal</h2>
-              <p class="text-xs text-[#52525B]">Akses paket SKD CPNS, BUMN, dan Kedinasan 110 soal beserta pembahasan resmi dan rapor PDF.</p>
-            </div>
-            <button type="button" onclick="App.openUpgradeModal()" class="btn-outline h-9 px-4 text-xs inline-flex items-center gap-2 shrink-0">
-              <span>${isPending ? 'Lihat status verifikasi' : 'Pelajari paket Pro'}</span>
-              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </button>
-          </div>
-        ` : ''}
+            <!-- 3 KPI Stat Cards -->
+            ${!d ? `<section class="grid grid-cols-1 md:grid-cols-3 gap-6 pb-10"><div class="skeleton h-36"></div><div class="skeleton h-36"></div><div class="skeleton h-36"></div></section>` : `
+              <section class="grid grid-cols-1 md:grid-cols-3 gap-6 pb-10">
+                <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col justify-between gap-4">
+                  <div class="flex items-center justify-between">
+                    <span class="font-label-lg text-label-lg text-on-surface-variant">Simulasi Diselesaikan</span>
+                    <span class="material-symbols-outlined text-secondary text-[22px]">task_alt</span>
+                  </div>
+                  <div class="flex items-end justify-between gap-4">
+                    <span class="font-headline-md text-headline-md text-on-surface tabular-nums">${d.kpi.tryoutSelesai}</span>
+                    <svg class="w-20 h-8 text-secondary" fill="none" viewBox="0 0 80 32" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M2 28L18 22L32 25L48 12L64 15L78 4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+                    </svg>
+                  </div>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Tersimpan pada riwayat akun</p>
+                </div>
 
-        <!-- Katalog Paket Tryout -->
-        <div class="p-6 sm:p-8 border-b border-[#DCDCE0] flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div class="flex items-baseline gap-3">
-            <span class="swiss-folio text-2xl font-semibold text-[#FF4F00]">01</span>
-            <h2 class="text-xl font-semibold text-[#111111] tracking-[-0.015em]">Pilih paket ujian CAT (${pakets.length})</h2>
-          </div>
-          <div class="inline-flex items-center border border-[#111111] self-start sm:self-auto">
-            ${['Semua', 'Latihan', 'Pro'].map(function (f, i) {
-              const label = f === 'Semua' ? 'Semua' : f === 'Latihan' ? 'Latihan' : 'Pro';
-              const active = state.paketFilter === f;
-              return `<button type="button" onclick="App.setPaketFilter('${f}')" class="h-8 px-3.5 text-xs font-medium transition-colors ${i > 0 ? 'border-l border-[#111111]' : ''} ${active ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FFFFFF] text-[#52525B] hover:text-[#111111]'}">${label}</button>`;
-            }).join('')}
-          </div>
-        </div>
+                <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col justify-between gap-4">
+                  <div class="flex items-center justify-between">
+                    <span class="font-label-lg text-label-lg text-on-surface-variant">Skor Tertinggi</span>
+                    <span class="material-symbols-outlined text-secondary text-[22px]">leaderboard</span>
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <span class="font-headline-md text-headline-md text-on-surface tabular-nums">${d.kpi.skorTertinggi} <span class="font-title-md text-title-md text-on-surface-variant">/ 550</span></span>
+                    <div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+                      <div class="h-full bg-secondary rounded-full" style="width: ${bestPct}%;"></div>
+                    </div>
+                  </div>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Standar maksimum SKD 550 poin</p>
+                </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#DCDCE0] border-b border-[#111111]">
-          ${pakets.map(function (p, idx) {
-            const locked = p.tier_akses === 'Pro' && !isPro;
-            return `
-              <div class="p-6 sm:p-8 flex flex-col justify-between space-y-6 bg-[#FFFFFF] hover:bg-[#F7F7F8] transition-colors">
-                <div class="space-y-4">
-                  <div class="flex items-center justify-between border-b border-[#DCDCE0] pb-3 text-xs">
-                    <span class="swiss-folio text-2xl font-semibold text-[#111111]">${pad2(idx + 1)}</span>
-                    <div class="flex items-center gap-2">
-                      <span class="text-[#71717A] tabular-nums">${esc(p.kategori_label || 'SKD')}</span>
-                      <span class="px-2 py-0.5 font-semibold ${p.tier_akses === 'Latihan' ? 'bg-[#F7F7F8] border border-[#DCDCE0] text-[#111111]' : 'bg-[#111111] text-[#FFFFFF]'}">
-                        ${p.tier_akses === 'Latihan' ? 'LATIHAN' : 'PRO'}
+                <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col justify-between gap-4">
+                  <div class="flex items-center justify-between">
+                    <span class="font-label-lg text-label-lg text-on-surface-variant">Status Percobaan Terakhir</span>
+                    <span class="material-symbols-outlined text-secondary text-[22px]">verified</span>
+                  </div>
+                  ${d.kpi.terakhir ? `
+                    <div>
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-label-md text-label-md ${d.kpi.terakhir.status_kelulusan === 'Lulus' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}">
+                        <span class="material-symbols-outlined material-fill text-[16px]">${d.kpi.terakhir.status_kelulusan === 'Lulus' ? 'check_circle' : 'error'}</span>
+                        ${d.kpi.terakhir.status_kelulusan === 'Lulus' ? 'Lulus Passing Grade' : 'Belum Lulus PG'}
                       </span>
                     </div>
-                  </div>
-                  <h3 class="font-semibold text-base text-[#111111] tracking-[-0.01em]">${esc(p.nama_paket)}</h3>
-                  <p class="text-xs text-[#52525B] leading-relaxed">${esc(p.deskripsi)}</p>
-                  <div class="flex items-center gap-4 text-xs tabular-nums font-medium text-[#111111] pt-1">
-                    <span>${p.durasi_menit} menit</span>
-                    <span>·</span>
-                    <span>${p.jumlah_soal} butir soal</span>
-                  </div>
+                    <p class="font-mono-score text-mono-score text-on-surface-variant tabular-nums">TWK ${d.kpi.terakhir.skor_twk} • TIU ${d.kpi.terakhir.skor_tiu} • TKP ${d.kpi.terakhir.skor_tkp}</p>
+                  ` : `
+                    <div>
+                      <span class="inline-flex items-center px-3 py-1.5 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md">Belum ada percobaan</span>
+                    </div>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Mulai simulasi pertama Anda di bawah</p>
+                  `}
                 </div>
-                ${locked ? `
-                  <button type="button" onclick="App.openUpgradeModal()" class="btn-outline w-full h-10 px-4 text-xs inline-flex items-center justify-between">
-                    <span>Buka dengan Pro</span>
-                    <i data-lucide="lock" class="w-3.5 h-3.5"></i>
-                  </button>
-                ` : `
-                  <button type="button" onclick="App.confirmStartExam('${esc(p.paket_id)}')" class="btn-primary w-full h-10 px-4 text-xs inline-flex items-center justify-between">
-                    <span>Mulai simulasi</span>
-                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                  </button>
-                `}
-              </div>`;
-          }).join('')}
-        </div>
+              </section>
+            `}
 
-        <!-- Riwayat Terakhir -->
-        ${d && d.riwayat && d.riwayat.length ? `
-          <div class="p-6 sm:p-8 space-y-4">
-            <div class="flex items-center justify-between gap-4 border-b border-[#111111] pb-3">
-              <div class="flex items-baseline gap-3">
-                <span class="swiss-folio text-2xl font-semibold text-[#FF4F00]">02</span>
-                <h3 class="font-semibold text-base text-[#111111]">Riwayat pengerjaan terakhir</h3>
+            <!-- Katalog Paket Simulasi -->
+            <section class="flex flex-col gap-6 pb-12">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex flex-col gap-1">
+                  <h2 class="font-headline-sm text-headline-sm text-on-surface">Katalog Paket Simulasi</h2>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Pilih paket tryout sesuai target seleksi Anda</p>
+                </div>
+                <div class="inline-flex items-center gap-1 bg-surface-container-low p-1 rounded-xl self-start sm:self-auto">
+                  ${['Semua', 'Latihan', 'Pro'].map(function (f) {
+                    const label = f === 'Semua' ? 'Semua Paket' : f === 'Latihan' ? 'Latihan (Gratis)' : 'Paket Pro';
+                    const active = state.paketFilter === f;
+                    return `<button type="button" onclick="App.setPaketFilter('${f}')" class="px-4 py-2 rounded-lg font-label-md text-label-md transition-all cursor-pointer ${active ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}">${label}</button>`;
+                  }).join('')}
+                </div>
               </div>
-              <button type="button" onclick="App.go('result')" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#FF4F00] hover:text-[#111111]">
-                <span>Evaluasi lengkap</span>
-                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-              </button>
-            </div>
-            <div class="divide-y divide-[#DCDCE0]">
-              ${d.riwayat.slice(0, 5).map(function (r, idx) {
-                const ok = r.status_kelulusan === 'Lulus';
-                return `
-                  <div class="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div class="flex items-baseline gap-4">
-                      <span class="swiss-folio text-lg font-semibold text-[#71717A] w-6">${pad2(idx + 1)}</span>
-                      <div class="space-y-0.5">
-                        <div class="font-semibold text-sm text-[#111111]">${esc(r.nama_paket)}</div>
-                        <div class="text-xs tabular-nums text-[#52525B]">TWK ${r.skor_twk} · TIU ${r.skor_tiu} · TKP ${r.skor_tkp} · Total <span class="text-[#111111] font-semibold">${r.skor_total}</span></div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                ${pakets.map(function (p) {
+                  const locked = p.tier_akses === 'Pro' && !isPro;
+                  return `
+                    <article class="${locked ? 'bg-surface-container-low' : 'bg-surface-container-lowest'} rounded-xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-6">
+                      <div class="flex flex-col gap-4">
+                        <div class="flex items-center justify-between gap-2">
+                          <span class="px-3 py-1 rounded-full font-label-md text-label-md ${p.tier_akses === 'Latihan' ? 'bg-secondary-container text-on-secondary-container' : 'bg-primary-fixed text-on-primary-fixed'}">
+                            ${p.tier_akses === 'Latihan' ? 'GRATIS / LATIHAN' : 'PRO PREMIUM'}
+                          </span>
+                          <span class="font-label-md text-label-md text-on-surface-variant">${esc(p.kategori_label || 'CPNS SKD')}</span>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                          <h3 class="font-title-lg text-title-lg text-on-surface">${esc(p.nama_paket)}</h3>
+                          <p class="font-body-sm text-body-sm text-on-surface-variant">${p.durasi_menit} Menit • ${p.jumlah_soal} Soal • ${p.tier_akses === 'Pro' ? 'Pembahasan Lengkap' : 'PG Resmi'}</p>
+                          <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">${esc(p.deskripsi)}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="px-2 py-0.5 text-xs font-semibold ${ok ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FF4F00] text-[#FFFFFF]'}">${esc(r.status_kelulusan).toUpperCase()}</span>
-                      <button type="button" onclick="App.go('result', { hasil_id: '${esc(r.hasil_id)}' })" class="btn-outline h-8 px-3 text-xs">Rincian</button>
-                    </div>
-                  </div>`;
-              }).join('')}
-            </div>
+                      ${locked ? `
+                        <button type="button" onclick="App.openUpgradeModal()" class="inline-flex items-center justify-center gap-2 w-full bg-surface-container-lowest hover:bg-surface-container text-on-surface-variant font-label-lg text-label-lg py-3 px-4 rounded-lg shadow-sm transition-colors cursor-pointer">
+                          <span class="material-symbols-outlined text-[18px]">lock</span>
+                          <span>Terkunci — Buka dengan Akun Pro</span>
+                        </button>
+                      ` : `
+                        <button type="button" onclick="App.confirmStartExam('${esc(p.paket_id)}')" class="inline-flex items-center justify-center gap-2 w-full bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg py-3 px-4 rounded-lg transition-colors cursor-pointer">
+                          <span>Mulai Simulasi</span>
+                          <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                        </button>
+                      `}
+                    </article>`;
+                }).join('')}
+              </div>
+            </section>
+
+            <!-- Riwayat Terakhir -->
+            ${d && d.riwayat && d.riwayat.length ? `
+              <section class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-4 mb-8">
+                <div class="flex items-center justify-between gap-4">
+                  <h3 class="font-title-lg text-title-lg text-on-surface">Riwayat Pengerjaan Terakhir</h3>
+                  <button type="button" onclick="App.go('result')" class="inline-flex items-center gap-1.5 font-label-lg text-label-lg text-secondary hover:underline cursor-pointer">
+                    <span>Evaluasi Lengkap</span>
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  </button>
+                </div>
+                <div class="flex flex-col gap-2.5">
+                  ${d.riwayat.slice(0, 5).map(function (r) {
+                    const ok = r.status_kelulusan === 'Lulus';
+                    return `
+                      <div class="p-4 rounded-xl bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="space-y-1">
+                          <div class="font-title-md text-title-md text-on-surface">${esc(r.nama_paket)}</div>
+                          <div class="font-mono-score text-mono-score text-on-surface-variant tabular-nums">TWK ${r.skor_twk} • TIU ${r.skor_tiu} • TKP ${r.skor_tkp} • Total <strong class="text-on-surface">${r.skor_total}</strong></div>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                          <span class="px-3 py-1 rounded-full font-label-md text-label-md ${ok ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}">${esc(r.status_kelulusan)}</span>
+                          <button type="button" onclick="App.go('result', { hasil_id: '${esc(r.hasil_id)}' })" class="px-3.5 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container font-label-md text-label-md text-on-surface shadow-sm transition-colors cursor-pointer">Rincian</button>
+                        </div>
+                      </div>`;
+                  }).join('')}
+                </div>
+              </section>
+            ` : ''}
+
           </div>
-        ` : ''}
+        </div>
       </main>
+      ${renderFooter()}
     `;
     refreshIcons();
   }
 
   // ==========================================================================
-  // SCREEN 3: RUANG UJIAN CAT REAL-TIME (Swiss Hairline Examination Sheet)
+  // SCREEN 3: RUANG UJIAN CAT REAL-TIME (Exact Stitch Layout)
   // ==========================================================================
   function saveExamLocal() {
     if (state.exam) localStorage.setItem(EXAM_STORAGE_KEY, JSON.stringify(state.exam));
@@ -707,144 +771,200 @@ const App = (function () {
     if (!ex) return go('dashboard');
     const q = ex.soal[ex.idx];
     const total = ex.soal.length;
-    const answeredCount = Object.keys(ex.answers).length;
     const isDoubtful = !!ex.doubtful[q.soal_id];
     const picked = ex.answers[q.soal_id] || '';
     const remSec = Math.max(0, Math.floor((ex.endAt - Date.now()) / 1000));
-    const timerCls = remSec < 600 ? 'bg-[#FF4F00] text-[#FFFFFF]' : 'bg-[#F7F7F8] text-[#111111] border-x border-[#DCDCE0]';
+    const timerCls = remSec < 300
+      ? 'bg-error-container text-on-error-container'
+      : remSec < 900
+        ? 'bg-tertiary-fixed text-on-tertiary-fixed'
+        : 'bg-surface-container-low text-on-surface';
+
+    let countAnswered = 0;
+    let countDoubtful = 0;
+    let countUnanswered = 0;
 
     const navTilesHtml = ex.soal.map(function (item, i) {
-      const st = ex.doubtful[item.soal_id] ? 'doubtful' : ex.answers[item.soal_id] ? 'answered' : 'unanswered';
+      const hasDoubt = !!ex.doubtful[item.soal_id];
+      const hasAns = !!ex.answers[item.soal_id];
+      if (hasDoubt) countDoubtful++;
+      else if (hasAns) countAnswered++;
+      else countUnanswered++;
+
+      const st = hasDoubt ? 'doubtful' : hasAns ? 'answered' : 'unanswered';
       const active = i === ex.idx ? 'active-tile' : '';
-      return `<button type="button" onclick="App.jumpSoal(${i})" class="nav-tile ${st} ${active}">${pad2(i + 1)}</button>`;
+      return `<button type="button" onclick="App.jumpSoal(${i})" class="nav-tile ${st} ${active}">${i + 1}</button>`;
     }).join('');
 
-    root.innerHTML = `
-      <!-- Sticky Top Bar -->
-      <header class="h-14 bg-[#FFFFFF] border-b border-[#111111] sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto h-full border-x border-[#DCDCE0] flex items-stretch justify-between">
-          <div class="px-4 sm:px-6 flex items-center gap-3 min-w-0">
-            <span class="px-2 py-0.5 bg-[#111111] text-[#FFFFFF] text-xs font-semibold tabular-nums shrink-0">${esc(q.subtes)}</span>
-            <span class="font-semibold text-sm text-[#111111] truncate">${esc(ex.paket.nama_paket)}</span>
-          </div>
+    const subtesFull = q.subtes === 'TWK'
+      ? 'TWK — Tes Wawasan Kebangsaan'
+      : q.subtes === 'TIU'
+        ? 'TIU — Tes Intelegensia Umum'
+        : 'TKP — Tes Karakteristik Pribadi';
 
-          <div class="flex items-stretch">
-            <div id="exam-timer-pill" class="px-4 sm:px-5 tabular-nums font-semibold text-xs sm:text-sm inline-flex items-center gap-2 ${timerCls}">
-              <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+    root.innerHTML = `
+      <main class="w-full bg-surface min-h-screen flex flex-col">
+        <!-- Sticky Exam Top Bar -->
+        <header class="sticky top-0 z-30 w-full h-16 bg-surface-container-lowest shadow-sm px-6 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="font-title-md text-title-md text-on-surface truncate">${esc(ex.paket.nama_paket)}</span>
+            <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-md text-label-md shrink-0">
+              ${esc(subtesFull)}
+            </span>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <div id="exam-timer-pill" class="flex items-center gap-2 px-4 py-1.5 rounded-full font-mono-timer text-mono-timer tabular-nums transition-colors ${timerCls}">
+              <span class="material-symbols-outlined text-[20px]">schedule</span>
               <span id="exam-timer-text">${fmtTimer(remSec)}</span>
             </div>
-
-            <button type="button" onclick="App.confirmFinishExam()" class="px-4 sm:px-5 bg-[#111111] hover:bg-[#FF4F00] text-[#FFFFFF] text-xs font-semibold inline-flex items-center gap-2 shrink-0 transition-colors">
-              <span>Selesai<span class="hidden sm:inline"> ujian</span></span>
+            <button type="button" onclick="App.confirmFinishExam()" class="h-[38px] px-4 rounded-lg bg-error-container text-on-error-container font-label-lg text-label-lg hover:opacity-90 transition-opacity flex items-center gap-1.5 cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">stop_circle</span>
+              <span>Selesai<span class="hidden sm:inline"> Ujian</span></span>
             </button>
           </div>
+        </header>
+
+        <!-- Mobile Question Navigator Trigger -->
+        <div class="lg:hidden px-6 pt-4">
+          <button type="button" onclick="App.toggleMobileNavSheet(true)" class="w-full h-11 px-4 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-between font-label-lg text-label-lg cursor-pointer">
+            <span class="inline-flex items-center gap-2 text-on-surface">
+              <span class="material-symbols-outlined text-secondary text-[20px]">grid_view</span>
+              <span>Navigasi Soal (${countAnswered}/${total})</span>
+            </span>
+            <span class="text-on-surface-variant inline-flex items-center gap-1 font-label-md text-label-md">
+              <span>Buka Daftar</span>
+              <span class="material-symbols-outlined text-[18px]">expand_more</span>
+            </span>
+          </button>
         </div>
-      </header>
 
-      <!-- Mobile Question Navigator Trigger -->
-      <div class="lg:hidden border-b border-[#DCDCE0] bg-[#F7F7F8]">
-        <button type="button" onclick="App.toggleMobileNavSheet(true)" class="w-full h-11 px-4 flex items-center justify-between text-xs font-semibold">
-          <span class="inline-flex items-center gap-2 text-[#111111]">
-            <span>Navigasi soal</span>
-            <span class="px-2 py-0.5 bg-[#111111] text-[#FFFFFF] tabular-nums">${answeredCount}/${total}</span>
-          </span>
-          <span class="text-[#52525B] inline-flex items-center gap-1">
-            <span>Buka matriks</span>
-            <i data-lucide="chevron-down" class="w-4 h-4"></i>
-          </span>
-        </button>
-      </div>
-
-      <!-- Main Split Content (Exposed Hairline Grid) -->
-      <main class="max-w-7xl mx-auto w-full border-x border-b border-[#111111] pb-20 lg:pb-0 grid grid-cols-1 lg:grid-cols-12 flex-1 bg-[#FFFFFF]">
-        <!-- Left 8 Cols: Question Sheet -->
-        <div class="lg:col-span-8 border-b lg:border-b-0 lg:border-r border-[#111111] flex flex-col justify-between">
-          <div class="p-6 sm:p-8 lg:p-10 space-y-6">
-            <div class="flex items-baseline justify-between flex-wrap gap-2 pb-4 border-b border-[#111111]">
-              <div class="flex items-baseline gap-3">
-                <span class="swiss-folio text-4xl font-semibold text-[#111111]">${pad2(ex.idx + 1)}</span>
-                <span class="text-xs font-semibold text-[#71717A] tabular-nums">/ ${pad2(total)} · SUBTES ${esc(q.subtes)}</span>
+        <!-- Main Split Workspace -->
+        <div class="max-w-[1280px] w-full mx-auto px-6 py-6 pb-24 lg:pb-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start flex-1">
+          <!-- Left 8 Cols: Question & Options Card -->
+          <section class="lg:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-6">
+            <!-- Question Header Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="font-label-lg text-label-lg font-semibold tabular-nums text-on-surface">
+                  Soal No. ${ex.idx + 1} dari ${total}
+                </span>
+                ${isDoubtful ? `
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-md text-label-md">
+                    <span class="material-symbols-outlined text-[14px]">flag</span>
+                    Ragu-ragu
+                  </span>
+                ` : ''}
               </div>
-              <span class="text-xs text-[#52525B] tabular-nums">${esc(q.topik ? q.topik + ' · ' : '')}${q.subtes === 'TKP' ? 'Skala 1–5' : 'Benar +5'}</span>
+              <span class="px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-mono-score text-mono-score tabular-nums">
+                ${esc(q.topik ? q.topik + ' • ' : '')}${q.subtes === 'TKP' ? 'Skala Bobot 1–5' : 'Benar +5 • Salah 0'}
+              </span>
             </div>
 
-            <div class="text-sm sm:text-base text-[#111111] leading-relaxed max-w-[70ch] whitespace-pre-line">${esc(q.pertanyaan)}</div>
+            <!-- Question Stem -->
+            <div class="font-body-md text-body-md text-on-surface max-w-[70ch] leading-relaxed whitespace-pre-line">${esc(q.pertanyaan)}</div>
 
-            ${q.image_url ? `<div class="border border-[#DCDCE0] bg-[#F7F7F8] p-3"><img src="${esc(q.image_url)}" alt="Ilustrasi soal nomor ${ex.idx + 1}" class="max-h-72 object-contain" /></div>` : ''}
+            ${q.image_url ? `<div class="rounded-xl overflow-hidden bg-surface-container-low p-3"><img src="${esc(q.image_url)}" alt="Ilustrasi soal nomor ${ex.idx + 1}" class="max-h-72 mx-auto object-contain rounded-lg" /></div>` : ''}
 
-            <div class="space-y-2 pt-2">
+            <!-- Answer Option Rows (A-E) -->
+            <div class="flex flex-col gap-3">
               ${['A', 'B', 'C', 'D', 'E'].map(function (opt) {
                 const txt = q.opsi && q.opsi[opt];
                 if (!txt) return '';
                 const sel = picked === opt;
                 return `
-                  <div onclick="App.selectAnswer('${esc(q.soal_id)}', '${opt}')" class="cat-option ${sel ? 'selected' : ''} px-4 py-3 flex items-center gap-3">
-                    <span class="opt-badge w-7 h-7 border border-[#DCDCE0] bg-[#F7F7F8] text-[#111111] text-xs tabular-nums font-semibold flex items-center justify-center shrink-0">${opt}</span>
-                    <span class="text-sm text-[#111111] leading-snug flex-1">${esc(txt)}</span>
-                  </div>`;
+                  <button type="button" onclick="App.selectAnswer('${esc(q.soal_id)}', '${opt}')" class="cat-option ${sel ? 'selected' : ''} w-full min-h-[52px] rounded-lg p-3 flex items-center gap-4 text-left">
+                    <span class="opt-badge w-8 h-8 rounded-md flex items-center justify-center font-mono-score text-mono-score shrink-0 ${sel ? 'bg-primary-container text-on-primary' : 'bg-surface-container-lowest text-on-surface-variant'}">${opt}</span>
+                    <span class="font-body-md text-body-md ${sel ? 'font-medium' : ''}">${esc(txt)}</span>
+                  </button>`;
               }).join('')}
             </div>
-          </div>
 
-          <!-- Desktop Action Bar -->
-          <div class="hidden lg:flex border-t border-[#111111] bg-[#F7F7F8] p-4 items-center justify-between">
-            <button type="button" onclick="App.moveSoal(-1)" ${ex.idx === 0 ? 'disabled class="opacity-40 cursor-not-allowed btn-outline h-10 px-4 text-xs inline-flex items-center gap-2"' : 'class="btn-outline h-10 px-4 text-xs inline-flex items-center gap-2"'}>
-              <i data-lucide="arrow-left" class="w-4 h-4"></i>
-              <span>Sebelumnya</span>
-            </button>
-            <div class="flex items-center gap-3">
-              <button type="button" onclick="App.toggleDoubtful('${esc(q.soal_id)}')" class="h-10 px-4 border text-xs font-semibold inline-flex items-center gap-2 transition-colors ${isDoubtful ? 'bg-[#FF4F00] border-[#FF4F00] text-[#FFFFFF]' : 'bg-[#FFFFFF] border-[#111111] text-[#111111] hover:border-[#FF4F00] hover:text-[#FF4F00]'}">
-                <i data-lucide="bookmark" class="w-4 h-4"></i>
-                <span>${isDoubtful ? 'Ragu-ragu aktif' : 'Tandai ragu-ragu'}</span>
+            <!-- Bottom Action Bar (Desktop) -->
+            <div class="hidden lg:flex flex-wrap items-center justify-between gap-3 pt-2">
+              <button type="button" onclick="App.moveSoal(-1)" ${ex.idx === 0 ? 'disabled' : ''} class="px-4 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-label-lg text-label-lg hover:bg-surface-container transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed">
+                <span>← Sebelumnya</span>
               </button>
-              <button type="button" onclick="${ex.idx < total - 1 ? 'App.moveSoal(1)' : 'App.confirmFinishExam()'}" class="btn-primary h-10 px-5 text-xs inline-flex items-center gap-2">
-                <span>${ex.idx < total - 1 ? 'Simpan & lanjut' : 'Selesai & kumpulkan'}</span>
-                <i data-lucide="arrow-right" class="w-4 h-4"></i>
-              </button>
+              <div class="flex flex-wrap items-center gap-3">
+                <button type="button" onclick="App.toggleDoubtful('${esc(q.soal_id)}')" class="px-4 py-2.5 rounded-lg font-label-lg text-label-lg transition-opacity cursor-pointer flex items-center gap-1.5 ${isDoubtful ? 'bg-tertiary text-on-tertiary' : 'bg-tertiary-fixed text-on-tertiary-fixed hover:opacity-90'}">
+                  <span class="material-symbols-outlined text-[18px]">flag</span>
+                  <span>${isDoubtful ? 'Ragu-ragu Aktif' : 'Tandai Ragu-ragu'}</span>
+                </button>
+                <button type="button" onclick="${ex.idx < total - 1 ? 'App.moveSoal(1)' : 'App.confirmFinishExam()'}" class="px-5 py-2.5 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg hover:bg-primary transition-colors cursor-pointer flex items-center gap-1.5">
+                  <span>${ex.idx < total - 1 ? 'Simpan & Lanjutkan →' : 'Selesai & Kumpulkan →'}</span>
+                </button>
+              </div>
             </div>
-          </div>
+          </section>
+
+          <!-- Right 4 Cols: 3-State Question Navigator Matrix -->
+          <aside class="hidden lg:flex lg:col-span-4 lg:sticky lg:top-20 bg-surface-container-lowest rounded-xl p-5 shadow-sm flex-col gap-4">
+            <div class="flex items-center justify-between">
+              <h2 class="font-title-md text-title-md text-on-surface tabular-nums">Navigasi Soal (${countAnswered}/${total})</h2>
+              <span class="font-label-md text-label-md text-on-surface-variant">${esc(q.subtes)}</span>
+            </div>
+
+            <!-- 6-column grid of 36x36px numbered tiles -->
+            <div class="grid grid-cols-6 gap-2 max-h-[380px] overflow-y-auto pr-1">${navTilesHtml}</div>
+
+            <!-- Legend Footer -->
+            <div class="flex flex-col gap-3 pt-2">
+              <div class="grid grid-cols-3 gap-2">
+                <div class="flex items-center gap-2 bg-surface-container-low rounded-lg px-2.5 py-2">
+                  <span class="w-3 h-3 rounded-sm bg-secondary shrink-0"></span>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-label-md text-label-md text-on-surface-variant truncate">Dijawab</span>
+                    <span class="font-mono-score text-mono-score text-on-surface tabular-nums">${countAnswered}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 bg-surface-container-low rounded-lg px-2.5 py-2">
+                  <span class="w-3 h-3 rounded-sm bg-tertiary-fixed shrink-0"></span>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-label-md text-label-md text-on-surface-variant truncate">Ragu</span>
+                    <span class="font-mono-score text-mono-score text-on-surface tabular-nums">${countDoubtful}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 bg-surface-container-low rounded-lg px-2.5 py-2">
+                  <span class="w-3 h-3 rounded-sm bg-surface-container-high shrink-0"></span>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-label-md text-label-md text-on-surface-variant truncate">Kosong</span>
+                    <span class="font-mono-score text-mono-score text-on-surface tabular-nums">${countUnanswered}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
+                <span class="material-symbols-outlined text-[16px] text-secondary">cloud_done</span>
+                <span>Jawaban tersimpan otomatis di perangkat</span>
+              </div>
+            </div>
+          </aside>
         </div>
 
-        <!-- Right 4 Cols: Desktop Question Navigator Matrix -->
-        <aside class="hidden lg:block lg:col-span-4 bg-[#F7F7F8] p-6 space-y-5">
-          <div class="flex items-baseline justify-between border-b border-[#111111] pb-3">
-            <h3 class="font-semibold text-sm text-[#111111]">Matriks nomor soal</h3>
-            <span class="text-xs tabular-nums font-semibold text-[#111111]">${pad2(answeredCount)} / ${pad2(total)}</span>
+        <!-- Mobile Sticky Bottom Action Bar -->
+        <div class="lg:hidden fixed bottom-0 inset-x-0 bg-surface-container-lowest shadow-[0_-2px_10px_rgba(0,0,0,0.06)] px-4 py-3 z-30 flex items-center justify-between gap-2">
+          <button type="button" onclick="App.moveSoal(-1)" ${ex.idx === 0 ? 'disabled' : ''} class="px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md disabled:opacity-40">
+            ← Sebelumnya
+          </button>
+          <button type="button" onclick="App.toggleDoubtful('${esc(q.soal_id)}')" class="px-3.5 py-2.5 rounded-lg font-label-md text-label-md ${isDoubtful ? 'bg-tertiary text-on-tertiary' : 'bg-tertiary-fixed text-on-tertiary-fixed'}">
+            Ragu-ragu
+          </button>
+          <button type="button" onclick="${ex.idx < total - 1 ? 'App.moveSoal(1)' : 'App.confirmFinishExam()'}" class="flex-1 py-2.5 px-4 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md text-center">
+            ${ex.idx < total - 1 ? 'Simpan & Lanjut →' : 'Kumpulkan →'}
+          </button>
+        </div>
+
+        <!-- Mobile Bottom Sheet Drawer -->
+        ${state.mobileNavSheetOpen ? `
+          <div class="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bottom-sheet-backdrop" onclick="if(event.target===this) App.toggleMobileNavSheet(false)">
+            <div class="bg-surface-container-lowest bottom-sheet-panel p-5 max-h-[75vh] flex flex-col gap-4">
+              <div class="flex items-center justify-between">
+                <h3 class="font-title-md text-title-md text-on-surface">Navigasi Soal (${countAnswered}/${total})</h3>
+                <button type="button" onclick="App.toggleMobileNavSheet(false)" class="p-1.5 rounded-lg bg-surface-container-low text-on-surface-variant"><span class="material-symbols-outlined text-[20px]">close</span></button>
+              </div>
+              <div class="grid grid-cols-6 gap-2 overflow-y-auto p-1">${navTilesHtml}</div>
+            </div>
           </div>
-          <div class="grid grid-cols-6 gap-1.5 max-h-[384px] overflow-y-auto">${navTilesHtml}</div>
-          <div class="flex items-center justify-between pt-3 border-t border-[#DCDCE0] text-xs text-[#52525B]">
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-[#111111]"></span> Dijawab</span>
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 border border-[#FF4F00] bg-[#F7F7F8]"></span> Ragu</span>
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-[#FFFFFF] border border-[#DCDCE0]"></span> Kosong</span>
-          </div>
-        </aside>
+        ` : ''}
       </main>
-
-      <!-- Mobile Sticky Bottom Action Bar -->
-      <div class="lg:hidden fixed bottom-0 inset-x-0 bg-[#FFFFFF] border-t border-[#111111] px-4 py-3 z-30 flex items-center justify-between gap-2">
-        <button type="button" onclick="App.moveSoal(-1)" ${ex.idx === 0 ? 'disabled' : ''} class="btn-outline h-10 px-3 text-xs inline-flex items-center gap-1 disabled:opacity-40">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i>
-          <span>Sebelumnya</span>
-        </button>
-        <button type="button" onclick="App.toggleDoubtful('${esc(q.soal_id)}')" class="h-10 px-3 border text-xs font-semibold ${isDoubtful ? 'bg-[#FF4F00] border-[#FF4F00] text-[#FFFFFF]' : 'bg-[#FFFFFF] border-[#111111] text-[#111111]'}">Ragu</button>
-        <button type="button" onclick="${ex.idx < total - 1 ? 'App.moveSoal(1)' : 'App.confirmFinishExam()'}" class="btn-primary flex-1 h-10 px-4 text-xs inline-flex items-center justify-between">
-          <span>${ex.idx < total - 1 ? 'Simpan & lanjut' : 'Kumpulkan'}</span>
-          <i data-lucide="arrow-right" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <!-- Mobile Bottom Sheet Drawer -->
-      ${state.mobileNavSheetOpen ? `
-        <div class="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bottom-sheet-backdrop" onclick="if(event.target===this) App.toggleMobileNavSheet(false)">
-          <div class="bg-[#FFFFFF] bottom-sheet-panel p-5 max-h-[75vh] flex flex-col space-y-4">
-            <div class="flex items-center justify-between border-b border-[#DCDCE0] pb-3">
-              <h3 class="font-semibold text-base text-[#111111]">Matriks nomor soal (${answeredCount}/${total})</h3>
-              <button type="button" onclick="App.toggleMobileNavSheet(false)" class="w-8 h-8 border border-[#DCDCE0] inline-flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
-            </div>
-            <div class="grid grid-cols-6 gap-1.5 overflow-y-auto">${navTilesHtml}</div>
-          </div>
-        </div>
-      ` : ''}
     `;
     refreshIcons();
   }
@@ -886,10 +1006,10 @@ const App = (function () {
   }
 
   // ==========================================================================
-  // SCREEN 4: EVALUASI, GRAFIK, PEMBAHASAN & PERINGKAT
+  // SCREEN 4: EVALUASI, GRAFIK, PEMBAHASAN & PERINGKAT (Exact Stitch Layout)
   // ==========================================================================
   function renderResultSkeleton(root) {
-    root.innerHTML = `${renderNavbar('result')}<main class="max-w-7xl mx-auto w-full border-x border-[#DCDCE0] p-8 space-y-6"><div class="skeleton h-36"></div><div class="grid grid-cols-1 lg:grid-cols-12 gap-4"><div class="lg:col-span-8 skeleton h-64"></div><div class="lg:col-span-4 skeleton h-64"></div></div></main>`;
+    root.innerHTML = `${renderNavbar('result')}<main class="w-full pt-16 bg-surface flex-1"><div class="max-w-7xl mx-auto px-6 lg:px-12 py-8 space-y-6"><div class="skeleton h-40"></div><div class="grid grid-cols-1 lg:grid-cols-12 gap-6"><div class="lg:col-span-8 skeleton h-64"></div><div class="lg:col-span-4 skeleton h-64"></div></div></div></main>`;
   }
 
   function renderResult(root) {
@@ -905,167 +1025,225 @@ const App = (function () {
       const pct = Math.min(100, Math.round((Number(val) / maxVal) * 100));
       const pgPct = Math.min(100, Math.round((pg / maxVal) * 100));
       const delta = Number(val) - pg;
-      const deltaStr = (delta >= 0 ? '+' : '') + delta + ' dari PG ' + pg;
+      const deltaStr = (delta >= 0 ? '+' + delta + ' di atas PG' : delta + ' di bawah PG');
       return `
-        <div class="p-6 bg-[#FFFFFF] space-y-3">
-          <div class="flex items-center justify-between text-xs border-b border-[#DCDCE0] pb-2">
-            <span class="font-semibold text-[#111111]">${label}</span>
-            <span class="px-2 py-0.5 font-semibold ${ok ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FF4F00] text-[#FFFFFF]'}">${ok ? 'LULUS' : 'BELUM LULUS'}</span>
+        <div class="bg-surface-container-low rounded-lg p-4 flex flex-col justify-between gap-4">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-title-md text-title-md text-on-surface">${label}</span>
+            <span class="rounded-full px-2.5 py-0.5 font-label-md text-label-md ${ok ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}">${ok ? 'Lulus' : 'Belum Lulus'}</span>
           </div>
-          <div class="flex items-baseline justify-between gap-2">
-            <span class="swiss-folio text-4xl font-semibold text-[#111111]">${val}</span>
-            <span class="text-xs tabular-nums text-[#52525B]">${deltaStr}</span>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-baseline justify-between">
+              <span class="font-headline-sm text-headline-sm text-on-surface tabular-nums">${val}</span>
+              <span class="font-mono-score text-mono-score text-on-surface-variant">PG ${pg}</span>
+            </div>
+            <span class="font-label-md text-label-md ${ok ? 'text-secondary' : 'text-error'}">${deltaStr}</span>
           </div>
           <div class="pg-track">
-            <div class="pg-fill ${ok ? 'bg-[#111111]' : 'bg-[#FF4F00]'}" style="width:${pct}%"></div>
-            <span class="pg-marker" style="left:${pgPct}%" title="Passing grade ${pg}"></span>
+            <div class="pg-fill ${ok ? 'bg-primary-container' : 'bg-error'}" style="width: ${pct}%;"></div>
+            <div class="pg-marker" style="left: ${pgPct}%;" title="Ambang Batas: ${pg}"></div>
           </div>
         </div>`;
     };
 
     root.innerHTML = `
       ${renderNavbar('result')}
-      <main class="max-w-7xl mx-auto w-full border-x border-b border-[#111111] flex-1 bg-[#FFFFFF]">
-        <!-- Header Bar -->
-        <div class="p-6 sm:p-8 border-b border-[#111111] flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div class="space-y-1">
-            <h1 class="text-2xl sm:text-3xl font-semibold text-[#111111] tracking-[-0.02em]">${esc(h.nama_paket)}</h1>
-            <p class="text-xs tabular-nums text-[#52525B]">Durasi pengerjaan: ${fmtDurasi(h.durasi_pakai_detik)}</p>
-          </div>
-          <div class="flex items-center gap-2 no-print">
-            <button type="button" onclick="window.print()" class="btn-outline h-10 px-4 text-xs inline-flex items-center gap-2">
-              <i data-lucide="download" class="w-4 h-4"></i>
-              <span>Unduh rapor PDF</span>
-            </button>
-            <button type="button" onclick="App.go('dashboard')" class="btn-primary h-10 px-4 text-xs">Kembali ke paket</button>
-          </div>
-        </div>
+      <main class="w-full pt-16 bg-surface flex-1">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+          <div class="flex flex-col w-full gap-8 py-6">
 
-        <!-- Score Summary Hairline Matrix -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 border-b border-[#111111] divide-y lg:divide-y-0 lg:divide-x divide-[#DCDCE0]">
-          <div class="lg:col-span-4 p-6 sm:p-8 bg-[#F7F7F8] space-y-2">
-            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold ${lulus ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FF4F00] text-[#FFFFFF]'}">
-              ${lulus ? 'LULUS AMBANG BATAS' : 'BELUM LULUS AMBANG BATAS'}
-            </span>
-            <div class="text-xs text-[#52525B] pt-2">Total skor akhir</div>
-            <div class="flex items-baseline gap-2">
-              <span class="swiss-folio text-6xl font-semibold text-[#111111]">${h.skor_total}</span>
-              <span class="text-sm tabular-nums text-[#71717A]">/ 550</span>
-            </div>
-          </div>
-          <div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#DCDCE0]">
-            ${subCard('TWK', h.skor_twk, pgTwk, 150)}
-            ${subCard('TIU', h.skor_tiu, pgTiu, 175)}
-            ${subCard('TKP', h.skor_tkp, pgTkp, 225)}
-          </div>
-        </div>
-
-        <!-- Asymmetric Chart Hierarchy (8 cols Main Chart + 4 cols Trend) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 border-b border-[#111111] divide-y lg:divide-y-0 lg:divide-x divide-[#DCDCE0]">
-          <div class="p-6 sm:p-8 lg:col-span-8 flex flex-col justify-between space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#DCDCE0] pb-3">
-              <div>
-                <h3 class="font-semibold text-base text-[#111111]">Perbandingan skor terhadap ambang batas</h3>
-                <p class="text-xs text-[#52525B]">Skor perolehan subtes dibandingkan standar kelulusan minimum BKN</p>
-              </div>
-              <div class="flex items-center gap-4 text-xs text-[#52525B]">
-                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-[#111111]"></span> Skor Anda</span>
-                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-[#FF4F00]"></span> Ambang PG</span>
-              </div>
-            </div>
-            <div class="h-64"><canvas id="chartResultSubtes"></canvas></div>
-          </div>
-          <div class="p-6 sm:p-8 lg:col-span-4 flex flex-col justify-between space-y-4">
-            <div class="border-b border-[#DCDCE0] pb-3">
-              <h3 class="font-semibold text-base text-[#111111]">Tren total skor</h3>
-              <p class="text-xs text-[#52525B]">Riwayat skor antar percobaan</p>
-            </div>
-            <div class="h-64"><canvas id="chartResultTrend"></canvas></div>
-          </div>
-        </div>
-
-        <!-- Tabs Pembahasan & Papan Peringkat -->
-        <div class="p-6 sm:p-8 space-y-6">
-          <div class="inline-flex items-center border border-[#111111] no-print">
-            <button type="button" onclick="App.setResultTab('pembahasan')" class="h-9 px-4 text-xs font-semibold transition-colors ${state.resultTab === 'pembahasan' ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FFFFFF] text-[#52525B] hover:text-[#111111]'}">01 · Pembahasan soal</button>
-            <button type="button" onclick="App.setResultTab('peringkat')" class="h-9 px-4 border-l border-[#111111] text-xs font-semibold transition-colors ${state.resultTab === 'peringkat' ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FFFFFF] text-[#52525B] hover:text-[#111111]'}">02 · Papan peringkat (${state.leaderboard.length})</button>
-          </div>
-
-          ${state.resultTab === 'pembahasan' ? `
-            <div class="border-t border-l border-[#DCDCE0]">
-              ${d.pembahasan.filter(function (x) { return !x.locked; }).map(function (item, i) {
-                const open = !!state.openAccordion[i];
-                const badgeCls = item.poin >= 5 ? 'bg-[#111111] text-[#FFFFFF]' : item.poin > 0 ? 'bg-[#F7F7F8] border border-[#111111] text-[#111111]' : 'bg-[#FF4F00] text-[#FFFFFF]';
-                return `
-                  <div class="border-r border-b border-[#DCDCE0] p-5 space-y-3 bg-[#FFFFFF]">
-                    <div onclick="App.toggleAccordion(${i})" class="flex items-start justify-between gap-4 cursor-pointer">
-                      <div class="flex items-start gap-4">
-                        <span class="swiss-folio text-2xl font-semibold text-[#111111] w-8 shrink-0">${pad2(item.nomor_urut)}</span>
-                        <div>
-                          <div class="text-xs font-semibold text-[#71717A]">${esc(item.subtes)}${item.topik ? ' · ' + esc(item.topik) : ''}</div>
-                          <div class="text-sm font-medium text-[#111111] mt-1">${esc(item.pertanyaan)}</div>
-                        </div>
-                      </div>
-                      <span class="px-2.5 py-1 text-xs tabular-nums font-semibold shrink-0 ${badgeCls}">${item.subtes === 'TKP' ? '+' + item.poin + ' POIN' : (item.benar ? '+5 BENAR' : '0 SALAH')}</span>
+            <!-- Score Hero Summary Card -->
+            <section class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                <div class="lg:col-span-4 flex flex-col justify-between gap-6">
+                  <div class="flex flex-col gap-3">
+                    <div class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 w-fit ${lulus ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}">
+                      <span class="material-symbols-outlined material-fill text-[16px]">${lulus ? 'verified' : 'error'}</span>
+                      <span class="font-label-md text-label-md">${lulus ? 'LULUS AMBANG BATAS' : 'BELUM LULUS AMBANG BATAS'}</span>
                     </div>
-                    ${open ? `
-                      <div class="pl-12 space-y-3 pt-3 border-t border-[#DCDCE0]">
-                        <div class="flex flex-wrap gap-2 text-xs tabular-nums">
-                          <span class="px-2.5 py-1 bg-[#F7F7F8] border border-[#DCDCE0] text-[#52525B]">Jawaban Anda: <strong class="font-semibold text-[#111111]">${esc(item.jawaban_user || 'Kosong')}</strong></span>
-                          <span class="px-2.5 py-1 bg-[#111111] text-[#FFFFFF]">Kunci / bobot: <strong class="font-semibold">${esc(item.kunci_atau_bobot)}</strong></span>
-                        </div>
-                        <div class="p-4 bg-[#F7F7F8] border-l-2 border-[#FF4F00] text-xs text-[#52525B] leading-relaxed">
-                          <div class="font-semibold text-[#111111] mb-1">Pembahasan resmi</div>
-                          ${esc(item.pembahasan || 'Pembahasan belum tersedia')}
-                        </div>
-                      </div>
-                    ` : ''}
-                  </div>`;
-              }).join('')}
-
-              ${d.lockedCount > 0 ? `
-                <div class="border-r border-b border-[#111111] bg-[#F7F7F8] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 no-print">
-                  <div class="space-y-1">
-                    <div class="font-semibold text-base text-[#111111]">${d.lockedCount} pembahasan soal lainnya terkunci</div>
-                    <div class="text-xs text-[#52525B]">Upgrade ke Akun Pro untuk membuka seluruh kunci pembahasan dan paket simulasi 110 soal.</div>
+                    <div class="font-label-md text-label-md text-on-surface-variant">${esc(h.nama_paket)}</div>
+                    <div class="flex items-baseline gap-2">
+                      <span class="font-headline-lg text-headline-lg text-on-surface tabular-nums">${h.skor_total}</span>
+                      <span class="font-title-lg text-title-lg text-on-surface-variant tabular-nums">/ 550</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+                      <span class="material-symbols-outlined text-[18px]">timer</span>
+                      <span>Waktu pengerjaan: <strong class="text-on-surface font-label-lg text-label-lg">${fmtDurasi(h.durasi_pakai_detik)}</strong></span>
+                    </div>
                   </div>
-                  <button type="button" onclick="App.openUpgradeModal()" class="btn-accent h-10 px-5 text-xs shrink-0">Upgrade ke Akun Pro</button>
+                  <div class="flex flex-wrap items-center gap-3 no-print">
+                    <button type="button" onclick="window.print()" class="inline-flex items-center justify-center gap-2 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-lg px-4 py-2.5 font-label-lg text-label-lg transition-colors cursor-pointer">
+                      <span class="material-symbols-outlined text-[18px]">download</span>
+                      <span>Unduh Rapor PDF</span>
+                    </button>
+                    <button type="button" onclick="App.go('dashboard')" class="inline-flex items-center justify-center gap-2 bg-primary-container hover:bg-primary text-on-primary rounded-lg px-4 py-2.5 font-label-lg text-label-lg transition-colors cursor-pointer">
+                      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                      <span>Kembali ke Katalog</span>
+                    </button>
+                  </div>
                 </div>
-              ` : ''}
-            </div>
-          ` : `
-            <div class="border border-[#111111] overflow-x-auto">
-              <table class="w-full text-left border-collapse text-sm">
-                <thead>
-                  <tr class="border-b border-[#111111] bg-[#F7F7F8] text-xs text-[#52525B]">
-                    <th class="py-3 px-4 font-semibold">Peringkat</th>
-                    <th class="py-3 px-4 font-semibold">Peserta</th>
-                    <th class="py-3 px-3 font-semibold">TWK</th>
-                    <th class="py-3 px-3 font-semibold">TIU</th>
-                    <th class="py-3 px-3 font-semibold">TKP</th>
-                    <th class="py-3 px-3 font-semibold">Total</th>
-                    <th class="py-3 px-4 font-semibold">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${state.leaderboard.map(function (lb) {
-                    const ok = lb.status_kelulusan === 'Lulus';
-                    return `<tr class="border-b border-[#DCDCE0] last:border-b-0 hover:bg-[#F7F7F8] transition-colors">
-                      <td class="py-3 px-4 swiss-folio text-lg font-semibold text-[#111111]">${pad2(lb.rank)}</td>
-                      <td class="py-3 px-4 font-medium text-[#111111]">${esc(lb.nama_user)}</td>
-                      <td class="py-3 px-3 tabular-nums text-[#52525B]">${lb.skor_twk}</td>
-                      <td class="py-3 px-3 tabular-nums text-[#52525B]">${lb.skor_tiu}</td>
-                      <td class="py-3 px-3 tabular-nums text-[#52525B]">${lb.skor_tkp}</td>
-                      <td class="py-3 px-3 tabular-nums font-semibold text-[#111111]">${lb.skor_total}</td>
-                      <td class="py-3 px-4"><span class="px-2 py-0.5 text-xs font-semibold ${ok ? 'bg-[#111111] text-[#FFFFFF]' : 'bg-[#FF4F00] text-[#FFFFFF]'}">${esc(lb.status_kelulusan).toUpperCase()}</span></td>
-                    </tr>`;
+                <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  ${subCard('TWK', h.skor_twk, pgTwk, 150)}
+                  ${subCard('TIU', h.skor_tiu, pgTiu, 175)}
+                  ${subCard('TKP', h.skor_tkp, pgTkp, 225)}
+                </div>
+              </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div class="lg:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col justify-between gap-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 class="font-title-lg text-title-lg text-on-surface">Perbandingan Skor vs Ambang Batas BKN</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Evaluasi capaian tiap subtes terhadap standar kelulusan resmi.</p>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                      <span class="w-3 h-3 rounded-sm bg-primary-container inline-block"></span>
+                      <span class="font-label-md text-label-md text-on-surface-variant">Skor Anda</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="w-3 h-3 rounded-sm bg-surface-dim inline-block"></span>
+                      <span class="font-label-md text-label-md text-on-surface-variant">Passing Grade</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="h-60"><canvas id="chartResultSubtes"></canvas></div>
+              </div>
+
+              <div class="lg:col-span-4 bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col justify-between gap-4">
+                <div>
+                  <h2 class="font-title-lg text-title-lg text-on-surface">Tren Tryout Terakhir</h2>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Riwayat perkembangan total skor antar percobaan.</p>
+                </div>
+                <div class="h-60"><canvas id="chartResultTrend"></canvas></div>
+              </div>
+            </section>
+
+            <!-- Tabs Pembahasan & Papan Peringkat -->
+            <section class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-6">
+              <div class="flex flex-wrap items-center gap-2 bg-surface-container-low p-1.5 rounded-xl w-fit no-print">
+                <button type="button" onclick="App.setResultTab('pembahasan')" class="rounded-lg px-4 py-2 font-label-lg text-label-lg transition-colors cursor-pointer ${state.resultTab === 'pembahasan' ? 'bg-primary-container text-on-primary' : 'text-on-surface-variant hover:text-on-surface'}">
+                  Pembahasan Detail Soal
+                </button>
+                <button type="button" onclick="App.setResultTab('peringkat')" class="rounded-lg px-4 py-2 font-label-lg text-label-lg transition-colors cursor-pointer ${state.resultTab === 'peringkat' ? 'bg-primary-container text-on-primary' : 'text-on-surface-variant hover:text-on-surface'}">
+                  Papan Peringkat Nasional (${state.leaderboard.length})
+                </button>
+              </div>
+
+              ${state.resultTab === 'pembahasan' ? `
+                <div class="flex flex-col gap-4">
+                  ${d.pembahasan.filter(function (x) { return !x.locked; }).map(function (item, i) {
+                    const open = !!state.openAccordion[i];
+                    const badgeCls = item.poin >= 5
+                      ? 'bg-secondary-container text-on-secondary-container'
+                      : item.poin > 0
+                        ? 'bg-primary-fixed text-on-primary-fixed'
+                        : 'bg-error-container text-on-error-container';
+                    const numStr = String(item.nomor_urut).padStart(2, '0');
+                    return `
+                      <div class="bg-surface-container-low rounded-xl p-5 flex flex-col gap-4">
+                        <button type="button" onclick="App.toggleAccordion(${i})" class="w-full flex flex-wrap items-center justify-between gap-3 text-left cursor-pointer">
+                          <div class="flex flex-wrap items-center gap-3">
+                            <span class="font-mono-score text-mono-score bg-surface-container-lowest text-on-surface px-2.5 py-1 rounded-md">Soal #${numStr}</span>
+                            <span class="bg-primary-fixed text-on-primary-fixed rounded-full px-2.5 py-0.5 font-label-md text-label-md">${esc(item.subtes)}</span>
+                            <span class="font-title-md text-title-md text-on-surface">${esc(item.topik || ('Butir Soal ' + item.subtes))}</span>
+                          </div>
+                          <div class="flex items-center gap-3">
+                            <span class="${badgeCls} rounded-full px-3 py-1 font-label-md text-label-md">${item.subtes === 'TKP' ? 'Poin +' + item.poin : (item.benar ? 'Benar (+5 Poin)' : 'Salah (0 Poin)')}</span>
+                            <span class="material-symbols-outlined text-on-surface-variant">${open ? 'expand_less' : 'expand_more'}</span>
+                          </div>
+                        </button>
+                        ${open ? `
+                          <div class="flex flex-col gap-4 pt-1">
+                            <p class="font-body-md text-body-md text-on-surface">${esc(item.pertanyaan)}</p>
+                            <div class="flex flex-wrap items-center gap-4 font-label-lg text-label-lg">
+                              <span class="bg-surface-container-lowest text-on-surface px-3 py-1.5 rounded-lg">Jawaban Anda: <strong class="text-secondary">${esc(item.jawaban_user || 'Kosong')}</strong></span>
+                              <span class="bg-secondary-container text-on-secondary-container px-3 py-1.5 rounded-lg">Kunci / Bobot: <strong>${esc(item.kunci_atau_bobot)}</strong></span>
+                            </div>
+                            <div class="bg-surface-container-lowest rounded-lg p-4 flex gap-3">
+                              <div class="w-1 bg-secondary rounded-full shrink-0"></div>
+                              <div class="flex flex-col gap-1">
+                                <span class="font-label-lg text-label-lg text-on-surface">Pembahasan Resmi</span>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant">${esc(item.pembahasan || 'Pembahasan belum tersedia')}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ` : ''}
+                      </div>`;
                   }).join('')}
-                </tbody>
-              </table>
-            </div>
-          `}
+
+                  ${d.lockedCount > 0 ? `
+                    <div class="relative rounded-xl overflow-hidden bg-surface-container-low p-8 min-h-[210px] no-print">
+                      <div class="blur-sm select-none pointer-events-none flex flex-col gap-3 opacity-60">
+                        <div class="flex items-center justify-between">
+                          <span class="font-mono-score text-mono-score bg-surface-container-lowest px-2.5 py-1 rounded-md">Soal #03</span>
+                          <span class="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 font-label-md text-label-md">TKP (+5 Poin)</span>
+                        </div>
+                        <p class="font-body-md text-body-md text-on-surface">
+                          Ketika rekan kerja Anda mengalami kendala teknis menjelang tenggat waktu pelaporan kinerja bulanan, sikap Anda yang paling tepat adalah...
+                        </p>
+                      </div>
+                      <div class="absolute inset-0 bg-surface-container-lowest/85 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6 gap-4">
+                        <div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary">
+                          <span class="material-symbols-outlined text-[24px]">lock</span>
+                        </div>
+                        <div class="flex flex-col gap-1 max-w-md">
+                          <h3 class="font-title-md text-title-md text-on-surface">${d.lockedCount} Pembahasan Soal Lainnya Terkunci untuk Akun Latihan</h3>
+                          <p class="font-body-sm text-body-sm text-on-surface-variant">Buka seluruh kunci jawaban, bobot nilai TKP, dan analisis mendalam tiap butir soal.</p>
+                        </div>
+                        <button type="button" onclick="App.openUpgradeModal()" class="bg-primary-container hover:bg-primary text-on-primary rounded-lg px-5 py-2.5 font-label-lg text-label-lg transition-colors cursor-pointer">
+                          Upgrade ke Akun Pro Sekarang
+                        </button>
+                      </div>
+                    </div>
+                  ` : ''}
+                </div>
+              ` : `
+                <div class="flex flex-col gap-4">
+                  <div class="bg-surface-container-low rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                      <span class="material-symbols-outlined text-secondary text-[24px]">emoji_events</span>
+                      <div>
+                        <p class="font-title-md text-title-md text-on-surface">Papan Peringkat Peserta Nasional</p>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">Diurutkan berdasarkan status kelulusan ambang batas dan total skor tertinggi</p>
+                      </div>
+                    </div>
+                    <span class="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 font-mono-score text-mono-score">Skor Anda: ${h.skor_total}</span>
+                  </div>
+
+                  <div class="flex flex-col gap-2">
+                    <div class="grid grid-cols-12 gap-2 px-4 py-2 font-label-md text-label-md text-on-surface-variant">
+                      <div class="col-span-2">Peringkat</div>
+                      <div class="col-span-4">Nama Peserta</div>
+                      <div class="col-span-3 text-right">TWK / TIU / TKP</div>
+                      <div class="col-span-1 text-right">Total</div>
+                      <div class="col-span-2 text-right">Status</div>
+                    </div>
+                    ${state.leaderboard.map(function (lb) {
+                      const ok = lb.status_kelulusan === 'Lulus';
+                      const isMe = state.user && lb.nama_user === state.user.nama_lengkap;
+                      return `
+                        <div class="grid grid-cols-12 gap-2 items-center ${isMe ? 'bg-primary-fixed' : 'bg-surface-container-low'} rounded-lg px-4 py-3">
+                          <div class="col-span-2 font-mono-score text-mono-score text-on-surface">#${lb.rank}</div>
+                          <div class="col-span-4 font-label-lg text-label-lg text-on-surface truncate">${esc(lb.nama_user)}</div>
+                          <div class="col-span-3 text-right font-mono-score text-mono-score text-on-surface-variant tabular-nums">${lb.skor_twk} • ${lb.skor_tiu} • ${lb.skor_tkp}</div>
+                          <div class="col-span-1 text-right font-mono-score text-mono-score text-secondary font-semibold tabular-nums">${lb.skor_total}</div>
+                          <div class="col-span-2 text-right">
+                            <span class="px-2.5 py-0.5 rounded-full font-label-md text-label-md ${ok ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}">${esc(lb.status_kelulusan)}</span>
+                          </div>
+                        </div>`;
+                    }).join('')}
+                  </div>
+                </div>
+              `}
+            </section>
+
+          </div>
         </div>
       </main>
+      ${renderFooter()}
     `;
     refreshIcons();
   }
@@ -1074,9 +1252,9 @@ const App = (function () {
     if (!state.resultData || !window.Chart) return;
     const h = state.resultData.hasil;
     const p = state.resultData.paket || {};
-    const swissFont = { family: "'Helvetica Neue', 'Akzidenz-Grotesk', 'Söhne', Helvetica, Arial, sans-serif", size: 11 };
-    const gridColor = '#DCDCE0';
-    const tickColor = '#52525B';
+    const monoFont = { family: "'JetBrains Mono', monospace", size: 11 };
+    const gridColor = '#dce9ff';
+    const tickColor = '#414944';
 
     const ctx1 = document.getElementById('chartResultSubtes');
     if (ctx1) {
@@ -1085,8 +1263,8 @@ const App = (function () {
         data: {
           labels: ['TWK', 'TIU', 'TKP'],
           datasets: [
-            { label: 'Skor Anda', data: [h.skor_twk, h.skor_tiu, h.skor_tkp], backgroundColor: '#111111', borderRadius: 0, barPercentage: 0.6 },
-            { label: 'Ambang PG', data: [p.pg_twk || 65, p.pg_tiu || 80, p.pg_tkp || 166], backgroundColor: '#FF4F00', borderRadius: 0, barPercentage: 0.6 }
+            { label: 'Skor Anda', data: [h.skor_twk, h.skor_tiu, h.skor_tkp], backgroundColor: '#0e3b2c', borderRadius: 4, barPercentage: 0.6 },
+            { label: 'Passing Grade', data: [p.pg_twk || 65, p.pg_tiu || 80, p.pg_tkp || 166], backgroundColor: '#ccdbf3', borderRadius: 4, barPercentage: 0.6 }
           ]
         },
         options: {
@@ -1094,8 +1272,8 @@ const App = (function () {
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            y: { beginAtZero: true, grid: { color: gridColor }, border: { display: false }, ticks: { color: tickColor, font: swissFont } },
-            x: { grid: { display: false }, border: { display: false }, ticks: { color: tickColor, font: swissFont } }
+            y: { beginAtZero: true, grid: { color: gridColor }, border: { display: false }, ticks: { color: tickColor, font: monoFont } },
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: tickColor, font: monoFont } }
           }
         }
       }));
@@ -1108,15 +1286,15 @@ const App = (function () {
         data: {
           labels: tr.map(function (t) { return t.label; }),
           datasets: [{
-            label: 'Total skor',
+            label: 'Total Skor',
             data: tr.map(function (t) { return t.total; }),
-            borderColor: '#FF4F00',
-            borderWidth: 2,
-            backgroundColor: 'rgba(255, 79, 0, 0.08)',
+            borderColor: '#006d44',
+            borderWidth: 2.5,
+            backgroundColor: 'rgba(0, 109, 68, 0.14)',
             fill: true,
-            tension: 0,
-            pointRadius: 3,
-            pointBackgroundColor: '#111111'
+            tension: 0.35,
+            pointRadius: 4,
+            pointBackgroundColor: '#006d44'
           }]
         },
         options: {
@@ -1124,8 +1302,8 @@ const App = (function () {
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            y: { beginAtZero: true, grid: { color: gridColor }, border: { display: false }, ticks: { color: tickColor, font: swissFont } },
-            x: { grid: { display: false }, border: { display: false }, ticks: { color: tickColor, font: swissFont } }
+            y: { beginAtZero: true, grid: { color: gridColor }, border: { display: false }, ticks: { color: tickColor, font: monoFont } },
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: tickColor, font: monoFont } }
           }
         }
       }));
@@ -1155,11 +1333,10 @@ const App = (function () {
     if (cfg.demoOAuth || ApiClient.isDemoMode()) {
       slot.innerHTML = `
         <button type="button" onclick="App.handleDemoGoogleLogin()"
-          class="w-full h-10 px-4 border border-[#111111] bg-[#FFFFFF] hover:bg-[#F7F7F8] text-xs font-semibold text-[#111111] inline-flex items-center justify-between transition-colors">
-          <span>Lanjutkan dengan Google (pratinjau)</span>
-          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          class="w-full h-10 px-4 rounded-lg bg-surface-container-low hover:bg-surface-container font-label-lg text-label-lg text-on-surface inline-flex items-center justify-center gap-2.5 transition-colors cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.3h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.26-2.08 3.56-5.15 3.56-8.65z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.93-2.91l-3.87-3c-1.07.72-2.44 1.14-4.06 1.14-3.12 0-5.77-2.11-6.72-4.95H1.29v3.09A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.28 14.28A7.18 7.18 0 0 1 4.9 12c0-.79.14-1.56.38-2.28V6.63H1.29A12 12 0 0 0 0 12c0 1.94.46 3.77 1.29 5.37l3.99-3.09z"/><path fill="#EA4335" d="M12 4.77c1.76 0 3.34.61 4.58 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.29 6.63l3.99 3.09C6.23 6.88 8.88 4.77 12 4.77z"/></svg>
+          <span>Lanjutkan dengan Google (Mode Pratinjau)</span>
         </button>`;
-      refreshIcons();
       return;
     }
 
@@ -1288,15 +1465,15 @@ const App = (function () {
     },
     openProfileMenu: function () {
       const u = state.user || {};
-      openModal('Profil akun', `
-        <div class="space-y-4 text-sm">
-          <div class="p-4 bg-[#F7F7F8] border border-[#DCDCE0] space-y-1">
-            <div class="font-semibold text-base text-[#111111]">${esc(u.nama_lengkap)}</div>
-            <div class="text-xs text-[#52525B]">${esc(u.email)}</div>
-            <div class="pt-2"><span class="px-2 py-0.5 text-xs font-semibold bg-[#111111] text-[#FFFFFF]">PERAN: ${esc(u.role).toUpperCase()}</span></div>
+      openModal('Profil Akun', `
+        <div class="flex flex-col gap-4">
+          <div class="p-4 rounded-xl bg-surface-container-low space-y-1">
+            <div class="font-title-md text-title-md text-on-surface">${esc(u.nama_lengkap)}</div>
+            <div class="font-body-sm text-body-sm text-on-surface-variant">${esc(u.email)}</div>
+            <div class="pt-2"><span class="px-3 py-1 rounded-full font-label-md text-label-md bg-secondary-container text-on-secondary-container">Peran: ${esc(u.role)}</span></div>
           </div>
-          ${u.role === 'Admin' ? `<button type="button" onclick="App.closeModal(); App.go('admin')" class="btn-primary w-full h-10 px-4 text-xs text-left">Buka panel kontrol admin</button>` : ''}
-          <button type="button" onclick="App.logout()" class="w-full h-10 px-4 bg-[#FF4F00] text-[#FFFFFF] font-semibold text-xs text-left transition-colors">Keluar dari akun</button>
+          ${u.role === 'Admin' ? `<button type="button" onclick="App.closeModal(); App.go('admin')" class="w-full py-3 px-4 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg transition-colors cursor-pointer">Buka Panel Kontrol Admin</button>` : ''}
+          <button type="button" onclick="App.logout()" class="w-full py-3 px-4 rounded-lg bg-error-container text-on-error-container hover:opacity-90 font-label-lg text-label-lg transition-opacity cursor-pointer">Keluar dari Akun</button>
         </div>
       `);
     },
@@ -1304,21 +1481,33 @@ const App = (function () {
     openUpgradeModal: function () {
       const set = (state.dashData && state.dashData.settings) || {};
       openModal('Upgrade ke Akun Pro', `
-        <form onsubmit="App.submitUpgrade(event)" class="space-y-4 text-sm">
-          <div class="p-4 bg-[#F7F7F8] border-l-2 border-[#FF4F00] text-[#111111] text-xs space-y-1">
-            <div class="font-semibold">Biaya aktivasi: ${esc(set.HARGA_PRO || 'Rp 99.000 / 6 bulan')}</div>
-            <div>Tujuan transfer: <span class="tabular-nums font-semibold">${esc(set.INFO_REKENING_PRO || 'BCA 7410 8829 14 a.n. PT Simulasi Edukasi Nusantara')}</span></div>
+        <div class="flex flex-col gap-4">
+          <div class="bg-primary-fixed/40 rounded-xl p-4 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="font-body-sm text-body-sm text-on-primary-fixed">Biaya Aktivasi</span>
+              <span class="font-title-lg text-title-lg text-on-primary-fixed">${esc(set.HARGA_PRO || 'Rp 99.000 / 6 Bulan')}</span>
+            </div>
+            <div class="pt-1 flex flex-col gap-1">
+              <span class="font-label-md text-label-md text-on-primary-fixed-variant">Tujuan Transfer Bank / QRIS</span>
+              <span class="font-mono-score text-mono-score text-on-primary-fixed">${esc(set.INFO_REKENING_PRO || 'BCA 7410 8829 14 a.n. PT Simulasi Edukasi Nusantara')}</span>
+            </div>
           </div>
-          <div>
-            <label class="text-xs font-medium text-[#52525B]">Bukti transfer (JPG/PNG, maksimal 2MB)</label>
-            <input type="file" id="upg-file" accept="image/*" class="mt-1 w-full text-xs p-3 border border-[#111111] bg-[#F7F7F8]" />
-          </div>
-          <div>
-            <label class="text-xs font-medium text-[#52525B]">Catatan pengirim</label>
-            <input type="text" id="upg-note" required placeholder="Contoh: BCA a.n. Budi Santoso" class="input-control mt-1 w-full" />
-          </div>
-          <button type="submit" class="btn-accent w-full h-10 px-4 text-xs text-left">Kirim bukti aktivasi</button>
-        </form>
+          <form onsubmit="App.submitUpgrade(event)" class="flex flex-col gap-4">
+            <label for="upg-file" class="bg-surface-container-low hover:bg-surface-container rounded-xl p-6 flex flex-col items-center justify-center gap-2 text-center cursor-pointer transition-colors">
+              <span class="material-symbols-outlined text-secondary text-[32px]">cloud_upload</span>
+              <span class="font-label-lg text-label-lg text-on-surface" id="upg-file-label">Unggah Bukti Transfer</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">Format JPG, PNG, atau PDF (Maks. 2MB)</span>
+              <input type="file" id="upg-file" accept="image/*,.pdf" class="hidden" onchange="document.getElementById('upg-file-label').textContent = (this.files && this.files[0]) ? this.files[0].name : 'Unggah Bukti Transfer'" />
+            </label>
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-label-md text-on-surface-variant" for="upg-note">Catatan Pengirim (Nama Rekening / Waktu Transfer)</label>
+              <input type="text" id="upg-note" required placeholder="Contoh: BCA a.n. Budi Santoso" class="w-full bg-surface-container-low rounded-lg px-4 py-2.5 font-body-sm text-body-sm text-on-surface focus:outline-none focus:bg-surface-container transition-colors" />
+            </div>
+            <button type="submit" class="w-full bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg py-3 px-4 rounded-lg shadow-sm transition-colors cursor-pointer">
+              Kirim Bukti Aktivasi
+            </button>
+          </form>
+        </div>
       `);
     },
     submitUpgrade: async function (e) {
@@ -1346,16 +1535,18 @@ const App = (function () {
     confirmStartExam: function (paketId) {
       const p = (state.dashData && state.dashData.paket || []).find(function (x) { return x.paket_id === paketId; });
       if (!p) return;
-      openModal('Mulai simulasi CAT', `
-        <div class="space-y-4 text-sm">
-          <div class="font-semibold text-base text-[#111111]">${esc(p.nama_paket)}</div>
-          <div class="grid grid-cols-2 border-t border-l border-[#DCDCE0] text-xs tabular-nums">
-            <div class="p-3 bg-[#F7F7F8] border-r border-b border-[#DCDCE0]">Durasi: <strong class="font-semibold text-[#111111]">${p.durasi_menit} menit</strong></div>
-            <div class="p-3 bg-[#F7F7F8] border-r border-b border-[#DCDCE0]">Jumlah: <strong class="font-semibold text-[#111111]">${p.jumlah_soal} soal</strong></div>
-            <div class="p-3 bg-[#F7F7F8] border-r border-b border-[#DCDCE0] col-span-2">Ambang batas: <strong class="font-semibold text-[#111111]">TWK ${p.pg_twk} · TIU ${p.pg_tiu} · TKP ${p.pg_tkp}</strong></div>
+      openModal('Mulai Simulasi CAT', `
+        <div class="flex flex-col gap-4">
+          <div class="font-title-lg text-title-lg text-on-surface">${esc(p.nama_paket)}</div>
+          <div class="grid grid-cols-2 gap-2.5 font-mono-score text-mono-score">
+            <div class="p-3 rounded-lg bg-surface-container-low">Durasi: <strong class="text-on-surface">${p.durasi_menit} menit</strong></div>
+            <div class="p-3 rounded-lg bg-surface-container-low">Jumlah: <strong class="text-on-surface">${p.jumlah_soal} soal</strong></div>
+            <div class="p-3 rounded-lg bg-surface-container-low col-span-2">Passing Grade: <strong class="text-on-surface">TWK ${p.pg_twk} • TIU ${p.pg_tiu} • TKP ${p.pg_tkp}</strong></div>
           </div>
-          <p class="text-xs text-[#52525B] leading-relaxed">Waktu langsung berjalan saat ujian dimulai dan jawaban tersimpan otomatis di peramban Anda.</p>
-          <button type="button" onclick="App.startExamNow('${esc(paketId)}')" class="btn-accent w-full h-11 px-4 text-xs uppercase tracking-[0.04em] text-left">Mulai kerjakan</button>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">Waktu langsung berjalan saat ujian dimulai dan jawaban tersimpan otomatis di peramban Anda.</p>
+          <button type="button" onclick="App.startExamNow('${esc(paketId)}')" class="w-full bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg py-3 px-4 rounded-lg shadow-sm transition-colors cursor-pointer">
+            Mulai Kerjakan Sekarang
+          </button>
         </div>
       `);
     },
@@ -1415,16 +1606,22 @@ const App = (function () {
       const total = state.exam.soal.length;
       const dijawab = Object.keys(state.exam.answers).length;
       const kosong = total - dijawab;
-      openModal('Kumpulkan jawaban ujian', `
-        <div class="space-y-4 text-sm">
-          <div class="p-4 bg-[#F7F7F8] border border-[#DCDCE0] text-xs tabular-nums space-y-1">
-            <div>Terjawab: <strong class="font-semibold text-[#111111]">${dijawab} / ${total}</strong></div>
-            <div>Kosong: <strong class="font-semibold ${kosong > 0 ? 'text-[#FF4F00]' : 'text-[#111111]'}">${kosong}</strong></div>
+      openModal('Akhiri Sesi Ujian?', `
+        <div class="flex flex-col gap-4">
+          <div class="p-4 rounded-xl bg-surface-container-low font-mono-score text-mono-score space-y-1">
+            <div>Terjawab: <strong class="text-secondary">${dijawab} / ${total} soal</strong></div>
+            <div>Belum Dijawab: <strong class="${kosong > 0 ? 'text-error' : 'text-secondary'}">${kosong} soal</strong></div>
           </div>
-          <p class="text-xs text-[#52525B] leading-relaxed">Setelah dikumpulkan, jawaban tidak dapat diubah dan skor TWK, TIU, TKP langsung dihitung.</p>
-          <div class="flex gap-2">
-            <button type="button" onclick="App.closeModal()" class="btn-outline flex-1 h-10 px-4 text-xs text-left">Periksa lagi</button>
-            <button type="button" onclick="App.closeModal(); App.finishExam()" class="btn-accent flex-1 h-10 px-4 text-xs text-left">Kumpulkan</button>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">
+            Pastikan seluruh jawaban telah diperiksa. Setelah dikumpulkan, jawaban tidak dapat diubah dan skor TWK, TIU, TKP langsung dihitung.
+          </p>
+          <div class="flex items-center justify-end gap-3 pt-2">
+            <button type="button" onclick="App.closeModal()" class="px-4 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-label-lg text-label-lg hover:bg-surface-container transition-colors cursor-pointer">
+              Kembali ke Ujian
+            </button>
+            <button type="button" onclick="App.closeModal(); App.finishExam()" class="px-4 py-2.5 rounded-lg bg-error text-on-error font-label-lg text-label-lg hover:opacity-90 transition-opacity cursor-pointer">
+              Ya, Selesai Sekarang
+            </button>
           </div>
         </div>
       `);

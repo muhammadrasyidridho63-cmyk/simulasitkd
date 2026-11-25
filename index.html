@@ -6,25 +6,117 @@
   <title>SimulasiTKD Pro — Simulasi Ujian CAT Standar BKN</title>
   <meta name="description" content="Platform simulasi dan evaluasi ujian CAT TKD (TWK, TIU, TKP) berstandar BKN untuk seleksi CPNS, BUMN, dan Sekolah Kedinasan." />
 
-  <!-- Tailwind CSS CDN (Swiss Anchor: 1 Sans Family, #FFFFFF / #F7F7F8 Surface, International Orange #FF4F00) -->
+  <!-- Fonts: Plus Jakarta Sans (600-700), Inter (400-700), JetBrains Mono (500-600) & Material Symbols Outlined -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN & Exact Stitch Design System Config -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
+  <script id="tailwind-config">
     tailwind.config = {
+      darkMode: "class",
       theme: {
         extend: {
           colors: {
-            swissWhite: '#FFFFFF',
-            swissNeutral: '#F7F7F8',
-            swissInk: '#111111',
-            swissMuted: '#52525B',
-            swissSubtle: '#71717A',
-            swissRule: '#DCDCE0',
-            swissAccent: '#FF4F00'
+            "surface-container": "#e6eeff",
+            "secondary": "#006d44",
+            "primary-fixed": "#beedd7",
+            "on-error-container": "#93000a",
+            "surface-dim": "#ccdbf3",
+            "primary-container": "#0e3b2c",
+            "inverse-on-surface": "#eaf1ff",
+            "surface-bright": "#f8f9ff",
+            "inverse-surface": "#233144",
+            "error-container": "#ffdad6",
+            "on-tertiary-fixed-variant": "#673a37",
+            "on-surface-variant": "#414944",
+            "on-tertiary-fixed": "#33100e",
+            "secondary-fixed": "#93f7be",
+            "on-background": "#0d1c2e",
+            "background": "#f8f9ff",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary-container": "#c88e88",
+            "surface-container-low": "#eff4ff",
+            "outline-variant": "#c0c8c3",
+            "on-error": "#ffffff",
+            "on-primary-fixed-variant": "#244e3e",
+            "on-surface": "#0d1c2e",
+            "on-primary": "#ffffff",
+            "secondary-container": "#93f7be",
+            "tertiary": "#371411",
+            "inverse-primary": "#a3d0bb",
+            "error": "#ba1a1a",
+            "primary-fixed-dim": "#a3d0bb",
+            "tertiary-fixed": "#ffdad6",
+            "on-secondary-container": "#007349",
+            "surface": "#f8f9ff",
+            "tertiary-container": "#512825",
+            "surface-tint": "#3c6755",
+            "surface-container-high": "#dce9ff",
+            "secondary-fixed-dim": "#77daa4",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed-variant": "#005232",
+            "on-secondary": "#ffffff",
+            "primary": "#002419",
+            "tertiary-fixed-dim": "#f7b7b1",
+            "outline": "#717974",
+            "on-primary-fixed": "#002116",
+            "surface-variant": "#d5e3fc",
+            "on-primary-container": "#7aa692",
+            "surface-container-highest": "#d5e3fc",
+            "on-secondary-fixed": "#002111"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "space-lg": "1.5rem",
+            "space-md": "1rem",
+            "space-sm": "0.5rem",
+            "space-xs": "0.25rem",
+            "margin": "1.5rem",
+            "space-xl": "2.5rem",
+            "gutter": "1.5rem"
           },
           fontFamily: {
-            sans: ['"Helvetica Neue"', '"Akzidenz-Grotesk"', '"Söhne"', 'Helvetica', 'Arial', 'sans-serif'],
-            heading: ['"Helvetica Neue"', '"Akzidenz-Grotesk"', '"Söhne"', 'Helvetica', 'Arial', 'sans-serif'],
-            mono: ['"Helvetica Neue"', '"Akzidenz-Grotesk"', '"Söhne"', 'Helvetica', 'Arial', 'sans-serif']
+            "body-lg": ["Inter", "sans-serif"],
+            "body-sm": ["Inter", "sans-serif"],
+            "title-md": ["Plus Jakarta Sans", "sans-serif"],
+            "label-md": ["Inter", "sans-serif"],
+            "headline-md": ["Plus Jakarta Sans", "sans-serif"],
+            "mono-score": ["JetBrains Mono", "monospace"],
+            "mono-timer": ["JetBrains Mono", "monospace"],
+            "headline-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "title-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-lg-mobile": ["Plus Jakarta Sans", "sans-serif"],
+            "label-lg": ["Inter", "sans-serif"],
+            "headline-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "body-md": ["Inter", "sans-serif"],
+            "heading": ["Plus Jakarta Sans", "sans-serif"],
+            "sans": ["Inter", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          },
+          fontSize: {
+            "body-lg": ["18px", { "lineHeight": "29px", "fontWeight": "400" }],
+            "body-sm": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "title-md": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "headline-md": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "mono-score": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "mono-timer": ["20px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "headline-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "title-lg": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "headline-sm": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-md": ["16px", { "lineHeight": "26px", "fontWeight": "400" }]
           }
         }
       }
@@ -36,10 +128,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <!-- Swiss Design System CSS -->
+  <!-- Stitch Design System CSS -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body class="bg-[#FFFFFF] text-[#111111] antialiased selection:bg-[#FF4F00] selection:text-[#FFFFFF]">
+<body class="bg-surface font-body-md text-body-md text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
 
   <!-- Toast Container -->
   <div id="toast-container" class="no-print"></div>
@@ -49,12 +141,12 @@
 
   <!-- Main SPA App Root -->
   <div id="app" class="min-h-screen flex flex-col">
-    <div class="max-w-7xl mx-auto w-full px-6 py-12 border-x border-[#DCDCE0]">
-      <div class="skeleton h-12 w-full mb-6"></div>
-      <div class="grid grid-cols-1 md:grid-cols-3 border-t border-l border-[#DCDCE0]">
-        <div class="skeleton h-40 border-r border-b border-[#DCDCE0]"></div>
-        <div class="skeleton h-40 border-r border-b border-[#DCDCE0]"></div>
-        <div class="skeleton h-40 border-r border-b border-[#DCDCE0]"></div>
+    <div class="max-w-7xl mx-auto w-full px-6 lg:px-12 py-12 space-y-6">
+      <div class="skeleton h-12 w-full"></div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="skeleton h-40"></div>
+        <div class="skeleton h-40"></div>
+        <div class="skeleton h-40"></div>
       </div>
     </div>
   </div>
