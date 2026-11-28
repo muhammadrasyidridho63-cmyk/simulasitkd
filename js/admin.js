@@ -10,7 +10,7 @@ const AdminPanel = (function () {
   const STITCH_LOGO_URL = 'https://lh3.googleusercontent.com/aida/ALJJyrCgxoYmh_SaCEQ6oaX69rhrfi6NdUX3exxvaE7Q01NE8iAhadoxRdehu5cipWq8mbe0oBl1EIswChPRMDGzWBIdpxe2V3RtFkbts_cTywm2V9Z_YqHbLgb4yjLfvBmBaFX5fn5-LXfge_YQ9-motV6tIlAnsh4XtoJ452d4q8bPB_AjagRtW5HNYso5FG9mxcnRpj-6J-wEo8NSkoI4lQZR18NMhzRuzGNj5hzqk20';
 
   let state = {
-    tab: 'overview', // overview | questions | crm | admins | security
+    tab: 'overview', // overview | questions | durations | crm | admins | security
     mobileSidebarOpen: false,
     overview: null,
     upgradeFilter: 'Semua',
@@ -20,6 +20,7 @@ const AdminPanel = (function () {
     qSubtesFilter: 'Semua',
     qSearch: '',
     editingSoal: null,
+    durasiTierFilter: 'Semua',
     reports: { users: [], hasil: [] },
     repFilterPaket: '',
     repFilterStatus: '',
@@ -171,6 +172,10 @@ const AdminPanel = (function () {
         const firstSoal = qd.soal.find(function (s) { return s.paket_id === state.selectedPaketId; });
         if (!state.editingSoal && firstSoal) state.editingSoal = Object.assign({}, firstSoal);
         paintShell(root);
+      } else if (state.tab === 'durations') {
+        const qd = await ApiClient.call('admin.getQuestions', { paket_id: '' });
+        state.qData = qd;
+        paintShell(root);
       } else if (state.tab === 'crm') {
         const [crm, cfg] = await Promise.all([
           ApiClient.call('admin.crmList'),
@@ -197,6 +202,7 @@ const AdminPanel = (function () {
     const navItems = [
       { id: 'overview', label: 'Ringkasan & Verifikasi Pro', icon: 'verified_user', badge: pendingCount > 0 ? pendingCount : '' },
       { id: 'questions', label: 'Bank Soal & Laporan', icon: 'library_books' },
+      { id: 'durations', label: 'Pengaturan Waktu', icon: 'timer' },
       { id: 'crm', label: 'Notifikasi WA & CRM', icon: 'forum' },
       { id: 'admins', label: 'Manajemen User', icon: 'group' },
       { id: 'security', label: 'Pengaturan Sistem', icon: 'settings' }
@@ -286,6 +292,7 @@ const AdminPanel = (function () {
             <div class="max-w-[1440px] mx-auto flex flex-col w-full gap-8 pb-12">
               ${state.tab === 'overview' ? renderOverview() : ''}
               ${state.tab === 'questions' ? renderQuestionsAndReports() : ''}
+              ${state.tab === 'durations' ? renderDurationSettings() : ''}
               ${state.tab === 'crm' ? renderCrmWa() : ''}
               ${state.tab === 'admins' ? renderAdminEmails() : ''}
               ${state.tab === 'security' ? renderSecurityMigration() : ''}
@@ -587,6 +594,10 @@ const AdminPanel = (function () {
           <h1 class="font-headline-sm text-headline-sm text-on-surface mt-0.5">Manajemen Paket, Butir Soal &amp; Rekap Nilai</h1>
         </div>
         <div class="flex flex-wrap gap-2.5">
+          <button type="button" onclick="AdminPanel.switchTab('durations')" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary-container hover:bg-primary-fixed text-on-secondary-container font-label-lg text-label-lg transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">timer</span>
+            <span>Atur Waktu</span>
+          </button>
           <button type="button" onclick="AdminPanel.openPackageModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg transition-colors cursor-pointer">
             <span class="material-symbols-outlined text-[18px]">create_new_folder</span>
             <span>Paket Baru</span>
@@ -608,7 +619,11 @@ const AdminPanel = (function () {
         <div class="lg:col-span-4 bg-surface-container-lowest rounded-xl shadow-sm p-5 flex flex-col gap-4">
           <div class="flex items-center justify-between">
             <h2 class="font-title-lg text-title-lg text-on-surface">Daftar Butir Soal</h2>
-            <span class="font-mono-score text-mono-score text-on-surface-variant">${soalFiltered.length} soal</span>
+            ${(function () {
+              const curP = pakets.find(function (x) { return x.paket_id === state.selectedPaketId; });
+              const durLabel = curP ? ' • ' + Number(curP.durasi_menit || 15) + ' mnt' : '';
+              return `<span class="font-mono-score text-mono-score text-on-surface-variant">${soalFiltered.length} soal${durLabel}</span>`;
+            })()}
           </div>
 
           <div class="flex items-center gap-1.5">
@@ -809,6 +824,199 @@ const AdminPanel = (function () {
                     </td>
                   </tr>`;
               }).join('') : `<tr><td colspan="7" class="py-8 text-center font-body-sm text-body-sm text-on-surface-variant">Belum ada riwayat pengerjaan yang sesuai filter</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+
+  // --------------------------------------------------------------------------
+  // TAB 2B: PENGATURAN WAKTU PENGERJAAN SOAL (AKUN LATIHAN & AKUN PRO)
+  // --------------------------------------------------------------------------
+  function renderDurationSettings() {
+    const pakets = state.qData.paket || [];
+    const soalAll = state.qData.soal || [];
+    const latihanList = pakets.filter(function (p) { return p.tier_akses === 'Latihan'; });
+    const proList = pakets.filter(function (p) { return p.tier_akses === 'Pro'; });
+
+    const avgLatihan = latihanList.length ? Math.round(latihanList.reduce(function (s, p) { return s + Number(p.durasi_menit || 15); }, 0) / latihanList.length) : 15;
+    const avgPro = proList.length ? Math.round(proList.reduce(function (s, p) { return s + Number(p.durasi_menit || 100); }, 0) / proList.length) : 100;
+
+    const filtered = pakets.filter(function (p) {
+      if (state.durasiTierFilter === 'Semua') return true;
+      return p.tier_akses === state.durasiTierFilter;
+    });
+
+    const countSoalMap = {};
+    soalAll.forEach(function (s) {
+      countSoalMap[s.paket_id] = (countSoalMap[s.paket_id] || 0) + 1;
+    });
+
+    return `
+      <section class="pt-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <span class="font-label-md text-label-md text-secondary uppercase tracking-wider">Pengaturan Timer Ujian CAT</span>
+          <h1 class="font-headline-sm text-headline-sm text-on-surface mt-0.5">Pengaturan Waktu Pengerjaan Soal</h1>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Atur durasi pengerjaan secara massal per tier (Akun Latihan / Akun Pro) maupun detail per paket ujian.</p>
+        </div>
+        <button type="button" onclick="AdminPanel.switchTab('questions')" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg transition-colors cursor-pointer shrink-0">
+          <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+          <span>Kembali ke Bank Soal</span>
+        </button>
+      </section>
+
+      <!-- Pengaturan Cepat Berdasarkan Tier Akun -->
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Kartu Akun Latihan -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-4 border border-outline-variant/20">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span class="w-11 h-11 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[22px]">timer</span>
+              </span>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h2 class="font-title-lg text-title-lg text-on-surface">Paket Akun Latihan</h2>
+                  <span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md">${latihanList.length} Paket</span>
+                </div>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Terapkan durasi seragam ke seluruh paket latihan (gratis)</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-label-md text-label-md text-on-surface-variant mr-1">Preset cepat:</span>
+            ${[10, 15, 30, 45, 60].map(function (m) {
+              return `<button type="button" onclick="document.getElementById('bulk-dur-latihan').value=${m}" class="px-3 py-1 rounded-full bg-surface-container-low hover:bg-primary-fixed text-on-surface font-mono-score text-xs cursor-pointer transition-colors">${m} mnt</button>`;
+            }).join('')}
+          </div>
+
+          <form onsubmit="AdminPanel.applyBulkTierDuration(event, 'Latihan')" class="flex flex-wrap sm:flex-nowrap items-center gap-3 pt-1">
+            <div class="relative flex-1 min-w-[140px]">
+              <input id="bulk-dur-latihan" type="number" min="1" max="600" required value="${avgLatihan}"
+                class="w-full pl-4 pr-16 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" />
+              <span class="absolute right-3.5 top-1/2 -translate-y-1/2 font-label-md text-label-md text-on-surface-variant">Menit</span>
+            </div>
+            <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container hover:bg-secondary text-on-primary font-label-lg text-label-lg transition-colors shadow-sm cursor-pointer shrink-0">
+              <span class="material-symbols-outlined text-[18px]">done_all</span>
+              <span>Terapkan ke Latihan</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Kartu Akun Pro -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-4 border border-outline-variant/20">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span class="w-11 h-11 rounded-xl bg-primary-container text-on-primary flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[22px]">workspace_premium</span>
+              </span>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h2 class="font-title-lg text-title-lg text-on-surface">Paket Akun Pro</h2>
+                  <span class="px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-md text-label-md">${proList.length} Paket</span>
+                </div>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Terapkan durasi seragam ke seluruh paket tryout Pro</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-label-md text-label-md text-on-surface-variant mr-1">Preset cepat:</span>
+            ${[60, 90, 100, 110, 120].map(function (m) {
+              return `<button type="button" onclick="document.getElementById('bulk-dur-pro').value=${m}" class="px-3 py-1 rounded-full bg-surface-container-low hover:bg-primary-fixed text-on-surface font-mono-score text-xs cursor-pointer transition-colors">${m} mnt</button>`;
+            }).join('')}
+          </div>
+
+          <form onsubmit="AdminPanel.applyBulkTierDuration(event, 'Pro')" class="flex flex-wrap sm:flex-nowrap items-center gap-3 pt-1">
+            <div class="relative flex-1 min-w-[140px]">
+              <input id="bulk-dur-pro" type="number" min="1" max="600" required value="${avgPro}"
+                class="w-full pl-4 pr-16 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" />
+              <span class="absolute right-3.5 top-1/2 -translate-y-1/2 font-label-md text-label-md text-on-surface-variant">Menit</span>
+            </div>
+            <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container hover:bg-secondary text-on-primary font-label-lg text-label-lg transition-colors shadow-sm cursor-pointer shrink-0">
+              <span class="material-symbols-outlined text-[18px]">done_all</span>
+              <span>Terapkan ke Pro</span>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Tabel Pengaturan Waktu Per Paket -->
+      <section class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="font-title-lg text-title-lg text-on-surface">Atur Durasi Spesifik Per Paket (${filtered.length})</h2>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Sesuaikan lamanya waktu (1–600 menit) untuk masing-masing paket soal sesuai kebutuhan ujian.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-1.5 bg-surface-container-low p-1 rounded-lg">
+              ${['Semua', 'Latihan', 'Pro'].map(function (t) {
+                const active = state.durasiTierFilter === t;
+                const label = t === 'Semua' ? 'Semua Tier' : 'Akun ' + t;
+                return `<button type="button" onclick="AdminPanel.setDurationTierFilter('${t}')" class="px-3 py-1.5 rounded-md font-label-md text-label-md transition-colors cursor-pointer ${active ? 'bg-primary-container text-on-primary' : 'text-on-surface-variant hover:text-on-surface'}">${label}</button>`;
+              }).join('')}
+            </div>
+            <button type="button" onclick="AdminPanel.saveAllDurations()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container hover:bg-secondary text-on-primary font-label-lg text-label-lg transition-colors shadow-sm cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">save</span>
+              <span>Simpan Semua Perubahan</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+                <th class="py-3 px-4 rounded-l-lg">Nama Paket Ujian</th>
+                <th class="py-3 px-4">Tier Akun</th>
+                <th class="py-3 px-4 text-center">Butir Soal</th>
+                <th class="py-3 px-4">Durasi Pengerjaan (Menit)</th>
+                <th class="py-3 px-4 text-center">Rata-rata / Soal</th>
+                <th class="py-3 px-4 text-right rounded-r-lg">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-container">
+              ${filtered.length ? filtered.map(function (p) {
+                const jmlAktual = countSoalMap[p.paket_id] || 0;
+                const jmlBasis = jmlAktual || Number(p.jumlah_soal || 1);
+                const dur = Number(p.durasi_menit || 15);
+                const detPerSoal = Math.round((dur * 60) / Math.max(1, jmlBasis));
+                const isPro = p.tier_akses === 'Pro';
+                return `
+                  <tr class="hover:bg-surface-container-low/60 transition-colors">
+                    <td class="py-3.5 px-4">
+                      <div class="font-label-lg text-label-lg text-on-surface">${esc(p.nama_paket)}</div>
+                      <div class="font-body-sm text-body-sm text-on-surface-variant">${esc(p.kategori_label || 'SKD')} • Status: ${esc(p.status_aktif || 'Aktif')}</div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <span class="px-2.5 py-1 rounded-full font-label-md text-label-md ${isPro ? 'bg-primary-fixed text-on-primary-fixed' : 'bg-secondary-container text-on-secondary-container'}">
+                        ${isPro ? 'Akun Pro' : 'Akun Latihan'}
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 text-center font-mono-score text-mono-score text-on-surface">
+                      ${jmlAktual} <span class="text-on-surface-variant text-xs">/ ${p.jumlah_soal || jmlAktual}</span>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <div class="flex items-center gap-2">
+                        <input type="number" min="1" max="600" value="${dur}" data-dur-paket="${esc(p.paket_id)}" data-soal-basis="${jmlBasis}"
+                          oninput="AdminPanel.previewPace('${esc(p.paket_id)}', this.value, ${jmlBasis})"
+                          class="w-24 px-3 py-2 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none ring-1 ring-outline-variant/30 focus:ring-primary-container" />
+                        <span class="font-label-md text-label-md text-on-surface-variant">menit</span>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4 text-center font-mono-score text-mono-score text-on-surface-variant">
+                      <span id="pace-${esc(p.paket_id)}">~${detPerSoal} dtk/soal</span>
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                      <button type="button" onclick="AdminPanel.saveSingleDuration('${esc(p.paket_id)}')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-primary-container hover:text-on-primary text-on-surface font-label-md text-label-md transition-colors cursor-pointer">
+                        <span class="material-symbols-outlined text-[16px]">check</span>
+                        <span>Simpan</span>
+                      </button>
+                    </td>
+                  </tr>`;
+              }).join('') : `<tr><td colspan="6" class="py-10 text-center font-body-sm text-body-sm text-on-surface-variant">Belum ada paket ujian pada tier ini.</td></tr>`}
             </tbody>
           </table>
         </div>
@@ -1558,6 +1766,68 @@ const AdminPanel = (function () {
         state.editingSoal = null;
         App.toast('Paket "' + pkg.nama_paket + '" dihapus', 'info');
         render(document.getElementById('app'), 'questions');
+      } catch (err) { App.toast(err.message, 'error'); }
+    },
+    setDurationTierFilter: function (tier) {
+      state.durasiTierFilter = tier;
+      paintShell(document.getElementById('app'));
+    },
+    previewPace: function (paketId, menit, basisSoal) {
+      const el = document.getElementById('pace-' + paketId);
+      if (!el) return;
+      const m = Number(menit || 0);
+      if (m <= 0) { el.textContent = '-'; return; }
+      const dtk = Math.round((m * 60) / Math.max(1, Number(basisSoal || 1)));
+      el.textContent = '~' + dtk + ' dtk/soal';
+    },
+    applyBulkTierDuration: async function (e, tier) {
+      e.preventDefault();
+      const inputId = tier === 'Latihan' ? 'bulk-dur-latihan' : 'bulk-dur-pro';
+      const dur = Math.round(Number(document.getElementById(inputId).value || 0));
+      if (!dur || dur < 1 || dur > 600) {
+        return App.toast('Masukkan durasi antara 1 sampai 600 menit.', 'warning');
+      }
+      if (!confirm('Terapkan durasi ' + dur + ' menit ke semua paket Akun ' + tier + '?')) return;
+      try {
+        const res = await ApiClient.call('admin.updatePackageDurations', { tier_akses: tier, durasi_menit: dur });
+        if (res && res.paket) state.qData.paket = res.paket;
+        App.toast('Durasi ' + res.updatedCount + ' paket Akun ' + tier + ' diubah menjadi ' + dur + ' menit!', 'success');
+        paintShell(document.getElementById('app'));
+      } catch (err) { App.toast(err.message, 'error'); }
+    },
+    saveSingleDuration: async function (paketId) {
+      const input = document.querySelector('input[data-dur-paket="' + paketId + '"]');
+      if (!input) return;
+      const dur = Math.round(Number(input.value || 0));
+      if (!dur || dur < 1 || dur > 600) {
+        return App.toast('Durasi harus antara 1 sampai 600 menit.', 'warning');
+      }
+      try {
+        const res = await ApiClient.call('admin.updatePackageDurations', {
+          updates: [{ paket_id: paketId, durasi_menit: dur }]
+        });
+        if (res && res.paket) state.qData.paket = res.paket;
+        App.toast('Durasi paket diperbarui menjadi ' + dur + ' menit!', 'success');
+        paintShell(document.getElementById('app'));
+      } catch (err) { App.toast(err.message, 'error'); }
+    },
+    saveAllDurations: async function () {
+      const inputs = Array.from(document.querySelectorAll('input[data-dur-paket]'));
+      if (!inputs.length) return;
+      const updates = [];
+      for (let i = 0; i < inputs.length; i++) {
+        const pid = inputs[i].getAttribute('data-dur-paket');
+        const dur = Math.round(Number(inputs[i].value || 0));
+        if (!dur || dur < 1 || dur > 600) {
+          return App.toast('Semua durasi harus antara 1 sampai 600 menit.', 'warning');
+        }
+        updates.push({ paket_id: pid, durasi_menit: dur });
+      }
+      try {
+        const res = await ApiClient.call('admin.updatePackageDurations', { updates: updates });
+        if (res && res.paket) state.qData.paket = res.paket;
+        App.toast('Berhasil menyimpan waktu pengerjaan untuk ' + res.updatedCount + ' paket!', 'success');
+        paintShell(document.getElementById('app'));
       } catch (err) { App.toast(err.message, 'error'); }
     },
     setRepFilter: function (k, v, pos) {

@@ -613,6 +613,23 @@ const ApiClient = (function () {
         return { deleted: data.paket_id };
       }
 
+      if (action === 'admin.updatePackageDurations') {
+        let count = 0;
+        if (data.tier_akses) {
+          const dur = Math.round(Number(data.durasi_menit || 0));
+          db.paket.forEach(function (p) {
+            if (p.tier_akses === data.tier_akses) { p.durasi_menit = dur; count++; }
+          });
+        } else if (Array.isArray(data.updates)) {
+          data.updates.forEach(function (u) {
+            const p = db.paket.find(function (x) { return x.paket_id === u.paket_id; });
+            if (p) { p.durasi_menit = Math.round(Number(u.durasi_menit || 0)); count++; }
+          });
+        }
+        saveDb(db);
+        return { updatedCount: count, paket: db.paket };
+      }
+
       if (action === 'admin.getReports') {
         return { users: db.users.filter(function (u) { return u.role !== 'Admin'; }), hasil: db.hasil };
       }
