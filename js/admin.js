@@ -1,13 +1,16 @@
 /**
  * ============================================================================
  * SimulasiTKD Pro — js/admin.js
- * Panel Kontrol Admin (Sesuai Stitch Screen #5 & #6 + Modul WA/CRM + Rahasia + Migrasi)
+ * Panel Kontrol Admin (Stitch CAT Platform Design)
+ * Seluruh pengaturan, fitur CRUD, Impor CSV, CRM WA, OAuth 2.0 & Migrasi tetap utuh
  * ============================================================================
  */
 
 const AdminPanel = (function () {
+  const STITCH_LOGO_URL = 'https://lh3.googleusercontent.com/aida/ALJJyrCgxoYmh_SaCEQ6oaX69rhrfi6NdUX3exxvaE7Q01NE8iAhadoxRdehu5cipWq8mbe0oBl1EIswChPRMDGzWBIdpxe2V3RtFkbts_cTywm2V9Z_YqHbLgb4yjLfvBmBaFX5fn5-LXfge_YQ9-motV6tIlAnsh4XtoJ452d4q8bPB_AjagRtW5HNYso5FG9mxcnRpj-6J-wEo8NSkoI4lQZR18NMhzRuzGNj5hzqk20';
+
   let state = {
-    tab: 'overview', // overview | questions | crm | security
+    tab: 'overview', // overview | questions | crm | admins | security
     mobileSidebarOpen: false,
     overview: null,
     upgradeFilter: 'Semua',
@@ -42,6 +45,7 @@ const AdminPanel = (function () {
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+<<<<<<< HEAD
   function getFilteredReports() {
     return (state.reports.hasil || []).filter(function (h) {
       const mp = !state.repFilterPaket || h.paket_id === state.repFilterPaket;
@@ -57,6 +61,12 @@ const AdminPanel = (function () {
     el.focus();
     const pos = typeof cursorPos === 'number' ? cursorPos : el.value.length;
     try { el.setSelectionRange(pos, pos); } catch (e) {}
+=======
+  function refreshIcons() {
+    if (window.lucide) {
+      lucide.createIcons({ attrs: { 'stroke-width': 1.75 } });
+    }
+>>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
   }
 
   /** Parser CSV standar RFC-4180 (otomatis deteksi koma `,` atau titik koma `;` Excel Indonesia) */
@@ -166,117 +176,117 @@ const AdminPanel = (function () {
   function paintShell(root) {
     const pendingCount = (state.overview && state.overview.kpi && state.overview.kpi.pendingUpgrade) || 0;
     const savedAdmin = ApiClient.getSavedUser() || {};
-    const adminInitials = String(savedAdmin.nama_lengkap || 'AD').split(' ').map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
     const navItems = [
-      { id: 'overview', label: 'Ringkasan Analitik', icon: 'bar-chart-3', badge: pendingCount > 0 ? pendingCount : '' },
-      { id: 'questions', label: 'Bank Soal & Paket', icon: 'file-question' },
-      { id: 'crm', label: 'Notifikasi WA & CRM', icon: 'message-square-text' },
-      { id: 'admins', label: 'Kelola Admin (Email)', icon: 'user-cog' },
-      { id: 'security', label: 'Keamanan & Migrasi', icon: 'shield-check' }
+      { id: 'overview', label: 'Ringkasan & Verifikasi Pro', icon: 'verified_user', badge: pendingCount > 0 ? pendingCount : '' },
+      { id: 'questions', label: 'Bank Soal & Laporan', icon: 'library_books' },
+      { id: 'crm', label: 'Notifikasi WA & CRM', icon: 'forum' },
+      { id: 'admins', label: 'Manajemen User', icon: 'group' },
+      { id: 'security', label: 'Pengaturan Sistem', icon: 'settings' }
     ];
 
     const navHtml = navItems.map(function (item) {
       const active = state.tab === item.id;
       return `
-        <button onclick="AdminPanel.switchTab('${item.id}')"
-          class="admin-nav-link ${active ? 'active' : 'text-emerald-100/80 hover:bg-white/10 hover:text-white'} w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-left">
-          <span class="flex items-center gap-3">
-            <i data-lucide="${item.icon}" class="w-4 h-4"></i>
-            ${item.label}
+        <button type="button" onclick="AdminPanel.switchTab('${item.id}')"
+          class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors text-left cursor-pointer ${active ? 'bg-secondary text-on-secondary font-bold' : 'font-label-lg text-label-lg text-on-primary-container hover:bg-secondary/40 hover:text-on-secondary'}">
+          <span class="flex items-center min-w-0">
+            <span class="material-symbols-outlined mr-3 text-[20px] shrink-0">${item.icon}</span>
+            <span class="truncate text-sm">${item.label}</span>
           </span>
-          ${item.badge ? `<span class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-[#22A06B] text-white">${item.badge}</span>` : ''}
+          ${item.badge ? `<span class="font-mono-score text-mono-score text-xs px-2 py-0.5 rounded-full bg-error text-on-error">${item.badge}</span>` : ''}
         </button>`;
     }).join('');
 
     root.innerHTML = `
-      <div class="min-h-screen flex bg-[#F7FAF8]">
-        <!-- Desktop Sidebar (#0E3B2C sesuai Stitch #5 & #6) -->
-        <aside class="hidden lg:flex lg:flex-col w-60 bg-[#0E3B2C] text-white fixed inset-y-0 left-0 z-30 no-print">
-          <div class="h-16 px-5 flex items-center gap-3 border-b border-white/10">
-            <div class="w-9 h-9 rounded-xl bg-white text-[#0E3B2C] flex items-center justify-center font-bold">
-              <i data-lucide="shield-check" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <div class="font-heading font-bold text-sm leading-tight">Admin Panel</div>
-              <div class="text-[11px] text-emerald-200/80">SimulasiTKD Pro</div>
-            </div>
-          </div>
-          <nav class="flex-1 p-3 space-y-1.5">${navHtml}</nav>
-          <div class="p-3 border-t border-white/10 space-y-1">
-            <button onclick="App.go('dashboard')" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-emerald-100/80 hover:bg-white/10 hover:text-white">
-              <i data-lucide="eye" class="w-4 h-4"></i> Lihat Portal Peserta
+      <div class="min-h-screen bg-surface">
+        <!-- Fixed Left Sidebar (Exact Stitch Admin Panel Sidebar) -->
+        <aside class="hidden lg:flex fixed left-0 top-0 h-full w-60 bg-primary-container text-on-primary z-50 flex-col pt-6 pb-8 no-print">
+          <div class="px-6 mb-8 font-title-lg text-title-lg text-on-primary">Admin Panel</div>
+          <nav class="flex-1 px-3 space-y-1">${navHtml}</nav>
+          <div class="px-3 pt-4 space-y-1">
+            <button type="button" onclick="App.go('dashboard')" class="w-full flex items-center px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-primary-container hover:bg-secondary hover:text-on-secondary transition-colors cursor-pointer">
+              <span class="material-symbols-outlined mr-3 text-[20px]">visibility</span>
+              <span>Pratinjau Portal Peserta</span>
             </button>
-            <button onclick="App.logout()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-rose-200 hover:bg-rose-500/20">
-              <i data-lucide="log-out" class="w-4 h-4"></i> Keluar
+            <button type="button" onclick="App.logout()" class="w-full flex items-center px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-primary-container hover:bg-error hover:text-on-error transition-colors cursor-pointer">
+              <span class="material-symbols-outlined mr-3 text-[20px]">logout</span>
+              <span>Keluar</span>
             </button>
           </div>
         </aside>
 
-        <!-- Mobile Drawer -->
+        <!-- Mobile Sidebar Drawer -->
         ${state.mobileSidebarOpen ? `
           <div class="fixed inset-0 z-50 lg:hidden flex">
-            <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="AdminPanel.toggleSidebar(false)"></div>
-            <aside class="relative w-64 max-w-[80vw] bg-[#0E3B2C] text-white flex flex-col z-10">
-              <div class="h-16 px-5 flex items-center justify-between border-b border-white/10">
-                <span class="font-heading font-bold">Admin Panel</span>
-                <button onclick="AdminPanel.toggleSidebar(false)" class="p-1.5 rounded-lg hover:bg-white/10"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <div class="fixed inset-0 bg-on-surface/50 backdrop-blur-sm" onclick="AdminPanel.toggleSidebar(false)"></div>
+            <aside class="relative w-64 max-w-[82vw] bg-primary-container text-on-primary flex flex-col pt-6 pb-6 z-10">
+              <div class="px-6 mb-6 flex items-center justify-between">
+                <span class="font-title-lg text-title-lg text-on-primary">Admin Panel</span>
+                <button type="button" onclick="AdminPanel.toggleSidebar(false)" class="p-1.5 rounded-lg hover:bg-secondary/40 text-on-primary"><span class="material-symbols-outlined text-[20px]">close</span></button>
               </div>
-              <nav class="flex-1 p-3 space-y-1.5">${navHtml}</nav>
-              <div class="p-3 border-t border-white/10">
-                <button onclick="App.logout()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-rose-200 hover:bg-rose-500/20">
-                  <i data-lucide="log-out" class="w-4 h-4"></i> Keluar
+              <nav class="flex-1 px-3 space-y-1">${navHtml}</nav>
+              <div class="px-3 pt-4 space-y-1">
+                <button type="button" onclick="App.go('dashboard')" class="w-full flex items-center px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-primary-container hover:bg-secondary hover:text-on-secondary transition-colors">
+                  <span class="material-symbols-outlined mr-3 text-[20px]">visibility</span>
+                  <span>Pratinjau Portal Peserta</span>
+                </button>
+                <button type="button" onclick="App.logout()" class="w-full flex items-center px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-primary-container hover:bg-error hover:text-on-error transition-colors">
+                  <span class="material-symbols-outlined mr-3 text-[20px]">logout</span>
+                  <span>Keluar</span>
                 </button>
               </div>
             </aside>
           </div>
         ` : ''}
 
-        <!-- Main Content Area -->
-        <div class="flex-1 lg:pl-60 flex flex-col min-w-0">
-          <header class="h-16 bg-white border-b border-[#E2E8F0] px-4 lg:px-8 flex items-center justify-between sticky top-0 z-20 no-print">
+        <!-- Main Workspace -->
+        <div class="lg:pl-60">
+          <header class="fixed top-0 left-0 lg:left-60 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-6 lg:px-8 flex items-center justify-between no-print">
             <div class="flex items-center gap-3">
-              <button onclick="AdminPanel.toggleSidebar(true)" class="lg:hidden p-2 rounded-xl border border-[#E2E8F0] text-[#0E3B2C]">
-                <i data-lucide="menu" class="w-5 h-5"></i>
+              <button type="button" onclick="AdminPanel.toggleSidebar(true)" class="lg:hidden p-2 rounded-lg bg-surface-container-low text-on-surface">
+                <span class="material-symbols-outlined text-[20px]">menu</span>
               </button>
-              <div class="flex items-center gap-2 font-heading font-bold text-[#0E3B2C]">
-                <span class="w-7 h-7 rounded-lg bg-[#E8F5EE] text-[#1F8A5B] flex items-center justify-center"><i data-lucide="graduation-cap" class="w-4 h-4"></i></span>
-                SimulasiTKD Pro
-              </div>
-              ${ApiClient.isDemoMode() ? '<span class="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FEF9C3] text-[#854D0E]">Mode Demo Lokal</span>' : ''}
+              <img alt="SimulasiTKD Pro Logo" class="h-8 w-auto object-contain" src="${STITCH_LOGO_URL}" onerror="this.style.display='none'" />
+              <span class="font-title-md text-title-md text-primary">SimulasiTKD Pro</span>
+              ${ApiClient.isDemoMode() ? '<span class="hidden sm:inline-flex px-2.5 py-0.5 rounded-full font-label-md text-label-md bg-primary-fixed text-on-primary-fixed">Mode Pratinjau</span>' : ''}
             </div>
             <div class="flex items-center gap-3">
-              <button onclick="AdminPanel.refresh()" class="p-2 rounded-full border border-[#E2E8F0] text-[#4B5563] hover:bg-[#F7FAF8]" title="Segarkan Data">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              <button type="button" onclick="AdminPanel.refresh()" class="w-9 h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant flex items-center justify-center transition-colors cursor-pointer" title="Muat ulang data">
+                <span class="material-symbols-outlined text-[18px]">refresh</span>
               </button>
               <div class="hidden sm:block text-right">
-                <div class="text-xs font-bold text-[#111827] leading-tight">${esc(savedAdmin.nama_lengkap || 'Admin')}</div>
-                <div class="text-[11px] text-[#64748B] leading-tight">${esc(savedAdmin.email || '')}</div>
+                <div class="font-label-lg text-label-lg text-on-surface leading-tight">${esc(savedAdmin.nama_lengkap || 'Administrator')}</div>
+                <div class="font-label-md text-label-md text-on-surface-variant leading-tight">${esc(savedAdmin.email || '')}</div>
               </div>
-              <div class="w-9 h-9 rounded-full bg-[#0E3B2C] text-white flex items-center justify-center text-xs font-bold">${esc(adminInitials)}</div>
+              <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+              </div>
             </div>
           </header>
 
-          <main class="p-4 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
-            ${state.tab === 'overview' ? renderOverview() : ''}
-            ${state.tab === 'questions' ? renderQuestionsAndReports() : ''}
-            ${state.tab === 'crm' ? renderCrmWa() : ''}
-            ${state.tab === 'admins' ? renderAdminEmails() : ''}
-            ${state.tab === 'security' ? renderSecurityMigration() : ''}
+          <main class="relative pt-16 bg-surface w-full px-6 lg:px-8">
+            <div class="max-w-[1440px] mx-auto flex flex-col w-full gap-8 pb-12">
+              ${state.tab === 'overview' ? renderOverview() : ''}
+              ${state.tab === 'questions' ? renderQuestionsAndReports() : ''}
+              ${state.tab === 'crm' ? renderCrmWa() : ''}
+              ${state.tab === 'admins' ? renderAdminEmails() : ''}
+              ${state.tab === 'security' ? renderSecurityMigration() : ''}
+            </div>
           </main>
         </div>
       </div>
     `;
-    if (window.lucide) lucide.createIcons();
+    refreshIcons();
   }
 
   // --------------------------------------------------------------------------
-  // TAB 1: RINGKASAN ANALITIK & ANTREAN PERSETUJUAN PRO (Stitch Screen #5)
+  // TAB 1: RINGKASAN ANALITIK & ANTREAN PERSETUJUAN PRO (Exact Stitch Layout)
   // --------------------------------------------------------------------------
   function renderOverview() {
     if (!state.overview) {
-      return `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      return `<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-6">
         <div class="skeleton h-32"></div><div class="skeleton h-32"></div><div class="skeleton h-32"></div><div class="skeleton h-32"></div>
-      </div>`;
+      </section>`;
     }
     const k = state.overview.kpi;
     const list = (state.overview.upgrades || []).filter(function (r) {
@@ -287,119 +297,89 @@ const AdminPanel = (function () {
     });
 
     const rowsHtml = list.length ? list.map(function (r) {
-      const initials = String(r.nama_user || 'U').split(' ').map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
-      const badgeCls = r.status_verifikasi === 'Approved' ? 'bg-[#DCFCE7] text-[#166534]'
-        : r.status_verifikasi === 'Rejected' ? 'bg-[#FEE2E2] text-[#991B1B]'
-        : 'bg-[#FEF9C3] text-[#854D0E]';
+      const badgeCls = r.status_verifikasi === 'Approved' ? 'bg-secondary-container text-on-secondary-container'
+        : r.status_verifikasi === 'Rejected' ? 'bg-error-container text-on-error-container'
+        : 'bg-tertiary-fixed text-on-tertiary-fixed-variant';
       return `
-        <tr class="border-t border-[#E2E8F0] hover:bg-[#F7FAF8]">
+        <tr class="transition-colors hover:bg-surface-container-low/50">
           <td class="py-3.5 px-4">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-[#E8F5EE] text-[#0E3B2C] font-bold text-xs flex items-center justify-center shrink-0">${esc(initials)}</div>
-              <div>
-                <div class="font-semibold text-sm text-[#111827]">${esc(r.nama_user)}</div>
-                <div class="text-xs text-[#64748B] sm:hidden">${esc(r.email_user)}</div>
-              </div>
-            </div>
+            <div class="font-title-md text-title-md text-on-surface">${esc(r.nama_user)}</div>
+            <div class="font-body-sm text-body-sm text-on-surface-variant">${esc(r.email_user)}</div>
           </td>
-          <td class="py-3.5 px-4 text-sm text-[#4B5563] hidden sm:table-cell">${esc(r.email_user)}</td>
-          <td class="py-3.5 px-4 text-xs text-[#4B5563] hidden md:table-cell">${fmtDate(r.tanggal_request)}</td>
+          <td class="py-3.5 px-4 font-mono-score text-mono-score text-on-surface-variant">${fmtDate(r.tanggal_request)}</td>
           <td class="py-3.5 px-4">
-            <button onclick="AdminPanel.previewProof('${esc(r.req_id)}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] text-xs font-medium text-[#111827] hover:bg-[#F7FAF8]">
-              <i data-lucide="file-image" class="w-3.5 h-3.5 text-[#1F8A5B]"></i> Lihat Bukti
+            <button type="button" onclick="AdminPanel.previewProof('${esc(r.req_id)}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-primary font-label-md text-label-md hover:bg-primary-fixed transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">receipt_long</span>
+              <span>Lihat Bukti Drive</span>
             </button>
           </td>
-          <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${badgeCls}">${esc(r.status_verifikasi)}</span></td>
+          <td class="py-3.5 px-4">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full font-label-md text-label-md ${badgeCls}">${esc(r.status_verifikasi)}</span>
+          </td>
           <td class="py-3.5 px-4 text-right">
             ${r.status_verifikasi === 'Pending' ? `
               <div class="inline-flex items-center gap-2">
-                <button onclick="AdminPanel.processUpgrade('${esc(r.req_id)}','Approved')" class="px-3.5 py-1.5 rounded-full bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-semibold">Setujui Pro</button>
-                <button onclick="AdminPanel.processUpgrade('${esc(r.req_id)}','Rejected')" class="px-3.5 py-1.5 rounded-full bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-semibold">Tolak</button>
+                <button type="button" onclick="AdminPanel.processUpgrade('${esc(r.req_id)}','Approved')" class="h-8 px-3 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md hover:bg-secondary transition-colors cursor-pointer">Setujui &amp; Aktifkan Pro</button>
+                <button type="button" onclick="AdminPanel.processUpgrade('${esc(r.req_id)}','Rejected')" class="h-8 px-3 rounded-lg bg-error text-on-error font-label-md text-label-md hover:opacity-90 transition-opacity cursor-pointer">Tolak</button>
               </div>
-            ` : `<span class="text-xs text-[#64748B]">${esc(r.catatan_admin || 'Selesai')}</span>`}
+            ` : `<span class="font-label-md text-label-md text-on-surface-variant">${esc(r.catatan_admin || 'Terverifikasi')}</span>`}
           </td>
         </tr>`;
-    }).join('') : `<tr><td colspan="6" class="py-10 text-center text-sm text-[#64748B]">Semua pengajuan upgrade sudah diproses atau tidak ada data cocok.</td></tr>`;
+    }).join('') : `<tr><td colspan="5" class="py-10 text-center font-body-sm text-body-sm text-on-surface-variant">Tidak ada pengajuan upgrade yang sesuai filter</td></tr>`;
 
     return `
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <div class="text-xs font-bold tracking-wider uppercase text-[#1F8A5B]">Panel Kontrol Admin</div>
-          <h1 class="text-2xl sm:text-3xl font-heading font-bold text-[#111827] mt-1">Ringkasan Analitik &amp; Antrean Pro</h1>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="AdminPanel.switchTab('questions')" class="btn-primary px-4 py-2.5 text-xs inline-flex items-center gap-2">
-            <i data-lucide="download" class="w-4 h-4"></i> Ekspor Laporan
-          </button>
-        </div>
-      </div>
-
-      <!-- 4 KPI Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="card-stitch p-5">
-          <div class="flex items-center justify-between text-xs font-medium text-[#4B5563]">Total Peserta <span class="w-8 h-8 rounded-lg bg-[#E8F5EE] text-[#1F8A5B] flex items-center justify-center"><i data-lucide="users" class="w-4 h-4"></i></span></div>
-          <div class="text-3xl font-heading font-bold tabular-nums mt-3">${k.totalPeserta}</div>
-          <div class="text-xs text-[#166534] mt-2"><span class="px-2 py-0.5 rounded-full bg-[#DCFCE7] font-semibold">Aktif</span> terdaftar di sistem</div>
-        </div>
-        <div class="card-stitch p-5">
-          <div class="flex items-center justify-between text-xs font-medium text-[#4B5563]">Akun Pro Aktif <span class="w-8 h-8 rounded-lg bg-[#E8F5EE] text-[#1F8A5B] flex items-center justify-center"><i data-lucide="badge-check" class="w-4 h-4"></i></span></div>
-          <div class="text-3xl font-heading font-bold tabular-nums mt-3">${k.totalPro}</div>
-          <div class="text-xs text-[#4B5563] mt-2"><span class="px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#166534] font-semibold">${k.rasioPro}%</span> rasio konversi Pro</div>
-        </div>
-        <div class="card-stitch p-5">
-          <div class="flex items-center justify-between text-xs font-medium text-[#4B5563]">Antrean Upgrade <span class="w-8 h-8 rounded-lg bg-[#FEF9C3] text-[#D97706] flex items-center justify-center"><i data-lucide="hourglass" class="w-4 h-4"></i></span></div>
-          <div class="flex items-center gap-2 mt-3">
-            <span class="text-3xl font-heading font-bold tabular-nums">${k.pendingUpgrade}</span>
-            <span class="px-2 py-0.5 rounded-full bg-[#FEF9C3] text-[#854D0E] text-xs font-semibold">Pending</span>
+      <!-- 1. Admin KPI Row -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-6">
+        <!-- KPI 1 -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col justify-between transition-all hover:shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Peserta Terdaftar</span>
+            <span class="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined text-[20px]">group</span>
+            </span>
           </div>
-          <div class="text-xs text-[#64748B] mt-2">Menunggu verifikasi admin</div>
-        </div>
-        <div class="card-stitch p-5">
-          <div class="flex items-center justify-between text-xs font-medium text-[#4B5563]">Tingkat Kelulusan <span class="w-8 h-8 rounded-lg bg-[#E8F5EE] text-[#1F8A5B] flex items-center justify-center"><i data-lucide="award" class="w-4 h-4"></i></span></div>
-          <div class="text-3xl font-heading font-bold tabular-nums mt-3">${k.passRate}%</div>
-          <div class="text-xs text-[#4B5563] mt-2"><span class="px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#166534] font-semibold">Lulus PG</span> standar BKN</div>
-        </div>
-      </div>
-
-      <!-- Charts Row -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div class="card-stitch p-5 lg:col-span-5 flex flex-col justify-between">
-          <div>
-            <h3 class="font-heading font-bold text-base">Distribusi Tier Akun</h3>
-            <p class="text-xs text-[#64748B]">Perbandingan Akun Latihan vs Akun Pro</p>
-          </div>
-          <div class="flex items-center gap-6 mt-4">
-            <div class="w-36 h-36 relative shrink-0"><canvas id="chartAdminTier"></canvas></div>
-            <div class="space-y-3 flex-1 text-xs">
-              <div class="p-3 rounded-xl bg-[#F7FAF8] border border-[#E2E8F0] flex items-center justify-between">
-                <div><div class="font-bold text-[#0E3B2C]">Akun Pro</div><div class="text-[#64748B]">Akses penuh</div></div>
-                <div class="text-base font-bold tabular-nums">${k.totalPro}</div>
-              </div>
-              <div class="p-3 rounded-xl bg-[#F7FAF8] border border-[#E2E8F0] flex items-center justify-between">
-                <div><div class="font-bold text-[#1F8A5B]">Akun Latihan</div><div class="text-[#64748B]">Gratis terbatas</div></div>
-                <div class="text-base font-bold tabular-nums">${k.totalLatihan}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="card-stitch p-5 lg:col-span-7">
-          <div class="flex items-center justify-between mb-3">
+          <div class="mt-4 flex items-end justify-between">
             <div>
-              <h3 class="font-heading font-bold text-base">Aktivitas Ujian &amp; Kelulusan Mingguan</h3>
-              <p class="text-xs text-[#64748B]">Jumlah peserta ujian CAT dan rasio kelulusan 7 hari terakhir</p>
+              <div class="font-headline-md text-headline-md text-on-surface tabular-nums">${k.totalPeserta}</div>
+              <div class="font-label-md text-label-md text-secondary mt-1 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">trending_up</span>
+                <span>Akun terdaftar aktif</span>
+              </div>
+            </div>
+            <svg class="w-16 h-8 text-secondary" fill="none" viewBox="0 0 64 32">
+              <path d="M2 26L14 20L24 22L36 12L48 15L62 4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+            </svg>
+          </div>
+        </div>
+
+        <!-- KPI 2 -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col justify-between transition-all hover:shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Peserta Akun Pro Aktif</span>
+            <span class="w-9 h-9 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-container">
+              <span class="material-symbols-outlined text-[20px]">workspace_premium</span>
+            </span>
+          </div>
+          <div class="mt-4">
+            <div class="flex items-baseline gap-2">
+              <span class="font-headline-md text-headline-md text-on-surface tabular-nums">${k.totalPro}</span>
+              <span class="font-label-md text-label-md px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container">${k.rasioPro}% konversi</span>
+            </div>
+            <div class="w-full h-1.5 bg-surface-container-low rounded-full mt-3 overflow-hidden">
+              <div class="h-full bg-secondary rounded-full transition-all duration-500" style="width: ${Math.min(100, Number(k.rasioPro || 0))}%"></div>
             </div>
           </div>
-          <div class="h-44"><canvas id="chartAdminWeekly"></canvas></div>
         </div>
-      </div>
 
-      <!-- Antrean Persetujuan Upgrade Pro -->
-      <div class="card-stitch p-5">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-          <div>
-            <h3 class="font-heading font-bold text-lg">Antrean Persetujuan Upgrade Pro</h3>
-            <p class="text-xs text-[#64748B]">Verifikasi bukti transfer peserta untuk mengaktifkan akses Tryout Pro secara instan.</p>
+        <!-- KPI 3 -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col justify-between transition-all hover:shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Antrean Verifikasi Upgrade</span>
+            <span class="w-9 h-9 rounded-lg bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed-variant">
+              <span class="material-symbols-outlined text-[20px]">pending_actions</span>
+            </span>
           </div>
+<<<<<<< HEAD
           <div class="flex flex-wrap items-center gap-2">
             <input id="adm-upg-search" type="text" value="${esc(state.upgradeSearch)}" oninput="AdminPanel.setUpgradeSearch(this.value, this.selectionStart)" placeholder="Cari nama atau email..."
               class="px-3.5 py-2 text-xs rounded-full border border-[#E2E8F0] bg-[#F7FAF8] w-48" />
@@ -407,39 +387,134 @@ const AdminPanel = (function () {
               const active = state.upgradeFilter === st;
               return `<button onclick="AdminPanel.setUpgradeFilter('${st}')" class="px-3.5 py-1.5 rounded-full text-xs font-semibold ${active ? 'bg-[#0E3B2C] text-white' : 'bg-[#F7FAF8] text-[#4B5563] hover:bg-[#E8F5EE]'}">${st}</button>`;
             }).join('')}
+=======
+          <div class="mt-4 flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-2.5">
+                <span class="relative flex h-3 w-3">
+                  ${k.pendingUpgrade > 0 ? '<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>' : ''}
+                  <span class="relative inline-flex rounded-full h-3 w-3 ${k.pendingUpgrade > 0 ? 'bg-error' : 'bg-secondary'}"></span>
+                </span>
+                <span class="font-headline-md text-headline-md text-on-surface tabular-nums">${k.pendingUpgrade} Pending</span>
+              </div>
+              <p class="font-label-md text-label-md text-on-surface-variant mt-1">${k.pendingUpgrade > 0 ? 'Butuh tinjauan bukti transfer' : 'Tidak ada antrean tertunda'}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 4 -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col justify-between transition-all hover:shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Rata-rata Kelulusan PG</span>
+            <span class="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center text-on-primary-fixed-variant">
+              <span class="material-symbols-outlined text-[20px]">analytics</span>
+            </span>
+          </div>
+          <div class="mt-4 flex items-end justify-between">
+            <div>
+              <div class="font-headline-md text-headline-md text-on-surface tabular-nums">${k.passRate}%</div>
+              <div class="font-label-md text-label-md text-on-surface-variant mt-1">Ambang batas SKD Nasional</div>
+            </div>
+            <svg class="w-12 h-12 text-secondary -rotate-90" viewBox="0 0 36 36">
+              <circle class="text-surface-container-low" cx="18" cy="18" fill="none" r="15" stroke="currentColor" stroke-width="4"></circle>
+              <circle cx="18" cy="18" fill="none" r="15" stroke="currentColor" stroke-dasharray="${Math.min(100, Number(k.passRate || 0))} 100" stroke-linecap="round" stroke-width="4"></circle>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- Charts Hierarchy -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm p-6 lg:col-span-8 flex flex-col justify-between gap-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="font-title-lg text-title-lg text-on-surface">Aktivitas Ujian &amp; Kelulusan Mingguan</h3>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">Jumlah pengerjaan simulasi dan peserta lulus 7 hari terakhir</p>
+            </div>
+            <div class="flex items-center gap-4 font-label-md text-label-md text-on-surface-variant">
+              <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-primary-container"></span> Lulus PG</span>
+              <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-surface-dim"></span> Total Ujian</span>
+            </div>
+          </div>
+          <div class="h-60"><canvas id="chartAdminWeekly"></canvas></div>
+        </div>
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm p-6 lg:col-span-4 flex flex-col justify-between gap-4">
+          <div>
+            <h3 class="font-title-lg text-title-lg text-on-surface">Komposisi Tier Akun</h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Proporsi peserta Pro dan Latihan</p>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="w-32 h-32 relative shrink-0"><canvas id="chartAdminTier"></canvas></div>
+            <div class="space-y-2.5 flex-1">
+              <div class="p-3 rounded-lg bg-surface-container-low flex items-center justify-between">
+                <span class="font-label-md text-label-md text-on-surface">Akun Pro</span>
+                <span class="font-mono-score text-mono-score text-on-surface tabular-nums">${k.totalPro}</span>
+              </div>
+              <div class="p-3 rounded-lg bg-surface-container-low flex items-center justify-between">
+                <span class="font-label-md text-label-md text-on-surface-variant">Latihan</span>
+                <span class="font-mono-score text-mono-score text-on-surface tabular-nums">${k.totalLatihan}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Pro Upgrade Verification Queue Table -->
+      <section class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <span class="font-label-md text-label-md text-secondary uppercase tracking-wider">01 / Verifikasi Pembayaran</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface mt-0.5">Antrean Verifikasi Upgrade Pro</h2>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+              <input type="text" value="${esc(state.upgradeSearch)}" oninput="AdminPanel.setUpgradeSearch(this.value)" placeholder="Cari nama atau email peserta..."
+                class="pl-9 pr-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm placeholder:text-on-surface-variant focus:outline-none w-64" />
+            </div>
+            <div class="flex items-center gap-1.5 bg-surface-container-low p-1 rounded-lg">
+              ${['Semua', 'Pending', 'Approved', 'Rejected'].map(function (st) {
+                const active = state.upgradeFilter === st;
+                return `<button type="button" onclick="AdminPanel.setUpgradeFilter('${st}')" class="px-3 py-1.5 rounded-md font-label-md text-label-md transition-colors cursor-pointer ${active ? 'bg-primary-container text-on-primary' : 'text-on-surface-variant hover:text-on-surface'}">${st}</button>`;
+              }).join('')}
+            </div>
+>>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
           </div>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-[#F7FAF8] text-[11px] uppercase tracking-wider text-[#64748B]">
-                <th class="py-3 px-4 rounded-l-lg">Peserta</th>
-                <th class="py-3 px-4 hidden sm:table-cell">Email</th>
-                <th class="py-3 px-4 hidden md:table-cell">Tanggal</th>
-                <th class="py-3 px-4">Bukti Bayar</th>
+              <tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+                <th class="py-3 px-4 rounded-l-lg">Peserta &amp; Email</th>
+                <th class="py-3 px-4">Tanggal Pengajuan</th>
+                <th class="py-3 px-4">Bukti Transfer</th>
                 <th class="py-3 px-4">Status</th>
-                <th class="py-3 px-4 text-right rounded-r-lg">Aksi</th>
+                <th class="py-3 px-4 rounded-r-lg text-right">Aksi 1-Klik</th>
               </tr>
             </thead>
-            <tbody>${rowsHtml}</tbody>
+            <tbody class="font-body-sm text-body-sm">${rowsHtml}</tbody>
           </table>
         </div>
-      </div>
+      </section>
     `;
   }
 
   function mountOverviewCharts() {
     if (!state.overview || !window.Chart) return;
     const k = state.overview.kpi;
+    const monoFont = { family: "'JetBrains Mono', monospace", size: 11 };
+    const gridColor = '#dce9ff';
+    const tickColor = '#414944';
+
     const ctx1 = document.getElementById('chartAdminTier');
     if (ctx1) {
       charts.push(new Chart(ctx1, {
         type: 'doughnut',
         data: {
-          labels: ['Akun Pro', 'Akun Latihan'],
-          datasets: [{ data: [k.totalPro || 0, k.totalLatihan || 1], backgroundColor: ['#0E3B2C', '#A7F3D0'], borderWidth: 0 }]
+          labels: ['Akun Pro', 'Latihan'],
+          datasets: [{ data: [k.totalPro || 0, k.totalLatihan || 1], backgroundColor: ['#0e3b2c', '#ccdbf3'], borderWidth: 0 }]
         },
-        options: { cutout: '70%', plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false }
+        options: { cutout: '72%', plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false }
       }));
     }
     const ctx2 = document.getElementById('chartAdminWeekly');
@@ -450,17 +525,25 @@ const AdminPanel = (function () {
         data: {
           labels: w.map(function (d) { return d.label; }),
           datasets: [
-            { label: 'Total Ujian', data: w.map(function (d) { return d.total; }), backgroundColor: '#0E3B2C', borderRadius: 6, barPercentage: 0.6 },
-            { label: 'Lulus PG', data: w.map(function (d) { return d.lulus; }), backgroundColor: '#1F8A5B', borderRadius: 6, barPercentage: 0.6 }
+            { label: 'Lulus PG', data: w.map(function (d) { return d.lulus; }), backgroundColor: '#0e3b2c', borderRadius: 4, barPercentage: 0.6 },
+            { label: 'Total Ujian', data: w.map(function (d) { return d.total; }), backgroundColor: '#ccdbf3', borderRadius: 4, barPercentage: 0.6 }
           ]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', align: 'end' } }, scales: { y: { beginAtZero: true, grid: { color: '#F1F5F9' } }, x: { grid: { display: false } } } }
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: gridColor }, border: { display: false }, ticks: { color: tickColor, font: monoFont } },
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: tickColor, font: monoFont } }
+          }
+        }
       }));
     }
   }
 
   // --------------------------------------------------------------------------
-  // TAB 2: BANK SOAL, EDITOR PAKET & LAPORAN SKOR (Stitch Screen #6)
+  // TAB 2: BANK SOAL, EDITOR PAKET & LAPORAN SKOR (Exact Stitch Layout)
   // --------------------------------------------------------------------------
   function renderQuestionsAndReports() {
     const pakets = state.qData.paket || [];
@@ -489,24 +572,29 @@ const AdminPanel = (function () {
     const repList = getFilteredReports();
 
     return `
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <!-- Top Action Bar -->
+      <section class="pt-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <div class="text-xs font-bold tracking-wider uppercase text-[#1F8A5B]">01 / Manajemen Konten</div>
-          <h1 class="text-2xl font-heading font-bold text-[#111827] mt-1">Bank Soal &amp; Editor Paket</h1>
+          <span class="font-label-md text-label-md text-secondary uppercase tracking-wider">02 / Bank Soal &amp; Paket</span>
+          <h1 class="font-headline-sm text-headline-sm text-on-surface mt-0.5">Manajemen Paket, Butir Soal &amp; Rekap Nilai</h1>
         </div>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="AdminPanel.openPackageModal()" class="btn-outline px-4 py-2 text-xs inline-flex items-center gap-1.5">
-            <i data-lucide="folder-plus" class="w-4 h-4"></i> Paket Baru
+        <div class="flex flex-wrap gap-2.5">
+          <button type="button" onclick="AdminPanel.openPackageModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">create_new_folder</span>
+            <span>Paket Baru</span>
           </button>
-          <button onclick="AdminPanel.openImportModal()" class="btn-accent px-4 py-2 text-xs inline-flex items-center gap-1.5">
-            <i data-lucide="upload" class="w-4 h-4"></i> Impor Massal (CSV)
+          <button type="button" onclick="AdminPanel.openImportModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">upload_file</span>
+            <span>Impor CSV</span>
           </button>
-          <button onclick="AdminPanel.newQuestion()" class="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5">
-            <i data-lucide="plus" class="w-4 h-4"></i> Tambah Soal
+          <button type="button" onclick="AdminPanel.newQuestion()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container hover:bg-secondary text-on-primary font-label-lg text-label-lg transition-colors shadow-sm cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            <span>Tambah Soal</span>
           </button>
         </div>
-      </div>
+      </section>
 
+<<<<<<< HEAD
       <!-- Filter Bar -->
       <div class="flex flex-wrap items-center gap-2">
         <select onchange="AdminPanel.selectPaket(this.value)" class="px-4 py-2 rounded-full border border-[#E2E8F0] bg-white text-xs font-semibold text-[#111827]">
@@ -519,14 +607,48 @@ const AdminPanel = (function () {
         <input id="adm-q-search" type="text" value="${esc(state.qSearch)}" oninput="AdminPanel.setQSearch(this.value, this.selectionStart)" placeholder="Cari soal atau kata kunci..."
           class="ml-auto px-4 py-2 rounded-full border border-[#E2E8F0] bg-white text-xs w-56" />
       </div>
-
-      <!-- Split Question List + Editor -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div class="card-stitch p-4 lg:col-span-4 space-y-2.5 max-h-[620px] overflow-y-auto">
-          <div class="flex items-center justify-between px-1 mb-1">
-            <span class="font-heading font-bold text-sm">Daftar Soal</span>
-            <span class="text-xs text-[#64748B]">${soalFiltered.length} soal</span>
+=======
+      <!-- 3. Split Question Bank & TKP Weight Editor -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Left 4 Cols: Package & Question List -->
+        <div class="lg:col-span-4 bg-surface-container-lowest rounded-xl shadow-sm p-5 flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-title-lg text-title-lg text-on-surface">Daftar Butir Soal</h2>
+            <span class="font-mono-score text-mono-score text-on-surface-variant">${soalFiltered.length} soal</span>
           </div>
+>>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
+
+          <select onchange="AdminPanel.selectPaket(this.value)" class="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
+            ${pakets.map(function (p) { return `<option value="${esc(p.paket_id)}" ${p.paket_id === state.selectedPaketId ? 'selected' : ''}>${esc(p.nama_paket)} — ${esc(p.tier_akses)}</option>`; }).join('')}
+          </select>
+
+          <div class="flex items-center gap-1.5 bg-surface-container-low p-1 rounded-lg">
+            ${['Semua', 'TWK', 'TIU', 'TKP'].map(function (st) {
+              const active = state.qSubtesFilter === st;
+              return `<button type="button" onclick="AdminPanel.setQSubtes('${st}')" class="flex-1 py-1.5 rounded-md font-label-md text-label-md transition-colors cursor-pointer ${active ? 'bg-primary-container text-on-primary' : 'text-on-surface-variant hover:text-on-surface'}">${st}</button>`;
+            }).join('')}
+          </div>
+
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+            <input type="text" value="${esc(state.qSearch)}" oninput="AdminPanel.setQSearch(this.value)" placeholder="Cari teks pertanyaan..."
+              class="w-full pl-9 pr-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
+          </div>
+
+          <div class="flex flex-col gap-2.5 max-h-[520px] overflow-y-auto pr-1">
+            ${soalFiltered.length ? soalFiltered.map(function (s, idx) {
+              const active = ed.soal_id === s.soal_id;
+              return `
+                <button type="button" onclick="AdminPanel.editSoal('${esc(s.soal_id)}')" class="text-left p-3.5 rounded-xl transition-all cursor-pointer ${active ? 'bg-primary-fixed/60' : 'bg-surface-container-low hover:bg-surface-container'}">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="font-mono-score text-mono-score ${active ? 'text-on-primary-fixed' : 'text-on-surface-variant'}">Soal #${s.nomor_urut || idx + 1}</span>
+                    <span class="px-2 py-0.5 rounded-full font-label-md text-label-md ${s.subtes === 'TKP' ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container-high text-on-surface'}">${esc(s.subtes)}</span>
+                  </div>
+                  <p class="font-body-sm text-body-sm text-on-surface line-clamp-2">${esc(s.pertanyaan)}</p>
+                </button>`;
+            }).join('') : `<div class="py-10 text-center font-body-sm text-body-sm text-on-surface-variant">Belum ada soal di paket ini, klik Tambah Soal</div>`}
+          </div>
+<<<<<<< HEAD
           ${soalFiltered.length ? soalFiltered.map(function (s, idx) {
             const active = ed.soal_id === s.soal_id;
             return `
@@ -552,92 +674,110 @@ const AdminPanel = (function () {
 
         <form id="q-editor-form" onsubmit="AdminPanel.saveQuestion(event)" class="card-stitch p-5 lg:col-span-8 space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#E2E8F0]">
+=======
+        </div>
+
+        <!-- Right 8 Cols: Question & TKP Weight Editor -->
+        <div class="lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+>>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
             <div>
-              <h3 class="font-heading font-bold text-base">${ed.soal_id ? 'Edit Soal #' + esc(ed.nomor_urut) : 'Buat Soal Baru'}</h3>
-              <p class="text-xs text-[#64748B]">Ubah materi, kunci jawaban (TWK/TIU) atau bobot 1–5 (TKP), dan pembahasan.</p>
+              <span class="font-label-md text-label-md text-secondary uppercase tracking-wider">Editor Butir Soal • ${esc(ed.subtes)} #${esc(ed.nomor_urut || 1)}</span>
+              <h3 class="font-title-lg text-title-lg text-on-surface mt-0.5">${ed.soal_id ? 'Konten Soal & Pembobotan Skor' : 'Buat Butir Soal Baru'}</h3>
             </div>
             <div class="flex items-center gap-2">
-              <input type="number" id="q-nomor" value="${ed.nomor_urut || 1}" min="1" class="w-16 px-2.5 py-1.5 rounded-lg border border-[#E2E8F0] text-xs font-semibold" title="Nomor Urut" />
-              <select id="q-subtes" onchange="AdminPanel.changeEditorSubtes(this.value)" class="px-3 py-1.5 rounded-full bg-[#E8F5EE] text-[#0E3B2C] text-xs font-bold">
-                <option value="TWK" ${ed.subtes === 'TWK' ? 'selected' : ''}>Subtes: TWK</option>
-                <option value="TIU" ${ed.subtes === 'TIU' ? 'selected' : ''}>Subtes: TIU</option>
-                <option value="TKP" ${ed.subtes === 'TKP' ? 'selected' : ''}>Subtes: TKP</option>
+              <input type="number" id="q-nomor" value="${ed.nomor_urut || 1}" min="1" class="w-16 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" title="Nomor urut" />
+              <select id="q-subtes" onchange="AdminPanel.changeEditorSubtes(this.value)" class="px-3 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md focus:outline-none cursor-pointer">
+                <option value="TWK" ${ed.subtes === 'TWK' ? 'selected' : ''}>TWK (Benar +5)</option>
+                <option value="TIU" ${ed.subtes === 'TIU' ? 'selected' : ''}>TIU (Benar +5)</option>
+                <option value="TKP" ${ed.subtes === 'TKP' ? 'selected' : ''}>Skala TKP (1–5 Poin)</option>
               </select>
             </div>
           </div>
 
-          <input type="hidden" id="q-id" value="${esc(ed.soal_id || '')}" />
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <form onsubmit="AdminPanel.saveQuestion(event)" class="flex flex-col gap-4">
+            <input type="hidden" id="q-id" value="${esc(ed.soal_id || '')}" />
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-label-lg text-label-lg text-on-surface mb-1.5">Topik Materi</label>
+                <input type="text" id="q-topik" value="${esc(ed.topik || '')}" placeholder="Contoh: Pilar Negara / Silogisme" class="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
+              </div>
+              <div>
+                <label class="block font-label-lg text-label-lg text-on-surface mb-1.5">ID Gambar Google Drive (Opsional)</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">add_photo_alternate</span>
+                  <input type="text" id="q-img" value="${esc(ed.drive_image_id || '')}" placeholder="Contoh: 1A2B3C4D5E6F7G8H9I0J" class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" />
+                </div>
+              </div>
+            </div>
+
             <div>
-              <label class="text-xs font-semibold text-[#4B5563]">Topik / Materi</label>
-              <input type="text" id="q-topik" value="${esc(ed.topik || '')}" placeholder="Misal: Pilar Negara / Silogisme" class="mt-1 w-full px-3.5 py-2 rounded-xl border border-[#E2E8F0] text-sm" />
+              <label class="block font-label-lg text-label-lg text-on-surface mb-1.5">Pertanyaan (Question Stem)</label>
+              <textarea id="q-pertanyaan" rows="3" required class="w-full p-3.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">${esc(ed.pertanyaan || '')}</textarea>
             </div>
+
+            <div class="flex flex-col gap-3">
+              <label class="block font-label-lg text-label-lg text-on-surface">
+                Opsi Jawaban (A–E) &amp; ${ed.subtes === 'TKP' ? 'Bobot Poin TKP (1–5)' : 'Kunci Jawaban Benar (+5)'}
+              </label>
+              ${['A', 'B', 'C', 'D', 'E'].map(function (opt, idx) {
+                const val = ed['opsi_' + opt.toLowerCase()] || '';
+                const isTop = (ed.subtes === 'TKP' && tkpWeights[opt] === 5) || (ed.subtes !== 'TKP' && String(ed.kunci_atau_bobot).toUpperCase() === opt);
+                return `
+                  <div class="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+                    <span class="w-8 h-9 rounded-lg ${isTop ? 'bg-primary-container text-on-primary' : 'bg-surface-container-high text-on-surface'} flex items-center justify-center font-mono-score text-mono-score shrink-0">${opt}</span>
+                    <input type="text" id="q-opsi-${opt}" value="${esc(val)}" required placeholder="Teks opsi ${opt}" class="flex-1 px-3.5 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
+                    ${ed.subtes === 'TKP' ? `
+                      <select id="q-bobot-${opt}" class="w-32 px-3 py-2 rounded-lg ${tkpWeights[opt] === 5 ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container-low text-on-surface'} font-mono-score text-mono-score focus:outline-none">
+                        ${[5, 4, 3, 2, 1].map(function (n) { return `<option value="${n}" ${tkpWeights[opt] === n ? 'selected' : ''}>${n} Poin</option>`; }).join('')}
+                      </select>
+                    ` : `
+                      <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container-low font-label-md text-label-md text-on-surface cursor-pointer">
+                        <input type="radio" name="q-kunci" value="${opt}" ${String(ed.kunci_atau_bobot).toUpperCase() === opt ? 'checked' : ''} class="accent-[#0e3b2c]" />
+                        <span>Kunci Benar</span>
+                      </label>
+                    `}
+                  </div>`;
+              }).join('')}
+            </div>
+
             <div>
-              <label class="text-xs font-semibold text-[#4B5563]">URL / ID Gambar Soal (Opsional)</label>
-              <input type="text" id="q-img" value="${esc(ed.drive_image_id || '')}" placeholder="Tautan gambar Drive atau kosongkan" class="mt-1 w-full px-3.5 py-2 rounded-xl border border-[#E2E8F0] text-sm" />
+              <label class="block font-label-lg text-label-lg text-on-surface mb-1.5">Pembahasan Resmi</label>
+              <textarea id="q-pembahasan" rows="2" class="w-full p-3.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">${esc(ed.pembahasan || '')}</textarea>
             </div>
-          </div>
 
-          <div>
-            <label class="text-xs font-semibold text-[#4B5563]">Pertanyaan (Stem Soal)</label>
-            <textarea id="q-pertanyaan" rows="3" required class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] text-sm">${esc(ed.pertanyaan || '')}</textarea>
-          </div>
-
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <label class="text-xs font-semibold text-[#4B5563]">Pilihan Jawaban (A–E)</label>
-              <span class="text-[11px] text-[#1F8A5B] font-semibold">${ed.subtes === 'TKP' ? 'Atur bobot poin 1–5 per opsi' : 'Pilih 1 kunci jawaban benar (+5)'}</span>
+            <div class="flex items-center justify-between pt-2">
+              ${ed.soal_id ? `<button type="button" onclick="AdminPanel.deleteQuestion('${esc(ed.soal_id)}')" class="px-4 py-2.5 rounded-lg bg-error-container text-on-error-container font-label-lg text-label-lg hover:opacity-90 transition-opacity cursor-pointer">Hapus Soal</button>` : '<div></div>'}
+              <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg hover:bg-secondary transition-colors shadow-sm cursor-pointer">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                <span>Simpan Butir Soal</span>
+              </button>
             </div>
-            ${['A', 'B', 'C', 'D', 'E'].map(function (opt) {
-              const val = ed['opsi_' + opt.toLowerCase()] || '';
-              return `
-                <div class="flex items-center gap-2">
-                  <span class="w-8 h-9 rounded-lg bg-[#F7FAF8] border border-[#E2E8F0] flex items-center justify-center text-xs font-bold shrink-0">${opt}</span>
-                  <input type="text" id="q-opsi-${opt}" value="${esc(val)}" required placeholder="Teks opsi ${opt}" class="flex-1 px-3 py-2 rounded-xl border border-[#E2E8F0] text-xs sm:text-sm" />
-                  ${ed.subtes === 'TKP' ? `
-                    <select id="q-bobot-${opt}" class="w-16 px-2 py-2 rounded-xl border border-[#E2E8F0] text-xs font-bold bg-[#E8F5EE] text-[#0E3B2C]">
-                      ${[5, 4, 3, 2, 1].map(function (n) { return `<option value="${n}" ${tkpWeights[opt] === n ? 'selected' : ''}>${n} pt</option>`; }).join('')}
-                    </select>
-                  ` : `
-                    <label class="inline-flex items-center gap-1 text-xs font-medium text-[#4B5563] cursor-pointer px-2">
-                      <input type="radio" name="q-kunci" value="${opt}" ${String(ed.kunci_atau_bobot).toUpperCase() === opt ? 'checked' : ''} class="accent-[#0E3B2C]" /> Benar
-                    </label>
-                  `}
-                </div>`;
-            }).join('')}
-          </div>
+          </form>
+        </div>
+      </section>
 
+      <!-- 4. Score Recap & Export Toolbar -->
+      <section class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-5">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <label class="text-xs font-semibold text-[#4B5563]">Pembahasan Resmi</label>
-            <textarea id="q-pembahasan" rows="2" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] text-sm">${esc(ed.pembahasan || '')}</textarea>
+            <span class="font-label-md text-label-md text-secondary uppercase tracking-wider">03 / Rekapitulasi Nilai</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface mt-0.5">Rekap Skor &amp; Laporan Kelulusan</h2>
           </div>
-
-          <div class="flex items-center justify-between pt-2">
-            ${ed.soal_id ? `<button type="button" onclick="AdminPanel.deleteQuestion('${esc(ed.soal_id)}')" class="px-4 py-2 rounded-full bg-[#FEE2E2] text-[#991B1B] text-xs font-semibold hover:bg-red-200">Hapus Soal</button>` : '<div></div>'}
-            <button type="submit" class="btn-primary px-6 py-2.5 text-xs inline-flex items-center gap-2">
-              <i data-lucide="save" class="w-4 h-4"></i> Simpan Perubahan
+          <div class="flex flex-wrap items-center gap-2.5 no-print">
+            <button type="button" onclick="AdminPanel.exportReportsCSV()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-label-lg text-label-lg hover:bg-surface-container transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">table_view</span>
+              <span>Unduh CSV / Excel</span>
             </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- 02 / Laporan Skor & Manajemen Peserta -->
-      <div class="pt-4 space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-          <div>
-            <div class="text-xs font-bold tracking-wider uppercase text-[#1F8A5B]">02 / Analitik Peserta</div>
-            <h2 class="text-xl font-heading font-bold text-[#111827] mt-0.5">Laporan Skor &amp; Ekspor Data</h2>
-          </div>
-          <div class="flex flex-wrap gap-2 no-print">
-            <button onclick="AdminPanel.exportReportsCSV()" class="btn-outline px-4 py-2 text-xs inline-flex items-center gap-1.5">
-              <i data-lucide="file-spreadsheet" class="w-4 h-4 text-[#1F8A5B]"></i> Ekspor CSV / Excel
-            </button>
-            <button onclick="window.print()" class="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5">
-              <i data-lucide="printer" class="w-4 h-4"></i> Cetak Laporan PDF
+            <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg hover:bg-secondary transition-colors shadow-sm cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+              <span>Cetak Laporan PDF</span>
             </button>
           </div>
         </div>
 
+<<<<<<< HEAD
         <div class="card-stitch p-5 space-y-4">
           <div class="flex flex-wrap items-center gap-2 no-print">
             <select onchange="AdminPanel.setRepFilter('paket', this.value)" class="px-3.5 py-2 rounded-full border border-[#E2E8F0] text-xs bg-[#F7FAF8]">
@@ -683,9 +823,59 @@ const AdminPanel = (function () {
                 }).join('') : `<tr><td colspan="7" class="py-8 text-center text-xs text-[#64748B]">Belum ada riwayat pengerjaan yang cocok.</td></tr>`}
               </tbody>
             </table>
+=======
+        <!-- Filters -->
+        <div class="flex flex-wrap items-center gap-3 no-print">
+          <div class="relative flex-1 min-w-[220px]">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+            <input type="text" value="${esc(state.repSearch)}" oninput="AdminPanel.setRepFilter('search', this.value)" placeholder="Cari nama peserta..."
+              class="w-full pl-9 pr-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
+>>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
           </div>
+          <select onchange="AdminPanel.setRepFilter('paket', this.value)" class="px-3.5 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
+            <option value="">Semua Paket Tryout</option>
+            ${pakets.map(function (p) { return `<option value="${esc(p.paket_id)}" ${state.repFilterPaket === p.paket_id ? 'selected' : ''}>${esc(p.nama_paket)}</option>`; }).join('')}
+          </select>
+          <select onchange="AdminPanel.setRepFilter('status', this.value)" class="px-3.5 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
+            <option value="">Semua Status PG</option>
+            <option value="Lulus" ${state.repFilterStatus === 'Lulus' ? 'selected' : ''}>Lulus</option>
+            <option value="Tidak Lulus" ${state.repFilterStatus === 'Tidak Lulus' ? 'selected' : ''}>Tidak Lulus</option>
+          </select>
         </div>
-      </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+                <th class="py-3 px-4 rounded-l-lg">Nama Peserta</th>
+                <th class="py-3 px-4">Paket Tryout</th>
+                <th class="py-3 px-4">TWK</th>
+                <th class="py-3 px-4">TIU</th>
+                <th class="py-3 px-4">TKP</th>
+                <th class="py-3 px-4">Total Skor</th>
+                <th class="py-3 px-4 rounded-r-lg">Status PG</th>
+              </tr>
+            </thead>
+            <tbody class="font-body-sm text-body-sm">
+              ${repList.length ? repList.map(function (h) {
+                const ok = h.status_kelulusan === 'Lulus';
+                return `
+                  <tr class="hover:bg-surface-container-low/50 transition-colors">
+                    <td class="py-3.5 px-4 font-title-md text-title-md text-on-surface">${esc(h.nama_user)}</td>
+                    <td class="py-3.5 px-4 text-on-surface-variant">${esc(h.nama_paket)}</td>
+                    <td class="py-3.5 px-4 font-mono-score text-mono-score text-on-surface tabular-nums">${h.skor_twk}</td>
+                    <td class="py-3.5 px-4 font-mono-score text-mono-score text-on-surface tabular-nums">${h.skor_tiu}</td>
+                    <td class="py-3.5 px-4 font-mono-score text-mono-score text-on-surface tabular-nums">${h.skor_tkp}</td>
+                    <td class="py-3.5 px-4 font-mono-score text-mono-score text-primary font-bold tabular-nums">${h.skor_total}</td>
+                    <td class="py-3.5 px-4">
+                      <span class="inline-flex items-center px-2.5 py-1 rounded-full font-label-md text-label-md ${ok ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}">${esc(h.status_kelulusan)}</span>
+                    </td>
+                  </tr>`;
+              }).join('') : `<tr><td colspan="7" class="py-8 text-center font-body-sm text-body-sm text-on-surface-variant">Belum ada riwayat pengerjaan yang sesuai filter</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </section>
     `;
   }
 
@@ -698,52 +888,54 @@ const AdminPanel = (function () {
     const blasts = state.crm.blasts || [];
 
     return `
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <section class="pt-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <div class="text-xs font-bold tracking-wider uppercase text-[#1F8A5B]">Modul Notifikasi &amp; CRM</div>
-          <h1 class="text-2xl font-heading font-bold text-[#111827] mt-1">WhatsApp Gateway (Fonnte), Blast &amp; CRM Kontak</h1>
+          <span class="font-label-md text-label-md text-secondary uppercase tracking-wider">03 / Notifikasi &amp; CRM</span>
+          <h1 class="font-headline-sm text-headline-sm text-on-surface mt-0.5">WhatsApp Gateway, Blast &amp; Kontak Peserta</h1>
         </div>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="AdminPanel.syncCrm()" class="btn-outline px-4 py-2 text-xs inline-flex items-center gap-1.5">
-            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Sinkron Kontak Users
+        <div class="flex flex-wrap gap-2.5">
+          <button type="button" onclick="AdminPanel.syncCrm()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">sync</span>
+            <span>Sinkron Kontak</span>
           </button>
-          <button onclick="AdminPanel.validateWa()" class="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5">
-            <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Cek Validasi WA Fonnte
+          <button type="button" onclick="AdminPanel.validateWa()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container hover:bg-secondary text-on-primary font-label-lg text-label-lg transition-colors shadow-sm cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">verified</span>
+            <span>Validasi Nomor WA</span>
           </button>
         </div>
-      </div>
+      </section>
 
-      <!-- Saklar 2 Lapis & Blast Form -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div class="card-stitch p-5 lg:col-span-5 space-y-4">
-          <h3 class="font-heading font-bold text-base">Saklar Kanal Notifikasi</h3>
-          <div class="space-y-3 text-sm">
-            <label class="flex items-center justify-between p-3 rounded-xl bg-[#F7FAF8] border border-[#E2E8F0] cursor-pointer">
+      <!-- Saklar Kanal & Blast Form -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm p-6 lg:col-span-5 flex flex-col gap-4">
+          <h3 class="font-title-lg text-title-lg text-on-surface">Saklar Kanal Notifikasi</h3>
+          <div class="flex flex-col gap-3">
+            <label class="flex items-center justify-between p-3.5 rounded-xl bg-surface-container-low cursor-pointer">
               <div>
-                <div class="font-semibold">Notifikasi WhatsApp (Fonnte)</div>
-                <div class="text-xs text-[#64748B]">Token: ${cfg.fonnteAda ? '<span class="text-[#166534] font-semibold">Terpasang di Script Properties</span>' : '<span class="text-[#991B1B]">Belum diatur (atur di tab Keamanan)</span>'}</div>
+                <div class="font-title-md text-title-md text-on-surface">Notifikasi WhatsApp (Fonnte)</div>
+                <div class="font-label-md text-label-md text-on-surface-variant">Token: ${cfg.fonnteAda ? '<span class="text-secondary font-semibold">Terpasang di Script Properties</span>' : '<span class="text-error">Belum diatur di tab Pengaturan</span>'}</div>
               </div>
-              <input type="checkbox" id="cfg-wa" ${cfg.waAktif ? 'checked' : ''} onchange="AdminPanel.saveNotifToggle()" class="w-5 h-5 accent-[#0E3B2C]" />
+              <input type="checkbox" id="cfg-wa" ${cfg.waAktif ? 'checked' : ''} onchange="AdminPanel.saveNotifToggle()" class="w-4 h-4 accent-[#0e3b2c]" />
             </label>
-            <label class="flex items-center justify-between p-3 rounded-xl bg-[#F7FAF8] border border-[#E2E8F0] cursor-pointer">
+            <label class="flex items-center justify-between p-3.5 rounded-xl bg-surface-container-low cursor-pointer">
               <div>
-                <div class="font-semibold">Notifikasi Email (MailApp)</div>
-                <div class="text-xs text-[#64748B]">Antrean non-blocking via trigger 1 menit</div>
+                <div class="font-title-md text-title-md text-on-surface">Notifikasi Email (MailApp)</div>
+                <div class="font-label-md text-label-md text-on-surface-variant">Antrean non-blocking via pemicu berkala</div>
               </div>
-              <input type="checkbox" id="cfg-em" ${cfg.emailAktif ? 'checked' : ''} onchange="AdminPanel.saveNotifToggle()" class="w-5 h-5 accent-[#0E3B2C]" />
+              <input type="checkbox" id="cfg-em" ${cfg.emailAktif ? 'checked' : ''} onchange="AdminPanel.saveNotifToggle()" class="w-4 h-4 accent-[#0e3b2c]" />
             </label>
           </div>
 
-          <div class="pt-2 border-t border-[#E2E8F0]">
-            <div class="text-xs font-bold text-[#4B5563] mb-2">Matriks Kejadian Otomatis</div>
-            <div class="space-y-2 text-xs">
+          <div class="pt-2">
+            <div class="font-label-lg text-label-lg text-on-surface mb-2">Matriks Kejadian Otomatis</div>
+            <div class="flex flex-col gap-2">
               ${Object.keys(cfg.matriks || {}).map(function (ev) {
                 const m = cfg.matriks[ev];
-                return `<div class="flex items-center justify-between py-1.5 border-b border-[#F1F5F9]">
-                  <span>${esc(m.label || ev)}</span>
-                  <span class="flex gap-2">
-                    <span class="px-2 py-0.5 rounded-full ${m.wa ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#F1F5F9] text-[#64748B]'}">WA</span>
-                    <span class="px-2 py-0.5 rounded-full ${m.email ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#F1F5F9] text-[#64748B]'}">Email</span>
+                return `<div class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-container-low">
+                  <span class="font-body-sm text-body-sm text-on-surface">${esc(m.label || ev)}</span>
+                  <span class="flex gap-1.5">
+                    <span class="px-2.5 py-0.5 rounded-full font-label-md text-label-md ${m.wa ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container text-on-surface-variant'}">WA</span>
+                    <span class="px-2.5 py-0.5 rounded-full font-label-md text-label-md ${m.email ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container text-on-surface-variant'}">Email</span>
                   </span>
                 </div>`;
               }).join('')}
@@ -751,70 +943,71 @@ const AdminPanel = (function () {
           </div>
         </div>
 
-        <form onsubmit="AdminPanel.sendBlast(event)" class="card-stitch p-5 lg:col-span-7 space-y-4">
+        <form onsubmit="AdminPanel.sendBlast(event)" class="bg-surface-container-lowest rounded-xl shadow-sm p-6 lg:col-span-7 flex flex-col gap-4">
           <div>
-            <h3 class="font-heading font-bold text-base">Blast WhatsApp Massal Ber-Batch (Anti-Banned)</h3>
-            <p class="text-xs text-[#64748B]">Otomatis melewati kontak bertanda <b>Opt-Out = YA</b> dan mengirim bertahap dengan jeda acak 3–8 detik.</p>
+            <h3 class="font-title-lg text-title-lg text-on-surface">Blast WhatsApp Terjadwal</h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Melewati kontak bertanda Opt-Out dan mengirim bertahap dengan jeda acak 3–8 detik</p>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="text-xs font-semibold text-[#4B5563]">Judul Kampanye</label>
-              <input type="text" id="bl-judul" required placeholder="Misal: Promo Upgrade Pro SKD 2026" class="mt-1 w-full px-3.5 py-2 rounded-xl border border-[#E2E8F0] text-sm" />
+              <label class="block font-label-lg text-label-lg text-on-surface mb-1">Judul Kampanye</label>
+              <input type="text" id="bl-judul" required placeholder="Contoh: Pembukaan Tryout SKD #02" class="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
             </div>
             <div>
-              <label class="text-xs font-semibold text-[#4B5563]">Segmen Sasaran</label>
-              <select id="bl-sasaran" class="mt-1 w-full px-3.5 py-2 rounded-xl border border-[#E2E8F0] text-sm bg-white">
+              <label class="block font-label-lg text-label-lg text-on-surface mb-1">Segmen Sasaran</label>
+              <select id="bl-sasaran" class="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
                 <option value="SEMUA">Semua Kontak Aktif</option>
-                <option value="Latihan">Khusus Akun Latihan (Konversi Pro)</option>
-                <option value="Pro">Khusus Member Pro</option>
+                <option value="Latihan">Akun Latihan</option>
+                <option value="Pro">Akun Pro</option>
               </select>
             </div>
           </div>
           <div>
-            <label class="text-xs font-semibold text-[#4B5563]">Isi Pesan (Gunakan <code>{nama}</code>, <code>{institusi}</code>, <code>{link}</code>)</label>
-            <textarea id="bl-pesan" rows="3" required placeholder="Halo {nama}, paket Tryout Akbar SKD terbaru sudah dibuka di {institusi}!" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] text-sm"></textarea>
+            <label class="block font-label-lg text-label-lg text-on-surface mb-1">Isi Pesan (variabel: <code class="font-mono-score">{nama}</code>, <code class="font-mono-score">{institusi}</code>, <code class="font-mono-score">{link}</code>)</label>
+            <textarea id="bl-pesan" rows="3" required placeholder="Halo {nama}, paket Tryout SKD terbaru sudah tersedia di {institusi}" class="w-full p-3.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none"></textarea>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-xs text-[#64748B]">Batch 20 pesan • Jeda 3–8 detik</span>
-            <button type="submit" class="btn-accent px-5 py-2.5 text-xs inline-flex items-center gap-2">
-              <i data-lucide="send" class="w-4 h-4"></i> Jadwalkan Blast WA
+            <span class="font-mono-score text-mono-score text-on-surface-variant">Batch 20 pesan • Jeda 3–8 detik</span>
+            <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary-container hover:bg-secondary text-on-primary font-label-lg text-label-lg transition-colors shadow-sm cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">send</span>
+              <span>Jadwalkan Blast</span>
             </button>
           </div>
-          ${blasts.length ? `<div class="pt-3 border-t border-[#E2E8F0] text-xs space-y-1.5">
-            <div class="font-bold text-[#4B5563]">Riwayat Blast Terakhir:</div>
+          ${blasts.length ? `<div class="pt-3 flex flex-col gap-2">
+            <div class="font-label-lg text-label-lg text-on-surface">Riwayat Blast Terakhir</div>
             ${blasts.slice(0, 3).map(function (b) {
-              return `<div class="flex justify-between p-2 rounded-lg bg-[#F7FAF8]"><span><b>${esc(b.Judul)}</b> (${esc(b.Sasaran)})</span><span class="font-semibold text-[#166534]">${b.Terkirim}/${b.Total} • ${esc(b.Status)}</span></div>`;
+              return `<div class="flex justify-between p-3 rounded-lg bg-surface-container-low font-body-sm text-body-sm"><span><strong class="text-on-surface">${esc(b.Judul)}</strong> (${esc(b.Sasaran)})</span><span class="font-mono-score text-mono-score text-secondary">${b.Terkirim}/${b.Total} • ${esc(b.Status)}</span></div>`;
             }).join('')}
           </div>` : ''}
         </form>
-      </div>
+      </section>
 
       <!-- Tabel CRM Kontak -->
-      <div class="card-stitch p-5">
-        <h3 class="font-heading font-bold text-base mb-3">Database CRM Kontak (${kontak.length})</h3>
+      <section class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-4">
+        <h3 class="font-title-lg text-title-lg text-on-surface">Daftar Kontak CRM (${kontak.length})</h3>
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
+          <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-[#F7FAF8] text-[11px] uppercase tracking-wider text-[#64748B]">
+              <tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
                 <th class="py-3 px-4 rounded-l-lg">Nama &amp; Email</th>
-                <th class="py-3 px-4">No. WA</th>
+                <th class="py-3 px-4">Nomor WA</th>
                 <th class="py-3 px-4">Segmen</th>
                 <th class="py-3 px-4">Status WA</th>
-                <th class="py-3 px-4 text-right rounded-r-lg">Opt-Out Blast</th>
+                <th class="py-3 px-4 rounded-r-lg text-right">Status Blast</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody class="font-body-sm text-body-sm">
               ${kontak.map(function (k) {
                 const optOut = String(k.OptOut || '').toUpperCase() === 'YA';
                 return `
-                  <tr class="border-t border-[#E2E8F0]">
-                    <td class="py-3 px-4"><div class="font-semibold">${esc(k.Nama)}</div><div class="text-xs text-[#64748B]">${esc(k.Email)}</div></td>
-                    <td class="py-3 px-4 tabular-nums text-xs">${esc(k.NoWA || '-')}</td>
-                    <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${k.Segmen === 'Pro' ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEF9C3] text-[#854D0E]'}">${esc(k.Segmen)}</span></td>
-                    <td class="py-3 px-4 text-xs">${esc(k.StatusWA || 'Belum Dicek')}</td>
-                    <td class="py-3 px-4 text-right">
-                      <button onclick="AdminPanel.toggleOptOut('${esc(k.KontakID)}', ${!optOut})" class="px-3 py-1 rounded-full text-xs font-semibold ${optOut ? 'bg-[#FEE2E2] text-[#991B1B]' : 'bg-[#F1F5F9] text-[#475569]'}">
-                        ${optOut ? 'Opt-Out (YA)' : 'Aktif'}
+                  <tr class="hover:bg-surface-container-low/50 transition-colors">
+                    <td class="py-3.5 px-4"><div class="font-title-md text-title-md text-on-surface">${esc(k.Nama)}</div><div class="text-on-surface-variant">${esc(k.Email)}</div></td>
+                    <td class="py-3.5 px-4 font-mono-score text-mono-score text-on-surface-variant">${esc(k.NoWA || '-')}</td>
+                    <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full font-label-md text-label-md ${k.Segmen === 'Pro' ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container text-on-surface-variant'}">${esc(k.Segmen)}</span></td>
+                    <td class="py-3.5 px-4 text-on-surface-variant">${esc(k.StatusWA || 'Belum dicek')}</td>
+                    <td class="py-3.5 px-4 text-right">
+                      <button type="button" onclick="AdminPanel.toggleOptOut('${esc(k.KontakID)}', ${!optOut})" class="h-8 px-3 rounded-lg font-label-md text-label-md transition-colors cursor-pointer ${optOut ? 'bg-error-container text-on-error-container' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'}">
+                        ${optOut ? 'Opt-out Aktif' : 'Menerima'}
                       </button>
                     </td>
                   </tr>`;
@@ -822,136 +1015,150 @@ const AdminPanel = (function () {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     `;
   }
 
   // --------------------------------------------------------------------------
-  // TAB 4: KELOLA ADMIN & SINKRONISASI EMAIL (GOOGLE OAUTH <-> USERS)
+  // TAB 4: KELOLA ADMIN & MANAJEMEN USER
   // --------------------------------------------------------------------------
   function renderAdminEmails() {
     const d = state.adminEmailsData;
-    if (!d) return `<div class="space-y-4"><div class="skeleton h-32"></div><div class="skeleton h-52"></div></div>`;
+    if (!d) return `<div class="pt-6 space-y-4"><div class="skeleton h-32"></div><div class="skeleton h-52"></div></div>`;
     const admins = d.admins || [];
     const users = d.users || [];
 
     return `
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <section class="pt-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <div class="text-xs font-bold tracking-wider uppercase text-[#1F8A5B]">Otorisasi &amp; Sinkronisasi Email</div>
-          <h1 class="text-2xl font-heading font-bold text-[#111827] mt-1">Kelola Admin Tersinkron Email Google</h1>
-          <p class="text-xs text-[#64748B] mt-1">Setiap email yang terdaftar di sini otomatis memperoleh akses <b>Panel Kontrol Admin</b> saat masuk via Google OAuth 2.0 maupun login email biasa.</p>
+          <span class="font-label-md text-label-md text-secondary uppercase tracking-wider">04 / Otorisasi &amp; Manajemen User</span>
+          <h1 class="font-headline-sm text-headline-sm text-on-surface mt-0.5">Kelola Admin &amp; Akun Peserta Terdaftar</h1>
         </div>
-        <button onclick="AdminPanel.syncAdminEmails()" class="btn-primary px-4 py-2.5 text-xs inline-flex items-center gap-2 shrink-0">
-          <i data-lucide="refresh-cw" class="w-4 h-4"></i> Sinkronkan Email Sekarang
+        <button type="button" onclick="AdminPanel.syncAdminEmails()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container hover:bg-secondary text-on-primary font-label-lg text-label-lg transition-colors shadow-sm cursor-pointer self-start sm:self-auto">
+          <span class="material-symbols-outlined text-[18px]">sync</span>
+          <span>Sinkronkan Email Admin</span>
         </button>
-      </div>
+      </section>
 
       <!-- Info Akun Aktif & Form Tambah Email Admin -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div class="card-stitch p-5 lg:col-span-5 space-y-3">
-          <div class="text-xs font-bold uppercase tracking-wider text-[#64748B]">Status Sinkronisasi Sesi</div>
-          <div class="p-3.5 rounded-2xl bg-[#E8F5EE] text-[#0E3B2C] space-y-1 text-xs">
-            <div class="font-bold">Email Login Saat Ini:</div>
-            <div class="font-mono text-sm font-bold break-all">${esc(d.currentEmail || '-')}</div>
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm p-6 lg:col-span-5 flex flex-col gap-3">
+          <div class="font-title-md text-title-md text-on-surface">Status Sesi Saat Ini</div>
+          <div class="p-3.5 rounded-xl bg-primary-fixed/50 text-on-primary-fixed space-y-1">
+            <div class="font-label-md text-label-md">Email Login Aktif</div>
+            <div class="font-mono-score text-mono-score break-all">${esc(d.currentEmail || '-')}</div>
           </div>
-          <div class="p-3.5 rounded-2xl bg-[#F7FAF8] border border-[#E2E8F0] space-y-1 text-xs">
-            <div class="font-semibold text-[#4B5563]">Pemilik Google Apps Script (Otomatis Admin):</div>
-            <div class="font-mono font-bold text-[#111827] break-all">${esc(d.ownerEmail || 'Terdeteksi otomatis di GAS')}</div>
+          <div class="p-3.5 rounded-xl bg-surface-container-low space-y-1">
+            <div class="font-label-md text-label-md text-on-surface-variant">Pemilik Google Apps Script</div>
+            <div class="font-mono-score text-mono-score text-on-surface break-all">${esc(d.ownerEmail || 'Terdeteksi otomatis di GAS')}</div>
           </div>
         </div>
 
-        <form onsubmit="AdminPanel.addAdminEmail(event)" class="card-stitch p-5 lg:col-span-7 space-y-4">
+        <form onsubmit="AdminPanel.addAdminEmail(event)" class="bg-surface-container-lowest rounded-xl shadow-sm p-6 lg:col-span-7 flex flex-col gap-4">
           <div>
-            <h3 class="font-heading font-bold text-base">Tambah Email Admin Baru</h3>
-            <p class="text-xs text-[#64748B]">Masukkan alamat Gmail/Google yang ingin diberi akses Panel Admin. Sistem otomatis menyinkronkan ke <code>Script Properties</code> &amp; Sheet <code>Users</code>.</p>
+            <h3 class="font-title-lg text-title-lg text-on-surface">Tambah Email Administrator</h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Disinkronkan ke Script Properties dan tabel Users secara otomatis</p>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="text-xs font-semibold text-[#4B5563]">Alamat Email Google</label>
-              <input type="email" id="adm-new-email" required placeholder="adminbaru@gmail.com" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] text-sm" />
+              <label class="block font-label-lg text-label-lg text-on-surface mb-1">Alamat Email</label>
+              <input type="email" id="adm-new-email" required placeholder="admin@instansi.id" class="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
             </div>
             <div>
-              <label class="text-xs font-semibold text-[#4B5563]">Nama Admin (Opsional)</label>
-              <input type="text" id="adm-new-nama" placeholder="Misal: Pengelola Tryout" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] text-sm" />
+              <label class="block font-label-lg text-label-lg text-on-surface mb-1">Nama Tampilan (Opsional)</label>
+              <input type="text" id="adm-new-nama" placeholder="Contoh: Pengelola Tryout" class="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
             </div>
           </div>
-          <button type="submit" class="btn-accent px-5 py-2.5 text-xs inline-flex items-center gap-2">
-            <i data-lucide="user-plus" class="w-4 h-4"></i> Tambahkan &amp; Sinkronkan Email Admin
-          </button>
+          <div>
+            <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary-container hover:bg-secondary text-on-primary font-label-lg text-label-lg transition-colors shadow-sm cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">person_add</span>
+              <span>Tambahkan Admin</span>
+            </button>
+          </div>
         </form>
-      </div>
+      </section>
 
       <!-- Tabel Daftar Email Admin Tersinkron -->
-      <div class="card-stitch p-5 space-y-3">
-        <h3 class="font-heading font-bold text-base">Daftar Email Admin Aktif (${admins.length})</h3>
+      <section class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-4">
+        <h3 class="font-title-lg text-title-lg text-on-surface">Daftar Email Admin Aktif (${admins.length})</h3>
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
+          <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-[#F7FAF8] text-[11px] uppercase tracking-wider text-[#64748B]">
-                <th class="py-3 px-4 rounded-l-lg">Email Google</th>
-                <th class="py-3 px-4">Nama di Users</th>
+              <tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+                <th class="py-3 px-4 rounded-l-lg">Email</th>
+                <th class="py-3 px-4">Nama Pengguna</th>
                 <th class="py-3 px-4">Status Sinkron</th>
-                <th class="py-3 px-4 text-right rounded-r-lg">Aksi</th>
+                <th class="py-3 px-4 rounded-r-lg text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody class="font-body-sm text-body-sm">
               ${admins.length ? admins.map(function (a) {
                 return `
-                  <tr class="border-t border-[#E2E8F0]">
-                    <td class="py-3 px-4 font-semibold text-[#111827]">
+                  <tr class="hover:bg-surface-container-low/50 transition-colors">
+                    <td class="py-3.5 px-4 font-title-md text-title-md text-on-surface">
                       ${esc(a.email)}
-                      ${a.isOwner ? '<span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0E3B2C] text-white">Pemilik</span>' : ''}
+                      ${a.isOwner ? '<span class="ml-2 px-2.5 py-0.5 rounded-full font-label-md text-label-md bg-primary-container text-on-primary">Pemilik</span>' : ''}
                     </td>
-                    <td class="py-3 px-4 text-xs text-[#4B5563]">${esc(a.nama)}</td>
-                    <td class="py-3 px-4">
-                      <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${a.syncedRole === 'Admin' ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEF9C3] text-[#854D0E]'}">
-                        ${a.syncedRole === 'Admin' ? '✓ Tersinkron (Admin)' : esc(a.syncedRole)}
+                    <td class="py-3.5 px-4 text-on-surface-variant">${esc(a.nama)}</td>
+                    <td class="py-3.5 px-4">
+                      <span class="px-2.5 py-1 rounded-full font-label-md text-label-md ${a.syncedRole === 'Admin' ? 'bg-secondary-container text-on-secondary-container' : 'bg-tertiary-fixed text-on-tertiary-fixed'}">
+                        ${a.syncedRole === 'Admin' ? 'Tersinkron (Admin)' : esc(a.syncedRole)}
                       </span>
                     </td>
-                    <td class="py-3 px-4 text-right">
+                    <td class="py-3.5 px-4 text-right">
                       ${a.email !== d.currentEmail ? `
-                        <button onclick="AdminPanel.removeAdminEmail('${esc(a.email)}')" class="px-3 py-1 rounded-full bg-[#FEE2E2] text-[#991B1B] text-xs font-semibold hover:bg-red-200">Cabut Admin</button>
-                      ` : '<span class="text-xs text-[#64748B]">Sesi aktif Anda</span>'}
+                        <button type="button" onclick="AdminPanel.removeAdminEmail('${esc(a.email)}')" class="h-8 px-3 rounded-lg bg-error-container text-on-error-container font-label-md text-label-md hover:opacity-90 transition-opacity cursor-pointer">Cabut Akses</button>
+                      ` : '<span class="font-label-md text-label-md text-on-surface-variant">Sesi Aktif</span>'}
                     </td>
                   </tr>`;
-              }).join('') : `<tr><td colspan="4" class="py-8 text-center text-xs text-[#64748B]">Belum ada email admin tersimpan. Klik <b>Sinkronkan Email Sekarang</b>.</td></tr>`}
+              }).join('') : `<tr><td colspan="4" class="py-8 text-center text-on-surface-variant">Belum ada email admin tersimpan</td></tr>`}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      <!-- Tabel Semua Pengguna (Tambah User, Ubah Role, & Hapus User) -->
-      <div class="card-stitch p-5 space-y-4">
+      <!-- Tabel Semua Pengguna -->
+      <section class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <h3 class="font-heading font-bold text-base">Manajemen Akun &amp; User Terdaftar (${users.length})</h3>
-            <p class="text-xs text-[#64748B]">Tambah user baru (Latihan / Pro / Admin), ubah tier secara instan, atau hapus akun peserta.</p>
+            <h3 class="font-title-lg text-title-lg text-on-surface">Manajemen Akun Terdaftar (${users.length})</h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Tambah pengguna baru, ubah tier akses, atau hapus akun peserta</p>
           </div>
+<<<<<<< HEAD
           <div class="flex flex-wrap items-center gap-2">
             <input id="adm-user-search" type="text" value="${esc(state.userSearch)}" oninput="AdminPanel.setUserSearch(this.value, this.selectionStart)" placeholder="Cari nama atau email..."
               class="px-3.5 py-2 rounded-full border border-[#E2E8F0] bg-[#F7FAF8] text-xs w-44" />
             <select onchange="AdminPanel.setUserRoleFilter(this.value)" class="px-3 py-2 rounded-full border border-[#E2E8F0] bg-[#F7FAF8] text-xs font-semibold">
+=======
+          <div class="flex flex-wrap items-center gap-2.5">
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+              <input type="text" value="${esc(state.userSearch)}" oninput="AdminPanel.setUserSearch(this.value)" placeholder="Cari nama atau email..."
+                class="pl-9 pr-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none w-52" />
+            </div>
+            <select onchange="AdminPanel.setUserRoleFilter(this.value)" class="px-3.5 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
+>>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
               ${['Semua', 'Latihan', 'Pro', 'Admin'].map(function (r) {
-                return `<option value="${r}" ${state.userRoleFilter === r ? 'selected' : ''}>${r === 'Semua' ? 'Semua Role' : r}</option>`;
+                return `<option value="${r}" ${state.userRoleFilter === r ? 'selected' : ''}>${r === 'Semua' ? 'Semua Peran' : r}</option>`;
               }).join('')}
             </select>
-            <button onclick="AdminPanel.openCreateUserModal()" class="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5">
-              <i data-lucide="user-plus" class="w-4 h-4"></i> Tambah User
+            <button type="button" onclick="AdminPanel.openCreateUserModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container hover:bg-secondary text-on-primary font-label-lg text-label-lg transition-colors shadow-sm cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">person_add</span>
+              <span>Tambah Pengguna</span>
             </button>
           </div>
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
+          <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-[#F7FAF8] text-[11px] uppercase tracking-wider text-[#64748B]">
+              <tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
                 <th class="py-3 px-4 rounded-l-lg">Nama &amp; Email</th>
-                <th class="py-3 px-4 hidden sm:table-cell">No. WA</th>
-                <th class="py-3 px-4">Role Saat Ini</th>
-                <th class="py-3 px-4 text-right rounded-r-lg">Aksi</th>
+                <th class="py-3 px-4 hidden sm:table-cell">Nomor WA</th>
+                <th class="py-3 px-4">Peran</th>
+                <th class="py-3 px-4 rounded-r-lg text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody class="font-body-sm text-body-sm">
               ${(function () {
                 const q = state.userSearch.toLowerCase();
                 const filtered = users.filter(function (u) {
@@ -959,24 +1166,28 @@ const AdminPanel = (function () {
                   const mq = !q || String(u.nama_lengkap).toLowerCase().includes(q) || String(u.email).toLowerCase().includes(q);
                   return mr && mq;
                 });
-                if (!filtered.length) return `<tr><td colspan="4" class="py-8 text-center text-xs text-[#64748B]">Tidak ada user yang cocok dengan filter.</td></tr>`;
+                if (!filtered.length) return `<tr><td colspan="4" class="py-8 text-center text-on-surface-variant">Tidak ada pengguna yang sesuai filter</td></tr>`;
                 return filtered.map(function (u) {
-                  const badge = u.role === 'Admin' ? 'bg-[#0E3B2C] text-white' : u.role === 'Pro' ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEF9C3] text-[#854D0E]';
+                  const badge = u.role === 'Admin'
+                    ? 'bg-primary-container text-on-primary'
+                    : u.role === 'Pro'
+                      ? 'bg-secondary-container text-on-secondary-container'
+                      : 'bg-surface-container text-on-surface-variant';
                   const isSelf = String(u.email || '').toLowerCase() === String(d.currentEmail || '').toLowerCase();
                   return `
-                    <tr class="border-t border-[#E2E8F0] hover:bg-[#F7FAF8]">
-                      <td class="py-3 px-4">
-                        <div class="font-semibold text-[#111827]">${esc(u.nama_lengkap)} ${isSelf ? '<span class="ml-1 text-[10px] font-bold text-[#1F8A5B]">(Anda)</span>' : ''}</div>
-                        <div class="text-xs text-[#64748B]">${esc(u.email)}</div>
+                    <tr class="hover:bg-surface-container-low/50 transition-colors">
+                      <td class="py-3.5 px-4">
+                        <div class="font-title-md text-title-md text-on-surface">${esc(u.nama_lengkap)} ${isSelf ? '<span class="ml-1 font-label-md text-label-md text-secondary">(Anda)</span>' : ''}</div>
+                        <div class="text-on-surface-variant">${esc(u.email)}</div>
                       </td>
-                      <td class="py-3 px-4 text-xs text-[#4B5563] tabular-nums hidden sm:table-cell">${esc(u.no_wa || '-')}</td>
-                      <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${badge}">${esc(u.role)}</span></td>
-                      <td class="py-3 px-4 text-right">
+                      <td class="py-3.5 px-4 font-mono-score text-mono-score text-on-surface-variant hidden sm:table-cell">${esc(u.no_wa || '-')}</td>
+                      <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full font-label-md text-label-md ${badge}">${esc(u.role)}</span></td>
+                      <td class="py-3.5 px-4 text-right">
                         <div class="inline-flex flex-wrap justify-end gap-1.5">
-                          ${u.role !== 'Admin' ? `<button onclick="AdminPanel.quickPromoteAdmin('${esc(u.email)}','${esc(u.nama_lengkap)}')" class="px-3 py-1 rounded-full bg-[#0E3B2C] text-white text-xs font-semibold">Jadikan Admin</button>` : ''}
-                          ${u.role !== 'Pro' && u.role !== 'Admin' ? `<button onclick="AdminPanel.setUserTier('${esc(u.user_id)}','Pro')" class="px-3 py-1 rounded-full bg-[#DCFCE7] text-[#166534] text-xs font-semibold">Set Pro</button>` : ''}
-                          ${u.role === 'Pro' ? `<button onclick="AdminPanel.setUserTier('${esc(u.user_id)}','Latihan')" class="px-3 py-1 rounded-full bg-[#F1F5F9] text-[#475569] text-xs font-semibold">Set Latihan</button>` : ''}
-                          ${!isSelf ? `<button onclick="AdminPanel.deleteUser('${esc(u.user_id)}','${esc(u.email)}')" class="px-3 py-1 rounded-full bg-[#FEE2E2] text-[#991B1B] hover:bg-red-200 text-xs font-semibold inline-flex items-center gap-1"><i data-lucide="trash-2" class="w-3 h-3"></i> Hapus</button>` : ''}
+                          ${u.role !== 'Admin' ? `<button type="button" onclick="AdminPanel.quickPromoteAdmin('${esc(u.email)}','${esc(u.nama_lengkap)}')" class="h-8 px-2.5 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md hover:bg-secondary transition-colors cursor-pointer">Jadikan Admin</button>` : ''}
+                          ${u.role !== 'Pro' && u.role !== 'Admin' ? `<button type="button" onclick="AdminPanel.setUserTier('${esc(u.user_id)}','Pro')" class="h-8 px-2.5 rounded-lg bg-secondary-container text-on-secondary-container font-label-md text-label-md cursor-pointer">Set Pro</button>` : ''}
+                          ${u.role === 'Pro' ? `<button type="button" onclick="AdminPanel.setUserTier('${esc(u.user_id)}','Latihan')" class="h-8 px-2.5 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md cursor-pointer">Set Latihan</button>` : ''}
+                          ${!isSelf ? `<button type="button" onclick="AdminPanel.deleteUser('${esc(u.user_id)}','${esc(u.email)}')" class="h-8 px-2.5 rounded-lg bg-error-container text-on-error-container font-label-md text-label-md inline-flex items-center gap-1 hover:opacity-90 cursor-pointer"><span class="material-symbols-outlined text-[15px]">delete</span> Hapus</button>` : ''}
                         </div>
                       </td>
                     </tr>`;
@@ -985,7 +1196,7 @@ const AdminPanel = (function () {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     `;
   }
 
@@ -1003,155 +1214,162 @@ const AdminPanel = (function () {
       : 'https://USERNAME.github.io';
 
     return `
-      <div>
-        <div class="text-xs font-bold tracking-wider uppercase text-[#1F8A5B]">Keamanan &amp; Upgrade Sistem</div>
-        <h1 class="text-2xl font-heading font-bold text-[#111827] mt-1">Google OAuth 2.0, Brankas Script Properties &amp; Migrasi</h1>
-      </div>
+      <section class="pt-6">
+        <span class="font-label-md text-label-md text-secondary uppercase tracking-wider">05 / Pengaturan Sistem &amp; Keamanan</span>
+        <h1 class="font-headline-sm text-headline-sm text-on-surface mt-0.5">Google OAuth 2.0, Script Properties &amp; Migrasi Database</h1>
+      </section>
 
-      <!-- Kartu Khusus Pengaturan Google OAuth 2.0 -->
-      <form onsubmit="AdminPanel.saveOAuthSettings(event)" class="card-stitch p-5 sm:p-6 space-y-4">
+      <!-- Pengaturan Google OAuth 2.0 -->
+      <form onsubmit="AdminPanel.saveOAuthSettings(event)" class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-4">
         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div class="flex items-start gap-3">
-            <div class="w-11 h-11 rounded-2xl bg-[#E8F5EE] flex items-center justify-center shrink-0">
+            <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center shrink-0">
               <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.3h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.26-2.08 3.56-5.15 3.56-8.65z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.93-2.91l-3.87-3c-1.07.72-2.44 1.14-4.06 1.14-3.12 0-5.77-2.11-6.72-4.95H1.29v3.09A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.28 14.28A7.18 7.18 0 0 1 4.9 12c0-.79.14-1.56.38-2.28V6.63H1.29A12 12 0 0 0 0 12c0 1.94.46 3.77 1.29 5.37l3.99-3.09z"/><path fill="#EA4335" d="M12 4.77c1.76 0 3.34.61 4.58 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.29 6.63l3.99 3.09C6.23 6.88 8.88 4.77 12 4.77z"/></svg>
             </div>
             <div>
               <div class="flex flex-wrap items-center gap-2">
-                <h3 class="font-heading font-bold text-base">Pengaturan Login Google OAuth 2.0</h3>
-                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${gClient.ada && oauthAktif ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEF9C3] text-[#854D0E]'}">
-                  ${gClient.ada && oauthAktif ? 'Aktif & Terverifikasi Server' : 'Perlu Konfigurasi Client ID'}
+                <h3 class="font-title-lg text-title-lg text-on-surface">Login Google OAuth 2.0</h3>
+                <span class="px-2.5 py-0.5 rounded-full font-label-md text-label-md ${gClient.ada && oauthAktif ? 'bg-secondary-container text-on-secondary-container' : 'bg-tertiary-fixed text-on-tertiary-fixed'}">
+                  ${gClient.ada && oauthAktif ? 'Aktif' : 'Perlu Client ID'}
                 </span>
               </div>
-              <p class="text-xs text-[#64748B] mt-0.5">Peserta bisa masuk/daftar 1-klik memakai akun Google. ID Token diverifikasi ketat di server GAS (Aturan R7).</p>
+              <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Peserta masuk satu klik memakai akun Google dengan verifikasi token di server GAS</p>
             </div>
           </div>
-          <button type="button" onclick="AdminPanel.openOAuthGuideModal()" class="btn-outline px-3.5 py-2 text-xs inline-flex items-center gap-1.5 shrink-0">
-            <i data-lucide="book-open" class="w-3.5 h-3.5 text-[#1F8A5B]"></i> Panduan Google Cloud
+          <button type="button" onclick="AdminPanel.openOAuthGuideModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg transition-colors shrink-0 cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">menu_book</span>
+            <span>Panduan Google Cloud</span>
           </button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
           <div class="lg:col-span-5">
-            <div class="flex items-center justify-between text-xs mb-1">
-              <label class="font-bold text-[#111827]">Google OAuth 2.0 Client ID</label>
-              <span class="${gClient.ada ? 'text-[#166534] font-semibold' : 'text-[#64748B]'}">${gClient.ada ? 'Tersimpan: ' + esc(gClient.masked) : 'Belum diisi'}</span>
+            <div class="flex items-center justify-between font-label-md text-label-md mb-1">
+              <label class="text-on-surface">Google OAuth 2.0 Client ID</label>
+              <span class="font-mono-score ${gClient.ada ? 'text-secondary' : 'text-on-surface-variant'}">${gClient.ada ? 'Tersimpan: ' + esc(gClient.masked) : 'Belum diisi'}</span>
             </div>
-            <input type="text" id="oauth-client-id" placeholder="xxxx-xxxx.apps.googleusercontent.com (kosongkan jika tidak ubah)"
-              class="w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] text-sm" />
+            <input type="text" id="oauth-client-id" placeholder="xxxx.apps.googleusercontent.com"
+              class="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
           </div>
 
           <div class="lg:col-span-4">
-            <label class="text-xs font-bold text-[#111827] block mb-1">Authorized JavaScript Origin (Tempel di Google Cloud)</label>
-            <div class="flex items-center gap-1.5">
-              <input type="text" readonly id="oauth-origin-url" value="${esc(curOrigin)}" class="flex-1 px-3 py-2.5 rounded-xl border border-[#E2E8F0] bg-[#F7FAF8] text-xs font-mono text-[#4B5563]" />
-              <button type="button" onclick="AdminPanel.copyOrigin()" class="px-3 py-2.5 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#E8F5EE] text-xs font-semibold text-[#0E3B2C] shrink-0">Salin</button>
+            <label class="font-label-md text-label-md text-on-surface block mb-1">Authorized JavaScript Origin</label>
+            <div class="flex items-center gap-2">
+              <input type="text" readonly id="oauth-origin-url" value="${esc(curOrigin)}" class="flex-1 px-3.5 py-2.5 rounded-lg bg-surface-container-low font-mono-score text-mono-score text-on-surface-variant focus:outline-none" />
+              <button type="button" onclick="AdminPanel.copyOrigin()" class="px-3.5 py-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container font-label-md text-label-md text-on-surface shrink-0 cursor-pointer">Salin</button>
             </div>
           </div>
 
-          <div class="lg:col-span-3 flex items-center justify-between gap-3 p-2.5 rounded-xl bg-[#F7FAF8] border border-[#E2E8F0]">
-            <label for="oauth-aktif" class="text-xs font-semibold text-[#111827] cursor-pointer">Aktifkan Tombol Google</label>
-            <input type="checkbox" id="oauth-aktif" ${oauthAktif ? 'checked' : ''} class="w-5 h-5 accent-[#0E3B2C]" />
+          <div class="lg:col-span-3 flex items-center justify-between gap-3 h-[42px] px-3.5 rounded-lg bg-surface-container-low">
+            <label for="oauth-aktif" class="font-label-md text-label-md text-on-surface cursor-pointer">Aktifkan Tombol Google</label>
+            <input type="checkbox" id="oauth-aktif" ${oauthAktif ? 'checked' : ''} class="w-4 h-4 accent-[#0e3b2c]" />
           </div>
         </div>
 
         <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
-          <span class="text-[11px] text-[#64748B]">Ketik <code>__HAPUS__</code> pada kolom Client ID jika ingin menghapusnya dari Script Properties.</span>
-          <button type="submit" class="btn-primary px-5 py-2.5 text-xs inline-flex items-center gap-2">
-            <i data-lucide="save" class="w-4 h-4"></i> Simpan Pengaturan OAuth 2.0
+          <span class="font-label-md text-label-md text-on-surface-variant">Ketik <code class="font-mono-score">__HAPUS__</code> pada kolom Client ID untuk menghapus nilai tersimpan</span>
+          <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary-container hover:bg-secondary text-on-primary font-label-lg text-label-lg transition-colors shadow-sm cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">save</span>
+            <span>Simpan Pengaturan OAuth</span>
           </button>
         </div>
       </form>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <!-- Rahasia Script Properties -->
-        <form onsubmit="AdminPanel.saveSecrets(event)" class="card-stitch p-5 lg:col-span-6 space-y-4">
+        <form onsubmit="AdminPanel.saveSecrets(event)" class="bg-surface-container-lowest rounded-xl shadow-sm p-6 lg:col-span-6 flex flex-col gap-4">
           <div class="flex items-start justify-between gap-2">
             <div>
-              <h3 class="font-heading font-bold text-base">Kredensial Rahasia Lainnya (Script Properties)</h3>
-              <p class="text-xs text-[#64748B]">Token disimpan eksklusif di Script Properties (tidak pernah di Sheet/Git). Kosongkan input bila tidak ingin mengubah.</p>
+              <h3 class="font-title-lg text-title-lg text-on-surface">Kredensial Script Properties</h3>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">Token disimpan di Script Properties server, kosongkan kolom bila tidak diubah</p>
             </div>
-            <i data-lucide="lock" class="w-5 h-5 text-[#1F8A5B] shrink-0"></i>
+            <span class="material-symbols-outlined text-on-surface-variant">lock</span>
           </div>
 
-          <div class="space-y-3">
+          <div class="flex flex-col gap-3">
             ${sec.filter(function (item) { return item.key !== 'GOOGLE_CLIENT_ID'; }).map(function (item) {
               return `
                 <div>
-                  <div class="flex items-center justify-between text-xs mb-1">
-                    <label class="font-bold text-[#111827]">${esc(item.key)}</label>
-                    <span class="${item.ada ? 'text-[#166534] font-semibold' : 'text-[#64748B]'}">${item.ada ? 'Terpasang: ' + esc(item.masked) : 'Belum diisi'}</span>
+                  <div class="flex items-center justify-between font-label-md text-label-md mb-1">
+                    <label class="font-mono-score text-on-surface">${esc(item.key)}</label>
+                    <span class="font-mono-score ${item.ada ? 'text-secondary' : 'text-on-surface-variant'}">${item.ada ? 'Terpasang: ' + esc(item.masked) : 'Belum diisi'}</span>
                   </div>
-                  <input type="password" id="sec-${esc(item.key)}" placeholder="Masukkan nilai baru (atau ketik __HAPUS__ untuk menghapus)"
-                    class="w-full px-3.5 py-2 rounded-xl border border-[#E2E8F0] text-sm" />
+                  <input type="password" id="sec-${esc(item.key)}" placeholder="Nilai baru atau __HAPUS__"
+                    class="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
                 </div>`;
             }).join('')}
           </div>
 
-          <div class="pt-3 border-t border-[#E2E8F0] space-y-3">
-            <div class="text-xs font-bold text-[#4B5563]">Pengaturan Pembayaran &amp; Platform</div>
+          <div class="pt-3 flex flex-col gap-3">
+            <div class="font-title-md text-title-md text-on-surface">Pengaturan Pembayaran &amp; Kontak Admin</div>
             <div>
-              <label class="text-xs text-[#4B5563]">Info Rekening / QRIS Upgrade Pro</label>
-              <input type="text" id="set-rekening" value="${esc(set.INFO_REKENING_PRO || '')}" class="mt-1 w-full px-3.5 py-2 rounded-xl border border-[#E2E8F0] text-sm" />
+              <label class="font-label-md text-label-md text-on-surface-variant">Rekening / QRIS Aktivasi Pro</label>
+              <input type="text" id="set-rekening" value="${esc(set.INFO_REKENING_PRO || '')}" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="text-xs text-[#4B5563]">Harga Paket Pro</label>
-                <input type="text" id="set-harga" value="${esc(set.HARGA_PRO || '')}" class="mt-1 w-full px-3.5 py-2 rounded-xl border border-[#E2E8F0] text-sm" />
+                <label class="font-label-md text-label-md text-on-surface-variant">Harga Paket Pro</label>
+                <input type="text" id="set-harga" value="${esc(set.HARGA_PRO || '')}" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
               </div>
               <div>
-                <label class="text-xs text-[#4B5563]">WhatsApp Admin</label>
-                <input type="text" id="set-wa" value="${esc(set.WA_ADMIN || '')}" class="mt-1 w-full px-3.5 py-2 rounded-xl border border-[#E2E8F0] text-sm" />
+                <label class="font-label-md text-label-md text-on-surface-variant">WhatsApp Admin</label>
+                <input type="text" id="set-wa" value="${esc(set.WA_ADMIN || '')}" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
               </div>
             </div>
-          </div>
-
-          <button type="submit" class="btn-primary px-5 py-2.5 text-xs inline-flex items-center gap-2">
-            <i data-lucide="shield-check" class="w-4 h-4"></i> Simpan ke Script Properties
-          </button>
-        </form>
-
-        <!-- Migrasi Database Antar-Spreadsheet -->
-        <div class="card-stitch p-5 lg:col-span-6 space-y-4">
-          <div class="flex items-start justify-between gap-2">
-            <div>
-              <h3 class="font-heading font-bold text-base">Migrasi &amp; Delta-Sync Spreadsheet</h3>
-              <p class="text-xs text-[#64748B]">Impor data dari spreadsheet versi lama secara read-only, berbasis header, idempoten (anti duplikat), dan aman diulang.</p>
-            </div>
-            <i data-lucide="database-backup" class="w-5 h-5 text-[#1F8A5B] shrink-0"></i>
           </div>
 
           <div>
-            <label class="text-xs font-semibold text-[#4B5563]">ID atau URL Spreadsheet Sumber (Versi Lama)</label>
-            <input type="text" id="mig-source" placeholder="https://docs.google.com/spreadsheets/d/..." class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] text-sm" />
+            <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary-container hover:bg-secondary text-on-primary font-label-lg text-label-lg transition-colors shadow-sm cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">verified_user</span>
+              <span>Simpan Kredensial</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Migrasi Database Antar-Spreadsheet -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm p-6 lg:col-span-6 flex flex-col gap-4">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <h3 class="font-title-lg text-title-lg text-on-surface">Migrasi &amp; Sinkronisasi Spreadsheet</h3>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">Salin data dari spreadsheet versi lama secara idempoten berbasis nama kolom</p>
+            </div>
+            <span class="material-symbols-outlined text-on-surface-variant">database</span>
           </div>
 
-          <div class="flex flex-wrap gap-2">
-            <button onclick="AdminPanel.runMigration(true)" class="btn-outline px-4 py-2.5 text-xs inline-flex items-center gap-1.5">
-              <i data-lucide="search" class="w-4 h-4 text-[#1F8A5B]"></i> 1. Pindai Dulu (Dry-Run)
+          <div>
+            <label class="font-label-md text-label-md text-on-surface-variant">ID atau URL Spreadsheet Sumber</label>
+            <input type="text" id="mig-source" placeholder="https://docs.google.com/spreadsheets/d/..." class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
+          </div>
+
+          <div class="flex flex-wrap gap-2.5">
+            <button type="button" onclick="AdminPanel.runMigration(true)" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">Find_in_page</span>
+              <span>Pindai (Dry-Run)</span>
             </button>
-            <button onclick="AdminPanel.runMigration(false)" class="btn-primary px-4 py-2.5 text-xs inline-flex items-center gap-1.5">
-              <i data-lucide="play" class="w-4 h-4"></i> 2. Eksekusi Delta-Sync
+            <button type="button" onclick="AdminPanel.runMigration(false)" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary-container hover:bg-secondary text-on-primary font-label-lg text-label-lg transition-colors shadow-sm cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">play_arrow</span>
+              <span>Jalankan Sinkronisasi</span>
             </button>
           </div>
 
           ${mig ? `
-            <div class="p-4 rounded-2xl bg-[#F7FAF8] border border-[#E2E8F0] space-y-2">
-              <div class="flex items-center justify-between text-xs font-bold">
-                <span>${mig.dryRun ? '🔍 Hasil Pindai (Dry-Run)' : '✅ Hasil Sinkronisasi Nyata'}</span>
-                <span class="text-[#1F8A5B]">${esc(mig.sourceName)}</span>
+            <div class="p-4 rounded-xl bg-surface-container-low flex flex-col gap-3">
+              <div class="flex items-center justify-between font-label-lg text-label-lg">
+                <span class="text-on-surface">${mig.dryRun ? 'Hasil Pindai (Dry-Run)' : 'Hasil Sinkronisasi'}</span>
+                <span class="text-secondary">${esc(mig.sourceName)}</span>
               </div>
-              <table class="w-full text-xs">
-                <thead><tr class="text-[#64748B] border-b border-[#E2E8F0]"><th class="py-1.5 text-left">Sheet</th><th class="text-center">Tambah</th><th class="text-center">Update</th><th class="text-center">Lewati</th></tr></thead>
+              <table class="w-full font-body-sm text-body-sm">
+                <thead><tr class="text-on-surface-variant font-label-md text-label-md"><th class="py-1.5 text-left">Sheet</th><th class="text-right">Tambah</th><th class="text-right">Perbarui</th><th class="text-right">Lewati</th></tr></thead>
                 <tbody>
                   ${mig.report.map(function (r) {
-                    return `<tr class="border-b border-[#F1F5F9]"><td class="py-1.5 font-semibold">${esc(r.sheet)}</td><td class="text-center text-[#166534] font-bold">+${r.inserted}</td><td class="text-center text-[#D97706]">${r.updated}</td><td class="text-center text-[#64748B]">${r.skipped}</td></tr>`;
+                    return `<tr><td class="py-1.5 font-medium text-on-surface">${esc(r.sheet)}</td><td class="text-right font-mono-score text-secondary">+${r.inserted}</td><td class="text-right font-mono-score text-on-surface">${r.updated}</td><td class="text-right font-mono-score text-on-surface-variant">${r.skipped}</td></tr>`;
                   }).join('')}
                 </tbody>
               </table>
             </div>
           ` : ''}
         </div>
-      </div>
+      </section>
     `;
   }
 
@@ -1169,21 +1387,24 @@ const AdminPanel = (function () {
       const r = (state.overview && state.overview.upgrades || []).find(function (x) { return x.req_id === reqId; });
       if (!r) return;
       App.openModal('Bukti Transfer — ' + r.nama_user, `
-        <div class="space-y-3 text-sm">
-          <div class="p-3 rounded-xl bg-[#F7FAF8] text-xs space-y-1">
-            <div><b>Email:</b> ${esc(r.email_user)}</div>
-            <div><b>Catatan Peserta:</b> ${esc(r.catatan_user || '-')}</div>
+        <div class="flex flex-col gap-4">
+          <div class="p-3.5 rounded-xl bg-surface-container-low font-body-sm text-body-sm space-y-1">
+            <div><span class="text-on-surface-variant">Email:</span> <strong class="text-on-surface">${esc(r.email_user)}</strong></div>
+            <div><span class="text-on-surface-variant">Catatan:</span> <strong class="text-on-surface">${esc(r.catatan_user || '-')}</strong></div>
           </div>
-          ${r.url_bukti_drive ? `<img src="${esc(r.url_bukti_drive)}" alt="Bukti Transfer" class="w-full max-h-80 object-contain rounded-xl border border-[#E2E8F0]" />`
-            : `<div class="p-8 text-center rounded-xl bg-[#F7FAF8] text-xs text-[#64748B]">Tidak ada lampiran gambar bukti transfer.</div>`}
+          ${r.url_bukti_drive ? `<img src="${esc(r.url_bukti_drive)}" alt="Bukti transfer ${esc(r.nama_user)}" class="w-full max-h-80 object-contain rounded-xl bg-surface-container-low" />`
+            : `<div class="p-8 text-center rounded-xl bg-surface-container-low font-body-sm text-body-sm text-on-surface-variant">Tidak ada lampiran gambar bukti transfer</div>`}
+          <div class="flex justify-end">
+            <button type="button" onclick="App.closeModal()" class="px-4 py-2 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg cursor-pointer">Tutup Pratinjau</button>
+          </div>
         </div>
       `);
     },
     processUpgrade: async function (reqId, decision) {
-      const catatan = decision === 'Rejected' ? (prompt('Alasan penolakan (akan dikirim ke peserta):', 'Bukti transfer kurang jelas') || '') : 'Terverifikasi Admin';
+      const catatan = decision === 'Rejected' ? (prompt('Alasan penolakan untuk peserta:', 'Bukti transfer kurang terbaca') || '') : 'Terverifikasi admin';
       try {
         await ApiClient.call('admin.processUpgrade', { req_id: reqId, decision: decision, catatan_admin: catatan });
-        App.toast(decision === 'Approved' ? 'Akun Pro berhasil diaktifkan & notifikasi masuk antrean!' : 'Pengajuan upgrade ditolak.', 'success');
+        App.toast(decision === 'Approved' ? 'Akun Pro peserta berhasil diaktifkan!' : 'Pengajuan upgrade ditolak', 'success');
         render(document.getElementById('app'), 'overview');
       } catch (e) { App.toast(e.message, 'error'); }
     },
@@ -1241,7 +1462,7 @@ const AdminPanel = (function () {
       try {
         const saved = await ApiClient.call('admin.saveQuestion', payload);
         state.editingSoal = saved;
-        App.toast('Soal berhasil disimpan ke Bank Soal!', 'success');
+        App.toast('Butir soal berhasil disimpan ke Bank Soal!', 'success');
         render(document.getElementById('app'), 'questions');
       } catch (err) { App.toast(err.message, 'error'); }
     },
@@ -1250,7 +1471,7 @@ const AdminPanel = (function () {
       try {
         await ApiClient.call('admin.deleteQuestion', { soal_id: sid });
         state.editingSoal = null;
-        App.toast('Soal dihapus.', 'info');
+        App.toast('Butir soal dihapus', 'info');
         render(document.getElementById('app'), 'questions');
       } catch (err) { App.toast(err.message, 'error'); }
     },
@@ -1258,30 +1479,31 @@ const AdminPanel = (function () {
       const pakets = state.qData.paket || [];
       const curPkg = pakets.find(function (p) { return p.paket_id === state.selectedPaketId; });
       window._parsedImportItems = [];
-      App.openModal('Impor Massal Bank Soal (CSV / Excel)', `
-        <div class="space-y-4 text-sm">
-          <div class="p-3.5 rounded-2xl bg-[#E8F5EE] text-[#0E3B2C] text-xs space-y-1.5">
-            <div class="font-bold">Paket Tujuan: ${esc(curPkg ? curPkg.nama_paket : state.selectedPaketId)}</div>
-            <div>Unggah file <b>.csv</b> berisi puluhan hingga ratusan soal sekaligus. 1x simpan langsung masuk ke Google Sheets tanpa lag!</div>
-            <button type="button" onclick="AdminPanel.downloadCsvTemplate()" class="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-[#0E3B2C] font-bold border border-[#CBEAD9] hover:bg-[#F7FAF8]">
-              <i data-lucide="download" class="w-3.5 h-3.5"></i> Unduh Template CSV
+      App.openModal('Impor Massal Bank Soal (CSV)', `
+        <div class="flex flex-col gap-4">
+          <div class="p-4 rounded-xl bg-primary-fixed/40 text-on-primary-fixed space-y-2">
+            <div class="font-title-md text-title-md">Paket Tujuan: ${esc(curPkg ? curPkg.nama_paket : state.selectedPaketId)}</div>
+            <div class="font-body-sm text-body-sm text-on-primary-fixed-variant">Unggah berkas .csv untuk menambahkan banyak butir soal sekaligus ke paket aktif</div>
+            <button type="button" onclick="AdminPanel.downloadCsvTemplate()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">download</span>
+              <span>Unduh Template CSV</span>
             </button>
           </div>
 
           <div>
-            <label class="text-xs font-semibold text-[#4B5563]">Pilih File CSV Soal (.csv)</label>
+            <label class="font-label-md text-label-md text-on-surface-variant">Berkas CSV Soal</label>
             <input type="file" id="csv-soal-file" accept=".csv,text/csv" onchange="AdminPanel.handleCsvFile(this)"
-              class="mt-1 w-full text-xs p-3 rounded-xl border border-dashed border-[#CBD5E1] bg-[#F7FAF8]" />
+              class="mt-1 w-full font-body-sm text-body-sm p-3 rounded-xl bg-surface-container-low" />
           </div>
 
-          <div id="csv-preview-box" class="hidden p-3.5 rounded-2xl bg-[#F7FAF8] border border-[#E2E8F0] space-y-2 text-xs">
-            <div id="csv-preview-summary" class="font-bold text-[#166534]"></div>
-            <div id="csv-preview-list" class="max-h-40 overflow-y-auto space-y-1 text-[#4B5563]"></div>
+          <div id="csv-preview-box" class="hidden p-4 rounded-xl bg-surface-container-low space-y-2">
+            <div id="csv-preview-summary" class="font-label-lg text-label-lg text-secondary"></div>
+            <div id="csv-preview-list" class="max-h-40 overflow-y-auto space-y-1 font-body-sm text-body-sm text-on-surface-variant"></div>
           </div>
 
           <button type="button" id="btn-submit-csv" disabled onclick="AdminPanel.submitBulkImport()"
-            class="btn-primary w-full py-3 text-xs disabled:opacity-40 disabled:cursor-not-allowed">
-            Simpan Soal Massal ke Database
+            class="w-full py-3 px-4 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+            Simpan Soal ke Database
           </button>
         </div>
       `);
@@ -1298,7 +1520,7 @@ const AdminPanel = (function () {
       a.href = URL.createObjectURL(blob);
       a.download = 'Template_Bank_Soal_SimulasiTKD.csv';
       a.click();
-      App.toast('Template CSV berhasil diunduh!', 'success');
+      App.toast('Template CSV diunduh', 'success');
     },
     handleCsvFile: function (input) {
       const f = input.files && input.files[0];
@@ -1312,7 +1534,7 @@ const AdminPanel = (function () {
         const list = document.getElementById('csv-preview-list');
         const btn = document.getElementById('btn-submit-csv');
         if (!items.length) {
-          App.toast('Tidak ada baris soal valid terbaca. Pastikan header sesuai template CSV.', 'warning');
+          App.toast('Tidak ada baris soal valid, periksa kolom header CSV', 'warning');
           box.classList.add('hidden');
           btn.disabled = true;
           return;
@@ -1320,10 +1542,10 @@ const AdminPanel = (function () {
         const cTwk = items.filter(function (x) { return x.subtes === 'TWK'; }).length;
         const cTiu = items.filter(function (x) { return x.subtes === 'TIU'; }).length;
         const cTkp = items.filter(function (x) { return x.subtes === 'TKP'; }).length;
-        sum.textContent = '✓ Siap diimpor: ' + items.length + ' soal (TWK: ' + cTwk + ' • TIU: ' + cTiu + ' • TKP: ' + cTkp + ')';
+        sum.textContent = 'Siap diimpor: ' + items.length + ' soal (TWK ' + cTwk + ' • TIU ' + cTiu + ' • TKP ' + cTkp + ')';
         list.innerHTML = items.slice(0, 6).map(function (x, i) {
-          return '<div class="truncate"><b>' + (i + 1) + '. [' + esc(x.subtes) + ']</b> ' + esc(x.pertanyaan) + '</div>';
-        }).join('') + (items.length > 6 ? '<div class="text-[#1F8A5B] font-semibold">...dan ' + (items.length - 6) + ' soal lainnya</div>' : '');
+          return '<div class="truncate"><strong class="font-mono-score">' + (i + 1) + '. [' + esc(x.subtes) + ']</strong> ' + esc(x.pertanyaan) + '</div>';
+        }).join('') + (items.length > 6 ? '<div class="text-secondary font-medium">dan ' + (items.length - 6) + ' soal lainnya</div>' : '');
         box.classList.remove('hidden');
         btn.disabled = false;
       };
@@ -1340,32 +1562,32 @@ const AdminPanel = (function () {
           items: items
         });
         App.closeModal();
-        App.toast('Berhasil mengimpor ' + res.imported + ' soal! Total di paket ini: ' + res.totalInPackage + ' soal.', 'success');
+        App.toast(res.imported + ' soal diimpor, total paket: ' + res.totalInPackage + ' soal', 'success');
         render(document.getElementById('app'), 'questions');
       } catch (err) {
         App.toast(err.message, 'error');
-        if (btn) { btn.disabled = false; btn.textContent = 'Simpan Soal Massal ke Database'; }
+        if (btn) { btn.disabled = false; btn.textContent = 'Simpan Soal ke Database'; }
       }
     },
     openPackageModal: function () {
-      App.openModal('Tambah Paket Tryout Baru', `
-        <form onsubmit="AdminPanel.savePackage(event)" class="space-y-3 text-sm">
-          <div><label class="text-xs font-semibold">Nama Paket</label><input id="pkg-nama" required class="mt-1 w-full px-3 py-2 rounded-xl border border-[#E2E8F0]" placeholder="Misal: Tryout Akbar SKD #02" /></div>
-          <div><label class="text-xs font-semibold">Deskripsi</label><textarea id="pkg-desk" rows="2" class="mt-1 w-full px-3 py-2 rounded-xl border border-[#E2E8F0]"></textarea></div>
+      App.openModal('Tambah Paket Simulasi', `
+        <form onsubmit="AdminPanel.savePackage(event)" class="flex flex-col gap-3.5">
+          <div><label class="font-label-md text-label-md text-on-surface-variant">Nama Paket</label><input id="pkg-nama" required class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" placeholder="Contoh: Tryout Nasional SKD #02" /></div>
+          <div><label class="font-label-md text-label-md text-on-surface-variant">Deskripsi</label><textarea id="pkg-desk" rows="2" class="mt-1 w-full p-3.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none"></textarea></div>
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-xs font-semibold">Tier Akses</label><select id="pkg-tier" class="mt-1 w-full px-3 py-2 rounded-xl border border-[#E2E8F0]"><option value="Latihan">Latihan (Gratis)</option><option value="Pro">Pro (Premium)</option></select></div>
-            <div><label class="text-xs font-semibold">Kategori</label><input id="pkg-kat" value="CPNS SKD" class="mt-1 w-full px-3 py-2 rounded-xl border border-[#E2E8F0]" /></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">Tier Akses</label><select id="pkg-tier" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none"><option value="Latihan">Latihan (Gratis)</option><option value="Pro">Pro</option></select></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">Kategori</label><input id="pkg-kat" value="CPNS SKD" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" /></div>
           </div>
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-xs font-semibold">Durasi (Menit)</label><input id="pkg-dur" type="number" value="100" class="mt-1 w-full px-3 py-2 rounded-xl border border-[#E2E8F0]" /></div>
-            <div><label class="text-xs font-semibold">Target Jumlah Soal</label><input id="pkg-jml" type="number" value="110" class="mt-1 w-full px-3 py-2 rounded-xl border border-[#E2E8F0]" /></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">Durasi (Menit)</label><input id="pkg-dur" type="number" value="100" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">Target Soal</label><input id="pkg-jml" type="number" value="110" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div><label class="text-xs font-semibold">PG TWK</label><input id="pkg-twk" type="number" value="65" class="mt-1 w-full px-3 py-2 rounded-xl border border-[#E2E8F0]" /></div>
-            <div><label class="text-xs font-semibold">PG TIU</label><input id="pkg-tiu" type="number" value="80" class="mt-1 w-full px-3 py-2 rounded-xl border border-[#E2E8F0]" /></div>
-            <div><label class="text-xs font-semibold">PG TKP</label><input id="pkg-tkp" type="number" value="166" class="mt-1 w-full px-3 py-2 rounded-xl border border-[#E2E8F0]" /></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">PG TWK</label><input id="pkg-twk" type="number" value="65" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">PG TIU</label><input id="pkg-tiu" type="number" value="80" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">PG TKP</label><input id="pkg-tkp" type="number" value="166" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
           </div>
-          <button type="submit" class="btn-primary w-full py-2.5 text-sm">Simpan Paket</button>
+          <button type="submit" class="w-full py-3 px-4 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg transition-colors cursor-pointer">Simpan Paket</button>
         </form>
       `);
     },
@@ -1384,7 +1606,7 @@ const AdminPanel = (function () {
           pg_tkp: Number(document.getElementById('pkg-tkp').value)
         });
         App.closeModal();
-        App.toast('Paket tryout baru berhasil ditambahkan!', 'success');
+        App.toast('Paket simulasi ditambahkan', 'success');
         render(document.getElementById('app'), 'questions');
       } catch (err) { App.toast(err.message, 'error'); }
     },
@@ -1406,19 +1628,19 @@ const AdminPanel = (function () {
       a.href = URL.createObjectURL(blob);
       a.download = 'Laporan_Skor_SimulasiTKD_' + new Date().toISOString().slice(0, 10) + '.csv';
       a.click();
-      App.toast('Laporan CSV berhasil diunduh!', 'success');
+      App.toast('Mengunduh rekap skor dalam format CSV / Excel...', 'success');
     },
     syncCrm: async function () {
       try {
         const res = await ApiClient.call('admin.crmSync');
-        App.toast('CRM tersinkron! +' + res.inserted + ' kontak baru.', 'success');
+        App.toast('Kontak CRM disinkronkan (+' + res.inserted + ' baru)', 'success');
         render(document.getElementById('app'), 'crm');
       } catch (e) { App.toast(e.message, 'error'); }
     },
     validateWa: async function () {
       try {
         const res = await ApiClient.call('admin.crmValidateWA');
-        App.toast('Validasi WA selesai: ' + res.registered + '/' + res.checked + ' nomor terdaftar.', 'success');
+        App.toast('Validasi WA selesai: ' + res.registered + '/' + res.checked + ' aktif', 'success');
         render(document.getElementById('app'), 'crm');
       } catch (e) { App.toast(e.message, 'error'); }
     },
@@ -1428,7 +1650,7 @@ const AdminPanel = (function () {
           waAktif: document.getElementById('cfg-wa').checked,
           emailAktif: document.getElementById('cfg-em').checked
         });
-        App.toast('Pengaturan kanal notifikasi disimpan.', 'success');
+        App.toast('Pengaturan kanal notifikasi disimpan', 'success');
       } catch (e) { App.toast(e.message, 'error'); }
     },
     sendBlast: async function (e) {
@@ -1446,7 +1668,7 @@ const AdminPanel = (function () {
     toggleOptOut: async function (kid, val) {
       try {
         await ApiClient.call('admin.crmUpdate', { kontakId: kid, optOut: val });
-        App.toast('Status Opt-Out kontak diperbarui.', 'info');
+        App.toast('Status blast kontak diperbarui', 'info');
         render(document.getElementById('app'), 'crm');
       } catch (e) { App.toast(e.message, 'error'); }
     },
@@ -1456,72 +1678,72 @@ const AdminPanel = (function () {
       const nama = document.getElementById('adm-new-nama').value.trim();
       try {
         state.adminEmailsData = await ApiClient.call('admin.addAdminEmail', { email: email, nama: nama });
-        App.toast('Email ' + email + ' berhasil dijadikan Admin & disinkronkan!', 'success');
+        App.toast('Email ' + email + ' ditambahkan sebagai admin', 'success');
         paintShell(document.getElementById('app'));
       } catch (err) { App.toast(err.message, 'error'); }
     },
     quickPromoteAdmin: async function (email, nama) {
-      if (!confirm('Jadikan ' + email + ' sebagai Administrator?')) return;
+      if (!confirm('Jadikan ' + email + ' sebagai administrator?')) return;
       try {
         state.adminEmailsData = await ApiClient.call('admin.addAdminEmail', { email: email, nama: nama });
-        App.toast(email + ' kini berstatus Admin & tersinkron!', 'success');
+        App.toast(email + ' kini berstatus admin', 'success');
         paintShell(document.getElementById('app'));
       } catch (err) { App.toast(err.message, 'error'); }
     },
     removeAdminEmail: async function (email) {
-      if (!confirm('Cabut akses Admin dari ' + email + '? Sesi aktif akun tersebut akan otomatis logout.')) return;
+      if (!confirm('Cabut akses admin dari ' + email + '?')) return;
       try {
         state.adminEmailsData = await ApiClient.call('admin.removeAdminEmail', { email: email });
-        App.toast('Akses Admin ' + email + ' berhasil dicabut.', 'info');
+        App.toast('Akses admin ' + email + ' dicabut', 'info');
         paintShell(document.getElementById('app'));
       } catch (err) { App.toast(err.message, 'error'); }
     },
     syncAdminEmails: async function () {
       try {
         state.adminEmailsData = await ApiClient.call('admin.syncAdminEmails');
-        App.toast('Sinkronisasi Email Admin selesai! (' + (state.adminEmailsData.admins || []).length + ' email tersinkron)', 'success');
+        App.toast('Sinkronisasi selesai (' + (state.adminEmailsData.admins || []).length + ' email admin)', 'success');
         paintShell(document.getElementById('app'));
       } catch (err) { App.toast(err.message, 'error'); }
     },
     setUserTier: async function (userId, role) {
       try {
         await ApiClient.call('admin.updateUserTier', { user_id: userId, role: role });
-        App.toast('Tier akun diperbarui menjadi ' + role + '.', 'success');
+        App.toast('Peran akun diubah menjadi ' + role, 'success');
         render(document.getElementById('app'), 'admins');
       } catch (err) { App.toast(err.message, 'error'); }
     },
     setUserSearch: function (q, pos) { state.userSearch = q; paintShell(document.getElementById('app')); refocusInput('adm-user-search', pos); },
     setUserRoleFilter: function (r) { state.userRoleFilter = r; paintShell(document.getElementById('app')); },
     openCreateUserModal: function () {
-      App.openModal('Tambah User Baru', `
-        <form onsubmit="AdminPanel.createUser(event)" class="space-y-3.5 text-sm">
+      App.openModal('Tambah Pengguna Baru', `
+        <form onsubmit="AdminPanel.createUser(event)" class="flex flex-col gap-3.5">
           <div>
-            <label class="text-xs font-semibold text-[#4B5563]">Nama Lengkap</label>
-            <input type="text" id="cu-nama" required minlength="3" placeholder="Nama lengkap peserta / admin" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0]" />
+            <label class="font-label-md text-label-md text-on-surface-variant">Nama Lengkap</label>
+            <input type="text" id="cu-nama" required minlength="3" placeholder="Nama lengkap" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
           </div>
           <div>
-            <label class="text-xs font-semibold text-[#4B5563]">Email</label>
-            <input type="email" id="cu-email" required placeholder="nama@gmail.com" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0]" />
+            <label class="font-label-md text-label-md text-on-surface-variant">Email</label>
+            <input type="email" id="cu-email" required placeholder="nama@email.com" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="text-xs font-semibold text-[#4B5563]">No. WhatsApp (Opsional)</label>
-              <input type="tel" id="cu-wa" placeholder="0812xxxxxxxx" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0]" />
+              <label class="font-label-md text-label-md text-on-surface-variant">Nomor WhatsApp (Opsional)</label>
+              <input type="tel" id="cu-wa" placeholder="0812xxxxxxxx" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
             </div>
             <div>
-              <label class="text-xs font-semibold text-[#4B5563]">Role / Tier Akun</label>
-              <select id="cu-role" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] bg-white font-semibold">
-                <option value="Latihan">Latihan (Gratis)</option>
-                <option value="Pro">Pro (Premium)</option>
-                <option value="Admin">Admin (Panel Kontrol)</option>
+              <label class="font-label-md text-label-md text-on-surface-variant">Peran Akun</label>
+              <select id="cu-role" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
+                <option value="Latihan">Latihan</option>
+                <option value="Pro">Pro</option>
+                <option value="Admin">Admin</option>
               </select>
             </div>
           </div>
           <div>
-            <label class="text-xs font-semibold text-[#4B5563]">Kata Sandi (Min. 6 Karakter)</label>
-            <input type="password" id="cu-pass" required minlength="6" placeholder="Buat kata sandi awal" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8F0]" />
+            <label class="font-label-md text-label-md text-on-surface-variant">Kata Sandi (Minimal 6 Karakter)</label>
+            <input type="password" id="cu-pass" required minlength="6" placeholder="Kata sandi awal" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
           </div>
-          <button type="submit" class="btn-primary w-full py-3 text-xs">Simpan User Baru</button>
+          <button type="submit" class="w-full py-3 px-4 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg transition-colors cursor-pointer">Simpan Pengguna</button>
         </form>
       `);
     },
@@ -1536,15 +1758,15 @@ const AdminPanel = (function () {
           password: document.getElementById('cu-pass').value
         });
         App.closeModal();
-        App.toast('User ' + res.nama_lengkap + ' (' + res.role + ') berhasil ditambahkan!', 'success');
+        App.toast('Pengguna ' + res.nama_lengkap + ' (' + res.role + ') ditambahkan', 'success');
         render(document.getElementById('app'), 'admins');
       } catch (err) { App.toast(err.message, 'error'); }
     },
     deleteUser: async function (userId, email) {
-      if (!confirm('Hapus permanen user ' + email + ' dari database? Sesi login user tersebut akan langsung dicabut.')) return;
+      if (!confirm('Hapus permanen pengguna ' + email + ' dari database?')) return;
       try {
         await ApiClient.call('admin.deleteUser', { user_id: userId });
-        App.toast('User ' + email + ' berhasil dihapus.', 'info');
+        App.toast('Pengguna ' + email + ' dihapus', 'info');
         render(document.getElementById('app'), 'admins');
       } catch (err) { App.toast(err.message, 'error'); }
     },
@@ -1559,7 +1781,7 @@ const AdminPanel = (function () {
           secrets: secrets,
           settings: { OAUTH_GOOGLE_AKTIF: aktif }
         });
-        App.toast('Pengaturan Google OAuth 2.0 berhasil disimpan!', 'success');
+        App.toast('Pengaturan Google OAuth 2.0 disimpan', 'success');
         paintShell(document.getElementById('app'));
       } catch (err) { App.toast(err.message, 'error'); }
     },
@@ -1567,26 +1789,24 @@ const AdminPanel = (function () {
       const el = document.getElementById('oauth-origin-url');
       if (!el) return;
       navigator.clipboard.writeText(el.value).then(function () {
-        App.toast('Origin berhasil disalin: ' + el.value, 'success');
+        App.toast('Origin disalin: ' + el.value, 'success');
       }).catch(function () {
         el.select(); document.execCommand('copy');
-        App.toast('Origin disalin!', 'success');
+        App.toast('Origin disalin', 'success');
       });
     },
     openOAuthGuideModal: function () {
       const origin = (window.location && window.location.origin && window.location.origin !== 'null')
         ? window.location.origin : 'https://USERNAME.github.io';
-      App.openModal('Panduan Setup Google OAuth 2.0', `
-        <ol class="space-y-3 text-xs text-[#4B5563] list-decimal pl-4 leading-relaxed">
-          <li>Buka <b>Google Cloud Console</b> (<code>console.cloud.google.com</code>) dan buat / pilih proyek Anda.</li>
-          <li>Masuk ke menu <b>APIs &amp; Services → OAuth consent screen</b> → pilih <b>External</b> → isi nama aplikasi <b>SimulasiTKD Pro</b> &amp; email kontak → simpan.</li>
-          <li>Masuk ke menu <b>APIs &amp; Services → Credentials</b> → klik <b>+ CREATE CREDENTIALS → OAuth client ID</b>.</li>
-          <li>Pilih Application type: <b>Web application</b>.</li>
-          <li>Pada bagian <b>Authorized JavaScript origins</b>, klik <b>+ ADD URI</b> lalu tempelkan domain Anda:<br/>
-            <code class="inline-block mt-1 px-2 py-1 rounded bg-[#E8F5EE] text-[#0E3B2C] font-bold">${esc(origin)}</code>
+      App.openModal('Panduan Google OAuth 2.0', `
+        <ol class="space-y-3 font-body-sm text-body-sm text-on-surface-variant list-decimal pl-4">
+          <li>Buka <strong class="text-on-surface">Google Cloud Console</strong> (<code class="font-mono-score">console.cloud.google.com</code>) dan pilih proyek Anda.</li>
+          <li>Buka <strong class="text-on-surface">APIs &amp; Services → OAuth consent screen</strong>, pilih <strong class="text-on-surface">External</strong>, isi nama aplikasi SimulasiTKD Pro dan email kontak.</li>
+          <li>Buka <strong class="text-on-surface">Credentials → Create Credentials → OAuth client ID</strong> dengan tipe <strong class="text-on-surface">Web application</strong>.</li>
+          <li>Tambahkan domain berikut pada <strong class="text-on-surface">Authorized JavaScript origins</strong>:<br/>
+            <code class="inline-block mt-1 px-2.5 py-1 rounded-lg bg-primary-fixed text-on-primary-fixed font-mono-score">${esc(origin)}</code>
           </li>
-          <li>Klik <b>Create</b>, lalu salin <b>Client ID</b> (berakhiran <code>.apps.googleusercontent.com</code>).</li>
-          <li>Tempelkan Client ID tersebut ke kolom <b>Google OAuth 2.0 Client ID</b> di Panel Admin ini dan klik <b>Simpan</b>. Selesai!</li>
+          <li>Salin nilai <strong class="text-on-surface">Client ID</strong> ke kolom Google OAuth 2.0 Client ID pada halaman ini lalu simpan.</li>
         </ol>
       `);
     },
@@ -1604,17 +1824,17 @@ const AdminPanel = (function () {
       };
       try {
         state.secretsData = await ApiClient.call('admin.saveSecret', { secrets: secrets, settings: settings });
-        App.toast('Rahasia & pengaturan tersimpan aman di Script Properties!', 'success');
+        App.toast('Kredensial disimpan di Script Properties', 'success');
         paintShell(document.getElementById('app'));
       } catch (err) { App.toast(err.message, 'error'); }
     },
     runMigration: async function (dryRun) {
       const src = document.getElementById('mig-source').value.trim();
-      if (!src) { App.toast('Masukkan ID atau URL Spreadsheet lama terlebih dahulu.', 'warning'); return; }
-      if (!dryRun && !confirm('Jalankan sinkronisasi nyata (Delta-Sync) dari spreadsheet lama ke database baru?')) return;
+      if (!src) { App.toast('Masukkan ID atau URL spreadsheet sumber terlebih dahulu', 'warning'); return; }
+      if (!dryRun && !confirm('Jalankan sinkronisasi data dari spreadsheet sumber ke database aktif?')) return;
       try {
         state.migrationResult = await ApiClient.call('admin.runMigration', { sourceIdOrUrl: src, dryRun: dryRun });
-        App.toast(dryRun ? 'Pindai Dry-Run selesai!' : 'Migrasi Delta-Sync berhasil dijalankan!', 'success');
+        App.toast(dryRun ? 'Pemindaian dry-run selesai' : 'Sinkronisasi database selesai', 'success');
         paintShell(document.getElementById('app'));
       } catch (err) { App.toast(err.message, 'error'); }
     }

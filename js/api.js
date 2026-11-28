@@ -140,9 +140,9 @@ const ApiClient = (function () {
       return {
         settings: {
           NAMA_PLATFORM: 'SimulasiTKD Pro',
-          HARGA_PRO: 'Rp 99.000 / 6 Bulan',
-          INFO_REKENING_PRO: 'BCA 1234567890 a.n. SimulasiTKD Pro / QRIS Resmi',
-          WA_ADMIN: '081234567890',
+          HARGA_PRO: 'Rp 99.000 / 6 bulan',
+          INFO_REKENING_PRO: 'BCA 7410 8829 14 a.n. PT Simulasi Edukasi Nusantara',
+          WA_ADMIN: '081284910234',
           PG_TWK_DEFAULT: '65',
           PG_TIU_DEFAULT: '80',
           PG_TKP_DEFAULT: '166',
