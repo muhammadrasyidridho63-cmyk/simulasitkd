@@ -26,6 +26,7 @@ const App = (function () {
   };
 
   let resultCharts = [];
+  let isSubmittingExam = false;
 
   function esc(s) {
     return String(s == null ? '' : s)
@@ -759,6 +760,11 @@ const App = (function () {
       const rem = Math.floor((state.exam.endAt - Date.now()) / 1000);
       const el = document.getElementById('exam-timer-text');
       if (el) el.textContent = fmtTimer(rem);
+      const pill = document.getElementById('exam-timer-pill');
+      if (pill) {
+        const cls = rem < 600 ? 'bg-[#FEE2E2] text-[#991B1B]' : rem < 900 ? 'bg-[#FEF9C3] text-[#854D0E]' : 'bg-[#F7FAF8] text-[#0E3B2C]';
+        pill.className = 'px-3.5 py-1.5 rounded-full font-heading font-bold text-xs sm:text-sm tabular-nums inline-flex items-center gap-1.5 ' + cls;
+      }
       if (rem <= 0) {
         stopExamTimer();
         toast('Waktu habis! Jawaban Anda otomatis dikumpulkan.', 'warning');
@@ -768,7 +774,8 @@ const App = (function () {
   }
 
   async function submitExamNow() {
-    if (!state.exam) return;
+    if (!state.exam || isSubmittingExam) return;
+    isSubmittingExam = true;
     stopExamTimer();
     const ex = state.exam;
     const durasiDetik = Math.max(1, Math.floor((Date.now() - new Date(ex.startedAt).getTime()) / 1000));
@@ -785,6 +792,8 @@ const App = (function () {
       go('result', { hasil_id: res.hasil_id });
     } catch (err) {
       toast('Gagal mengirim jawaban: ' + err.message, 'error');
+    } finally {
+      isSubmittingExam = false;
     }
   }
 
@@ -898,6 +907,7 @@ const App = (function () {
                     </div>
                     ${open ? `
                       <div class="pl-11 space-y-2.5 pt-2 border-t border-[#F1F5F9]">
+                        ${item.image_url ? `<div class="rounded-xl overflow-hidden border border-[#E2E8F0] bg-[#F7FAF8] p-2"><img src="${esc(item.image_url)}" alt="Ilustrasi Soal" class="max-h-56 mx-auto object-contain rounded-lg" /></div>` : ''}
                         <div class="flex flex-wrap gap-2 text-xs">
                           <span class="px-3 py-1 rounded-lg bg-[#F7FAF8] border border-[#E2E8F0]">Jawaban Anda: <b>${esc(item.jawaban_user || 'Kosong')}</b></span>
                           <span class="px-3 py-1 rounded-lg bg-[#DCFCE7] text-[#166534]">Kunci / Bobot: <b>${esc(item.kunci_atau_bobot)}</b></span>

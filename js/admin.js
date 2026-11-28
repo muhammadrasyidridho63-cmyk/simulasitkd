@@ -42,6 +42,23 @@ const AdminPanel = (function () {
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  function getFilteredReports() {
+    return (state.reports.hasil || []).filter(function (h) {
+      const mp = !state.repFilterPaket || h.paket_id === state.repFilterPaket;
+      const ms = !state.repFilterStatus || h.status_kelulusan === state.repFilterStatus;
+      const mq = !state.repSearch || String(h.nama_user).toLowerCase().includes(state.repSearch.toLowerCase());
+      return mp && ms && mq;
+    });
+  }
+
+  function refocusInput(id, cursorPos) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.focus();
+    const pos = typeof cursorPos === 'number' ? cursorPos : el.value.length;
+    try { el.setSelectionRange(pos, pos); } catch (e) {}
+  }
+
   /** Parser CSV standar RFC-4180 (otomatis deteksi koma `,` atau titik koma `;` Excel Indonesia) */
   function parseCsvQuestions(text) {
     const clean = String(text || '').replace(/^\uFEFF/, '').trim();
@@ -384,7 +401,7 @@ const AdminPanel = (function () {
             <p class="text-xs text-[#64748B]">Verifikasi bukti transfer peserta untuk mengaktifkan akses Tryout Pro secara instan.</p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
-            <input type="text" value="${esc(state.upgradeSearch)}" oninput="AdminPanel.setUpgradeSearch(this.value)" placeholder="Cari nama atau email..."
+            <input id="adm-upg-search" type="text" value="${esc(state.upgradeSearch)}" oninput="AdminPanel.setUpgradeSearch(this.value, this.selectionStart)" placeholder="Cari nama atau email..."
               class="px-3.5 py-2 text-xs rounded-full border border-[#E2E8F0] bg-[#F7FAF8] w-48" />
             ${['Semua', 'Pending', 'Approved', 'Rejected'].map(function (st) {
               const active = state.upgradeFilter === st;
@@ -469,12 +486,7 @@ const AdminPanel = (function () {
       });
     }
 
-    const repList = (state.reports.hasil || []).filter(function (h) {
-      const mp = !state.repFilterPaket || h.paket_id === state.repFilterPaket;
-      const ms = !state.repFilterStatus || h.status_kelulusan === state.repFilterStatus;
-      const mq = !state.repSearch || String(h.nama_user).toLowerCase().includes(state.repSearch.toLowerCase());
-      return mp && ms && mq;
-    });
+    const repList = getFilteredReports();
 
     return `
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -504,7 +516,7 @@ const AdminPanel = (function () {
           const active = state.qSubtesFilter === st;
           return `<button onclick="AdminPanel.setQSubtes('${st}')" class="px-3.5 py-1.5 rounded-full text-xs font-semibold ${active ? 'bg-[#0E3B2C] text-white' : 'bg-white border border-[#E2E8F0] text-[#4B5563]'}">${st}</button>`;
         }).join('')}
-        <input type="text" value="${esc(state.qSearch)}" oninput="AdminPanel.setQSearch(this.value)" placeholder="Cari soal atau kata kunci..."
+        <input id="adm-q-search" type="text" value="${esc(state.qSearch)}" oninput="AdminPanel.setQSearch(this.value, this.selectionStart)" placeholder="Cari soal atau kata kunci..."
           class="ml-auto px-4 py-2 rounded-full border border-[#E2E8F0] bg-white text-xs w-56" />
       </div>
 
@@ -519,16 +531,26 @@ const AdminPanel = (function () {
             const active = ed.soal_id === s.soal_id;
             return `
               <div onclick="AdminPanel.editSoal('${esc(s.soal_id)}')" class="p-3.5 rounded-2xl border cursor-pointer transition ${active ? 'bg-[#E8F5EE] border-[#1F8A5B]' : 'bg-[#F7FAF8] border-[#E2E8F0] hover:bg-white'}">
-                <div class="flex items-center justify-between text-[11px] font-bold mb-1">
-                  <span class="px-2 py-0.5 rounded-full bg-white text-[#0E3B2C]">${esc(s.subtes)}</span>
-                  <span class="text-[#64748B]">Soal #${s.nomor_urut || idx + 1}</span>
+                <div class="flex items-center justify-between text-[11px] font-bold mb-1.5">
+                  <div class="flex items-center gap-1.5">
+                    <span class="px-2 py-0.5 rounded-full bg-white text-[#0E3B2C]">${esc(s.subtes)}</span>
+                    <span class="text-[#64748B]">Soal #${s.nomor_urut || idx + 1}</span>
+                  </div>
+                  <div class="flex items-center gap-1" onclick="event.stopPropagation()">
+                    <button type="button" onclick="AdminPanel.editSoal('${esc(s.soal_id)}')" title="Edit Soal" class="px-2 py-1 rounded-lg bg-white border border-[#E2E8F0] text-[#0E3B2C] hover:bg-[#E8F5EE] inline-flex items-center gap-1">
+                      <i data-lucide="pencil" class="w-3 h-3"></i> Edit
+                    </button>
+                    <button type="button" onclick="AdminPanel.deleteQuestion('${esc(s.soal_id)}')" title="Hapus Soal" class="px-2 py-1 rounded-lg bg-[#FEE2E2] text-[#991B1B] hover:bg-red-200 inline-flex items-center gap-1">
+                      <i data-lucide="trash-2" class="w-3 h-3"></i> Hapus
+                    </button>
+                  </div>
                 </div>
                 <p class="text-xs text-[#111827] line-clamp-2">${esc(s.pertanyaan)}</p>
               </div>`;
           }).join('') : `<div class="py-10 text-center text-xs text-[#64748B]">Belum ada soal di paket ini. Klik <b>+ Tambah Soal</b>.</div>`}
         </div>
 
-        <form onsubmit="AdminPanel.saveQuestion(event)" class="card-stitch p-5 lg:col-span-8 space-y-4">
+        <form id="q-editor-form" onsubmit="AdminPanel.saveQuestion(event)" class="card-stitch p-5 lg:col-span-8 space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#E2E8F0]">
             <div>
               <h3 class="font-heading font-bold text-base">${ed.soal_id ? 'Edit Soal #' + esc(ed.nomor_urut) : 'Buat Soal Baru'}</h3>
@@ -627,7 +649,7 @@ const AdminPanel = (function () {
               <option value="Lulus" ${state.repFilterStatus === 'Lulus' ? 'selected' : ''}>Lulus</option>
               <option value="Tidak Lulus" ${state.repFilterStatus === 'Tidak Lulus' ? 'selected' : ''}>Tidak Lulus</option>
             </select>
-            <input type="text" value="${esc(state.repSearch)}" oninput="AdminPanel.setRepFilter('search', this.value)" placeholder="Cari nama peserta..." class="px-3.5 py-2 rounded-full border border-[#E2E8F0] text-xs bg-[#F7FAF8] w-52" />
+            <input id="adm-rep-search" type="text" value="${esc(state.repSearch)}" oninput="AdminPanel.setRepFilter('search', this.value, this.selectionStart)" placeholder="Cari nama peserta..." class="px-3.5 py-2 rounded-full border border-[#E2E8F0] text-xs bg-[#F7FAF8] w-52" />
           </div>
 
           <div class="overflow-x-auto">
@@ -907,7 +929,7 @@ const AdminPanel = (function () {
             <p class="text-xs text-[#64748B]">Tambah user baru (Latihan / Pro / Admin), ubah tier secara instan, atau hapus akun peserta.</p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
-            <input type="text" value="${esc(state.userSearch)}" oninput="AdminPanel.setUserSearch(this.value)" placeholder="Cari nama atau email..."
+            <input id="adm-user-search" type="text" value="${esc(state.userSearch)}" oninput="AdminPanel.setUserSearch(this.value, this.selectionStart)" placeholder="Cari nama atau email..."
               class="px-3.5 py-2 rounded-full border border-[#E2E8F0] bg-[#F7FAF8] text-xs w-44" />
             <select onchange="AdminPanel.setUserRoleFilter(this.value)" class="px-3 py-2 rounded-full border border-[#E2E8F0] bg-[#F7FAF8] text-xs font-semibold">
               ${['Semua', 'Latihan', 'Pro', 'Admin'].map(function (r) {
@@ -1142,7 +1164,7 @@ const AdminPanel = (function () {
     toggleSidebar: function (open) { state.mobileSidebarOpen = !!open; paintShell(document.getElementById('app')); },
     refresh: function () { ApiClient.invalidateCache(); render(document.getElementById('app'), state.tab); },
     setUpgradeFilter: function (f) { state.upgradeFilter = f; paintShell(document.getElementById('app')); mountOverviewCharts(); },
-    setUpgradeSearch: function (q) { state.upgradeSearch = q; paintShell(document.getElementById('app')); mountOverviewCharts(); },
+    setUpgradeSearch: function (q, pos) { state.upgradeSearch = q; paintShell(document.getElementById('app')); mountOverviewCharts(); refocusInput('adm-upg-search', pos); },
     previewProof: function (reqId) {
       const r = (state.overview && state.overview.upgrades || []).find(function (x) { return x.req_id === reqId; });
       if (!r) return;
@@ -1167,10 +1189,17 @@ const AdminPanel = (function () {
     },
     selectPaket: function (pid) { state.selectedPaketId = pid; state.editingSoal = null; paintShell(document.getElementById('app')); },
     setQSubtes: function (st) { state.qSubtesFilter = st; paintShell(document.getElementById('app')); },
-    setQSearch: function (q) { state.qSearch = q; paintShell(document.getElementById('app')); },
+    setQSearch: function (q, pos) { state.qSearch = q; paintShell(document.getElementById('app')); refocusInput('adm-q-search', pos); },
     editSoal: function (sid) {
       const found = (state.qData.soal || []).find(function (s) { return s.soal_id === sid; });
-      if (found) { state.editingSoal = Object.assign({}, found); paintShell(document.getElementById('app')); }
+      if (found) {
+        state.editingSoal = Object.assign({}, found);
+        paintShell(document.getElementById('app'));
+        if (window.innerWidth < 1024) {
+          const form = document.getElementById('q-editor-form');
+          if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
     },
     newQuestion: function () {
       const count = (state.qData.soal || []).filter(function (s) { return s.paket_id === state.selectedPaketId; }).length;
@@ -1359,15 +1388,16 @@ const AdminPanel = (function () {
         render(document.getElementById('app'), 'questions');
       } catch (err) { App.toast(err.message, 'error'); }
     },
-    setRepFilter: function (k, v) {
+    setRepFilter: function (k, v, pos) {
       if (k === 'paket') state.repFilterPaket = v;
       if (k === 'status') state.repFilterStatus = v;
       if (k === 'search') state.repSearch = v;
       paintShell(document.getElementById('app'));
+      if (k === 'search') refocusInput('adm-rep-search', pos);
     },
     exportReportsCSV: function () {
       const rows = [['Nama Peserta', 'Paket', 'TWK', 'TIU', 'TKP', 'Total', 'Status', 'Waktu Selesai']];
-      (state.reports.hasil || []).forEach(function (h) {
+      getFilteredReports().forEach(function (h) {
         rows.push([h.nama_user, h.nama_paket, h.skor_twk, h.skor_tiu, h.skor_tkp, h.skor_total, h.status_kelulusan, h.waktu_selesai]);
       });
       const csv = rows.map(function (r) { return r.map(function (c) { return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
@@ -1460,7 +1490,7 @@ const AdminPanel = (function () {
         render(document.getElementById('app'), 'admins');
       } catch (err) { App.toast(err.message, 'error'); }
     },
-    setUserSearch: function (q) { state.userSearch = q; paintShell(document.getElementById('app')); },
+    setUserSearch: function (q, pos) { state.userSearch = q; paintShell(document.getElementById('app')); refocusInput('adm-user-search', pos); },
     setUserRoleFilter: function (r) { state.userRoleFilter = r; paintShell(document.getElementById('app')); },
     openCreateUserModal: function () {
       App.openModal('Tambah User Baru', `
