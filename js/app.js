@@ -1070,31 +1070,6 @@ const App = (function () {
                       <span class="material-symbols-outlined material-fill text-[16px]">${lulus ? 'verified' : 'error'}</span>
                       <span class="font-label-md text-label-md">${lulus ? 'LULUS AMBANG BATAS' : 'BELUM LULUS AMBANG BATAS'}</span>
                     </div>
-<<<<<<< HEAD
-                    ${open ? `
-                      <div class="pl-11 space-y-2.5 pt-2 border-t border-[#F1F5F9]">
-                        ${item.image_url ? `<div class="rounded-xl overflow-hidden border border-[#E2E8F0] bg-[#F7FAF8] p-2"><img src="${esc(item.image_url)}" alt="Ilustrasi Soal" class="max-h-56 mx-auto object-contain rounded-lg" /></div>` : ''}
-                        <div class="flex flex-wrap gap-2 text-xs">
-                          <span class="px-3 py-1 rounded-lg bg-[#F7FAF8] border border-[#E2E8F0]">Jawaban Anda: <b>${esc(item.jawaban_user || 'Kosong')}</b></span>
-                          <span class="px-3 py-1 rounded-lg bg-[#DCFCE7] text-[#166534]">Kunci / Bobot: <b>${esc(item.kunci_atau_bobot)}</b></span>
-                        </div>
-                        <div class="p-3.5 rounded-xl bg-[#F7FAF8] text-xs text-[#4B5563] leading-relaxed">
-                          <div class="font-bold text-[#111827] mb-1">Pembahasan Resmi:</div>
-                          ${esc(item.pembahasan || 'Pembahasan belum tersedia.')}
-                        </div>
-                      </div>
-                    ` : ''}
-                  </div>`;
-              }).join('')}
-
-              ${d.lockedCount > 0 ? `
-                <div class="card-stitch p-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-[#F7FAF8] to-[#E8F5EE] no-print">
-                  <div class="flex items-center gap-3">
-                    <span class="w-11 h-11 rounded-2xl bg-white border border-[#E2E8F0] flex items-center justify-center text-[#0E3B2C]"><i data-lucide="lock" class="w-5 h-5"></i></span>
-                    <div>
-                      <div class="font-heading font-bold text-base">${d.lockedCount} Pembahasan Soal Lainnya Terkunci</div>
-                      <div class="text-xs text-[#4B5563]">Upgrade ke Akun Pro untuk membuka seluruh pembahasan detail &amp; paket tryout penuh.</div>
-=======
                     <div class="font-label-md text-label-md text-on-surface-variant">${esc(h.nama_paket)}</div>
                     <div class="flex items-baseline gap-2">
                       <span class="font-headline-lg text-headline-lg text-on-surface tabular-nums">${h.skor_total}</span>
@@ -1103,7 +1078,6 @@ const App = (function () {
                     <div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
                       <span class="material-symbols-outlined text-[18px]">timer</span>
                       <span>Waktu pengerjaan: <strong class="text-on-surface font-label-lg text-label-lg">${fmtDurasi(h.durasi_pakai_detik)}</strong></span>
->>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
                     </div>
                   </div>
                   <div class="flex flex-wrap items-center gap-3 no-print">
@@ -1447,7 +1421,11 @@ const App = (function () {
     }
   }
 
-  document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 
   return {
     go: go,

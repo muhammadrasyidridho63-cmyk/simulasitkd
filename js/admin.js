@@ -45,7 +45,6 @@ const AdminPanel = (function () {
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-<<<<<<< HEAD
   function getFilteredReports() {
     return (state.reports.hasil || []).filter(function (h) {
       const mp = !state.repFilterPaket || h.paket_id === state.repFilterPaket;
@@ -61,12 +60,12 @@ const AdminPanel = (function () {
     el.focus();
     const pos = typeof cursorPos === 'number' ? cursorPos : el.value.length;
     try { el.setSelectionRange(pos, pos); } catch (e) {}
-=======
+  }
+
   function refreshIcons() {
     if (window.lucide) {
       lucide.createIcons({ attrs: { 'stroke-width': 1.75 } });
     }
->>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
   }
 
   /** Parser CSV standar RFC-4180 (otomatis deteksi koma `,` atau titik koma `;` Excel Indonesia) */
@@ -379,15 +378,6 @@ const AdminPanel = (function () {
               <span class="material-symbols-outlined text-[20px]">pending_actions</span>
             </span>
           </div>
-<<<<<<< HEAD
-          <div class="flex flex-wrap items-center gap-2">
-            <input id="adm-upg-search" type="text" value="${esc(state.upgradeSearch)}" oninput="AdminPanel.setUpgradeSearch(this.value, this.selectionStart)" placeholder="Cari nama atau email..."
-              class="px-3.5 py-2 text-xs rounded-full border border-[#E2E8F0] bg-[#F7FAF8] w-48" />
-            ${['Semua', 'Pending', 'Approved', 'Rejected'].map(function (st) {
-              const active = state.upgradeFilter === st;
-              return `<button onclick="AdminPanel.setUpgradeFilter('${st}')" class="px-3.5 py-1.5 rounded-full text-xs font-semibold ${active ? 'bg-[#0E3B2C] text-white' : 'bg-[#F7FAF8] text-[#4B5563] hover:bg-[#E8F5EE]'}">${st}</button>`;
-            }).join('')}
-=======
           <div class="mt-4 flex items-center justify-between">
             <div>
               <div class="flex items-center gap-2.5">
@@ -469,7 +459,7 @@ const AdminPanel = (function () {
           <div class="flex flex-wrap items-center gap-3">
             <div class="relative">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
-              <input type="text" value="${esc(state.upgradeSearch)}" oninput="AdminPanel.setUpgradeSearch(this.value)" placeholder="Cari nama atau email peserta..."
+              <input id="adm-upg-search" type="text" value="${esc(state.upgradeSearch)}" oninput="AdminPanel.setUpgradeSearch(this.value, this.selectionStart)" placeholder="Cari nama atau email peserta..."
                 class="pl-9 pr-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm placeholder:text-on-surface-variant focus:outline-none w-64" />
             </div>
             <div class="flex items-center gap-1.5 bg-surface-container-low p-1 rounded-lg">
@@ -478,7 +468,6 @@ const AdminPanel = (function () {
                 return `<button type="button" onclick="AdminPanel.setUpgradeFilter('${st}')" class="px-3 py-1.5 rounded-md font-label-md text-label-md transition-colors cursor-pointer ${active ? 'bg-primary-container text-on-primary' : 'text-on-surface-variant hover:text-on-surface'}">${st}</button>`;
               }).join('')}
             </div>
->>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -594,20 +583,6 @@ const AdminPanel = (function () {
         </div>
       </section>
 
-<<<<<<< HEAD
-      <!-- Filter Bar -->
-      <div class="flex flex-wrap items-center gap-2">
-        <select onchange="AdminPanel.selectPaket(this.value)" class="px-4 py-2 rounded-full border border-[#E2E8F0] bg-white text-xs font-semibold text-[#111827]">
-          ${pakets.map(function (p) { return `<option value="${esc(p.paket_id)}" ${p.paket_id === state.selectedPaketId ? 'selected' : ''}>${esc(p.nama_paket)} (${esc(p.tier_akses)})</option>`; }).join('')}
-        </select>
-        ${['Semua', 'TWK', 'TIU', 'TKP'].map(function (st) {
-          const active = state.qSubtesFilter === st;
-          return `<button onclick="AdminPanel.setQSubtes('${st}')" class="px-3.5 py-1.5 rounded-full text-xs font-semibold ${active ? 'bg-[#0E3B2C] text-white' : 'bg-white border border-[#E2E8F0] text-[#4B5563]'}">${st}</button>`;
-        }).join('')}
-        <input id="adm-q-search" type="text" value="${esc(state.qSearch)}" oninput="AdminPanel.setQSearch(this.value, this.selectionStart)" placeholder="Cari soal atau kata kunci..."
-          class="ml-auto px-4 py-2 rounded-full border border-[#E2E8F0] bg-white text-xs w-56" />
-      </div>
-=======
       <!-- 3. Split Question Bank & TKP Weight Editor -->
       <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <!-- Left 4 Cols: Package & Question List -->
@@ -616,7 +591,6 @@ const AdminPanel = (function () {
             <h2 class="font-title-lg text-title-lg text-on-surface">Daftar Butir Soal</h2>
             <span class="font-mono-score text-mono-score text-on-surface-variant">${soalFiltered.length} soal</span>
           </div>
->>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
 
           <select onchange="AdminPanel.selectPaket(this.value)" class="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
             ${pakets.map(function (p) { return `<option value="${esc(p.paket_id)}" ${p.paket_id === state.selectedPaketId ? 'selected' : ''}>${esc(p.nama_paket)} — ${esc(p.tier_akses)}</option>`; }).join('')}
@@ -631,7 +605,7 @@ const AdminPanel = (function () {
 
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
-            <input type="text" value="${esc(state.qSearch)}" oninput="AdminPanel.setQSearch(this.value)" placeholder="Cari teks pertanyaan..."
+            <input id="adm-q-search" type="text" value="${esc(state.qSearch)}" oninput="AdminPanel.setQSearch(this.value, this.selectionStart)" placeholder="Cari teks pertanyaan..."
               class="w-full pl-9 pr-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
           </div>
 
@@ -639,48 +613,30 @@ const AdminPanel = (function () {
             ${soalFiltered.length ? soalFiltered.map(function (s, idx) {
               const active = ed.soal_id === s.soal_id;
               return `
-                <button type="button" onclick="AdminPanel.editSoal('${esc(s.soal_id)}')" class="text-left p-3.5 rounded-xl transition-all cursor-pointer ${active ? 'bg-primary-fixed/60' : 'bg-surface-container-low hover:bg-surface-container'}">
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="font-mono-score text-mono-score ${active ? 'text-on-primary-fixed' : 'text-on-surface-variant'}">Soal #${s.nomor_urut || idx + 1}</span>
-                    <span class="px-2 py-0.5 rounded-full font-label-md text-label-md ${s.subtes === 'TKP' ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container-high text-on-surface'}">${esc(s.subtes)}</span>
+                <div onclick="AdminPanel.editSoal('${esc(s.soal_id)}')" class="text-left p-3.5 rounded-xl transition-all cursor-pointer ${active ? 'bg-primary-fixed/60 ring-1 ring-primary-container' : 'bg-surface-container-low hover:bg-surface-container'}">
+                  <div class="flex items-center justify-between gap-2 mb-1.5">
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-mono-score text-mono-score ${active ? 'text-on-primary-fixed' : 'text-on-surface-variant'}">Soal #${s.nomor_urut || idx + 1}</span>
+                      <span class="px-2 py-0.5 rounded-full font-label-md text-label-md ${s.subtes === 'TKP' ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container-high text-on-surface'}">${esc(s.subtes)}</span>
+                    </div>
+                    <div class="flex items-center gap-1" onclick="event.stopPropagation()">
+                      <button type="button" onclick="AdminPanel.editSoal('${esc(s.soal_id)}')" title="Edit Soal" class="px-2 py-1 rounded-md bg-surface-container-lowest hover:bg-primary-fixed text-on-surface font-label-md text-[11px] inline-flex items-center gap-1 shadow-xs cursor-pointer">
+                        <span class="material-symbols-outlined text-[14px]">edit</span> Edit
+                      </button>
+                      <button type="button" onclick="AdminPanel.deleteQuestion('${esc(s.soal_id)}')" title="Hapus Soal" class="px-2 py-1 rounded-md bg-error-container hover:bg-error hover:text-on-error text-on-error-container font-label-md text-[11px] inline-flex items-center gap-1 transition-colors cursor-pointer">
+                        <span class="material-symbols-outlined text-[14px]">delete</span> Hapus
+                      </button>
+                    </div>
                   </div>
                   <p class="font-body-sm text-body-sm text-on-surface line-clamp-2">${esc(s.pertanyaan)}</p>
-                </button>`;
+                </div>`;
             }).join('') : `<div class="py-10 text-center font-body-sm text-body-sm text-on-surface-variant">Belum ada soal di paket ini, klik Tambah Soal</div>`}
           </div>
-<<<<<<< HEAD
-          ${soalFiltered.length ? soalFiltered.map(function (s, idx) {
-            const active = ed.soal_id === s.soal_id;
-            return `
-              <div onclick="AdminPanel.editSoal('${esc(s.soal_id)}')" class="p-3.5 rounded-2xl border cursor-pointer transition ${active ? 'bg-[#E8F5EE] border-[#1F8A5B]' : 'bg-[#F7FAF8] border-[#E2E8F0] hover:bg-white'}">
-                <div class="flex items-center justify-between text-[11px] font-bold mb-1.5">
-                  <div class="flex items-center gap-1.5">
-                    <span class="px-2 py-0.5 rounded-full bg-white text-[#0E3B2C]">${esc(s.subtes)}</span>
-                    <span class="text-[#64748B]">Soal #${s.nomor_urut || idx + 1}</span>
-                  </div>
-                  <div class="flex items-center gap-1" onclick="event.stopPropagation()">
-                    <button type="button" onclick="AdminPanel.editSoal('${esc(s.soal_id)}')" title="Edit Soal" class="px-2 py-1 rounded-lg bg-white border border-[#E2E8F0] text-[#0E3B2C] hover:bg-[#E8F5EE] inline-flex items-center gap-1">
-                      <i data-lucide="pencil" class="w-3 h-3"></i> Edit
-                    </button>
-                    <button type="button" onclick="AdminPanel.deleteQuestion('${esc(s.soal_id)}')" title="Hapus Soal" class="px-2 py-1 rounded-lg bg-[#FEE2E2] text-[#991B1B] hover:bg-red-200 inline-flex items-center gap-1">
-                      <i data-lucide="trash-2" class="w-3 h-3"></i> Hapus
-                    </button>
-                  </div>
-                </div>
-                <p class="text-xs text-[#111827] line-clamp-2">${esc(s.pertanyaan)}</p>
-              </div>`;
-          }).join('') : `<div class="py-10 text-center text-xs text-[#64748B]">Belum ada soal di paket ini. Klik <b>+ Tambah Soal</b>.</div>`}
-        </div>
-
-        <form id="q-editor-form" onsubmit="AdminPanel.saveQuestion(event)" class="card-stitch p-5 lg:col-span-8 space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#E2E8F0]">
-=======
         </div>
 
         <!-- Right 8 Cols: Question & TKP Weight Editor -->
-        <div class="lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-5">
+        <div id="q-editor-form" class="lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-5">
           <div class="flex flex-wrap items-center justify-between gap-3">
->>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
             <div>
               <span class="font-label-md text-label-md text-secondary uppercase tracking-wider">Editor Butir Soal • ${esc(ed.subtes)} #${esc(ed.nomor_urut || 1)}</span>
               <h3 class="font-title-lg text-title-lg text-on-surface mt-0.5">${ed.soal_id ? 'Konten Soal & Pembobotan Skor' : 'Buat Butir Soal Baru'}</h3>
@@ -777,60 +733,12 @@ const AdminPanel = (function () {
           </div>
         </div>
 
-<<<<<<< HEAD
-        <div class="card-stitch p-5 space-y-4">
-          <div class="flex flex-wrap items-center gap-2 no-print">
-            <select onchange="AdminPanel.setRepFilter('paket', this.value)" class="px-3.5 py-2 rounded-full border border-[#E2E8F0] text-xs bg-[#F7FAF8]">
-              <option value="">Semua Paket</option>
-              ${pakets.map(function (p) { return `<option value="${esc(p.paket_id)}" ${state.repFilterPaket === p.paket_id ? 'selected' : ''}>${esc(p.nama_paket)}</option>`; }).join('')}
-            </select>
-            <select onchange="AdminPanel.setRepFilter('status', this.value)" class="px-3.5 py-2 rounded-full border border-[#E2E8F0] text-xs bg-[#F7FAF8]">
-              <option value="">Semua Status</option>
-              <option value="Lulus" ${state.repFilterStatus === 'Lulus' ? 'selected' : ''}>Lulus</option>
-              <option value="Tidak Lulus" ${state.repFilterStatus === 'Tidak Lulus' ? 'selected' : ''}>Tidak Lulus</option>
-            </select>
-            <input id="adm-rep-search" type="text" value="${esc(state.repSearch)}" oninput="AdminPanel.setRepFilter('search', this.value, this.selectionStart)" placeholder="Cari nama peserta..." class="px-3.5 py-2 rounded-full border border-[#E2E8F0] text-xs bg-[#F7FAF8] w-52" />
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-[#F7FAF8] text-[11px] uppercase tracking-wider text-[#64748B]">
-                  <th class="py-3 px-4 rounded-l-lg">Peserta</th>
-                  <th class="py-3 px-4">Paket</th>
-                  <th class="py-3 px-3 text-center">TWK</th>
-                  <th class="py-3 px-3 text-center">TIU</th>
-                  <th class="py-3 px-3 text-center">TKP</th>
-                  <th class="py-3 px-3 text-center">Total</th>
-                  <th class="py-3 px-4 text-right rounded-r-lg">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${repList.length ? repList.map(function (h) {
-                  const ok = h.status_kelulusan === 'Lulus';
-                  return `
-                    <tr class="border-t border-[#E2E8F0] hover:bg-[#F7FAF8] text-sm">
-                      <td class="py-3 px-4 font-semibold text-[#111827]">${esc(h.nama_user)}</td>
-                      <td class="py-3 px-4 text-xs text-[#4B5563]">${esc(h.nama_paket)}</td>
-                      <td class="py-3 px-3 text-center tabular-nums">${h.skor_twk}</td>
-                      <td class="py-3 px-3 text-center tabular-nums">${h.skor_tiu}</td>
-                      <td class="py-3 px-3 text-center tabular-nums">${h.skor_tkp}</td>
-                      <td class="py-3 px-3 text-center font-bold tabular-nums">${h.skor_total}</td>
-                      <td class="py-3 px-4 text-right">
-                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${ok ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEE2E2] text-[#991B1B]'}">${esc(h.status_kelulusan)}</span>
-                      </td>
-                    </tr>`;
-                }).join('') : `<tr><td colspan="7" class="py-8 text-center text-xs text-[#64748B]">Belum ada riwayat pengerjaan yang cocok.</td></tr>`}
-              </tbody>
-            </table>
-=======
         <!-- Filters -->
         <div class="flex flex-wrap items-center gap-3 no-print">
           <div class="relative flex-1 min-w-[220px]">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
-            <input type="text" value="${esc(state.repSearch)}" oninput="AdminPanel.setRepFilter('search', this.value)" placeholder="Cari nama peserta..."
+            <input id="adm-rep-search" type="text" value="${esc(state.repSearch)}" oninput="AdminPanel.setRepFilter('search', this.value, this.selectionStart)" placeholder="Cari nama peserta..."
               class="w-full pl-9 pr-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" />
->>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
           </div>
           <select onchange="AdminPanel.setRepFilter('paket', this.value)" class="px-3.5 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
             <option value="">Semua Paket Tryout</option>
@@ -1124,20 +1032,13 @@ const AdminPanel = (function () {
             <h3 class="font-title-lg text-title-lg text-on-surface">Manajemen Akun Terdaftar (${users.length})</h3>
             <p class="font-body-sm text-body-sm text-on-surface-variant">Tambah pengguna baru, ubah tier akses, atau hapus akun peserta</p>
           </div>
-<<<<<<< HEAD
-          <div class="flex flex-wrap items-center gap-2">
-            <input id="adm-user-search" type="text" value="${esc(state.userSearch)}" oninput="AdminPanel.setUserSearch(this.value, this.selectionStart)" placeholder="Cari nama atau email..."
-              class="px-3.5 py-2 rounded-full border border-[#E2E8F0] bg-[#F7FAF8] text-xs w-44" />
-            <select onchange="AdminPanel.setUserRoleFilter(this.value)" class="px-3 py-2 rounded-full border border-[#E2E8F0] bg-[#F7FAF8] text-xs font-semibold">
-=======
           <div class="flex flex-wrap items-center gap-2.5">
             <div class="relative">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
-              <input type="text" value="${esc(state.userSearch)}" oninput="AdminPanel.setUserSearch(this.value)" placeholder="Cari nama atau email..."
+              <input id="adm-user-search" type="text" value="${esc(state.userSearch)}" oninput="AdminPanel.setUserSearch(this.value, this.selectionStart)" placeholder="Cari nama atau email..."
                 class="pl-9 pr-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none w-52" />
             </div>
             <select onchange="AdminPanel.setUserRoleFilter(this.value)" class="px-3.5 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
->>>>>>> b5bd50c820b513ce46308334ca479bc88cb071b2
               ${['Semua', 'Latihan', 'Pro', 'Admin'].map(function (r) {
                 return `<option value="${r}" ${state.userRoleFilter === r ? 'selected' : ''}>${r === 'Semua' ? 'Semua Peran' : r}</option>`;
               }).join('')}
