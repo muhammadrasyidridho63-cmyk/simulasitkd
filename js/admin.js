@@ -592,9 +592,19 @@ const AdminPanel = (function () {
             <span class="font-mono-score text-mono-score text-on-surface-variant">${soalFiltered.length} soal</span>
           </div>
 
-          <select onchange="AdminPanel.selectPaket(this.value)" class="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
-            ${pakets.map(function (p) { return `<option value="${esc(p.paket_id)}" ${p.paket_id === state.selectedPaketId ? 'selected' : ''}>${esc(p.nama_paket)} — ${esc(p.tier_akses)}</option>`; }).join('')}
-          </select>
+          <div class="flex items-center gap-1.5">
+            <select onchange="AdminPanel.selectPaket(this.value)" class="flex-1 min-w-0 px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">
+              ${pakets.map(function (p) { return `<option value="${esc(p.paket_id)}" ${p.paket_id === state.selectedPaketId ? 'selected' : ''}>${esc(p.nama_paket)} — ${esc(p.tier_akses)}</option>`; }).join('')}
+            </select>
+            ${state.selectedPaketId ? `
+              <button type="button" onclick="AdminPanel.openPackageModal('${esc(state.selectedPaketId)}')" title="Edit Paket Terpilih" class="p-2.5 rounded-lg bg-surface-container-low hover:bg-primary-fixed text-on-surface transition-colors cursor-pointer shrink-0">
+                <span class="material-symbols-outlined text-[18px]">edit</span>
+              </button>
+              <button type="button" onclick="AdminPanel.deletePackage('${esc(state.selectedPaketId)}')" title="Hapus Paket Terpilih" class="p-2.5 rounded-lg bg-error-container hover:bg-error hover:text-on-error text-on-error-container transition-colors cursor-pointer shrink-0">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+              </button>
+            ` : ''}
+          </div>
 
           <div class="flex items-center gap-1.5 bg-surface-container-low p-1 rounded-lg">
             ${['Semua', 'TWK', 'TIU', 'TKP'].map(function (st) {
@@ -1470,44 +1480,64 @@ const AdminPanel = (function () {
         if (btn) { btn.disabled = false; btn.textContent = 'Simpan Soal ke Database'; }
       }
     },
-    openPackageModal: function () {
-      App.openModal('Tambah Paket Simulasi', `
+    openPackageModal: function (paketId) {
+      const pkg = paketId ? (state.qData.paket || []).find(function (p) { return p.paket_id === paketId; }) : null;
+      const isEdit = !!pkg;
+      App.openModal(isEdit ? 'Edit Paket Simulasi' : 'Tambah Paket Simulasi', `
         <form onsubmit="AdminPanel.savePackage(event)" class="flex flex-col gap-3.5">
-          <div><label class="font-label-md text-label-md text-on-surface-variant">Nama Paket</label><input id="pkg-nama" required class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" placeholder="Contoh: Tryout Nasional SKD #02" /></div>
-          <div><label class="font-label-md text-label-md text-on-surface-variant">Deskripsi</label><textarea id="pkg-desk" rows="2" class="mt-1 w-full p-3.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none"></textarea></div>
-          <div class="grid grid-cols-2 gap-3">
-            <div><label class="font-label-md text-label-md text-on-surface-variant">Tier Akses</label><select id="pkg-tier" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none"><option value="Latihan">Latihan (Gratis)</option><option value="Pro">Pro</option></select></div>
-            <div><label class="font-label-md text-label-md text-on-surface-variant">Kategori</label><input id="pkg-kat" value="CPNS SKD" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" /></div>
+          <input type="hidden" id="pkg-id" value="${esc(isEdit ? pkg.paket_id : '')}" />
+          <div><label class="font-label-md text-label-md text-on-surface-variant">Nama Paket</label><input id="pkg-nama" required value="${esc(isEdit ? pkg.nama_paket : '')}" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" placeholder="Contoh: Tryout Nasional SKD #02" /></div>
+          <div><label class="font-label-md text-label-md text-on-surface-variant">Deskripsi</label><textarea id="pkg-desk" rows="2" class="mt-1 w-full p-3.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none">${esc(isEdit ? (pkg.deskripsi || '') : '')}</textarea></div>
+          <div class="grid grid-cols-3 gap-2.5">
+            <div><label class="font-label-md text-label-md text-on-surface-variant">Tier Akses</label><select id="pkg-tier" class="mt-1 w-full px-3 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none"><option value="Latihan" ${!isEdit || pkg.tier_akses === 'Latihan' ? 'selected' : ''}>Latihan</option><option value="Pro" ${isEdit && pkg.tier_akses === 'Pro' ? 'selected' : ''}>Pro</option></select></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">Kategori</label><input id="pkg-kat" value="${esc(isEdit ? (pkg.kategori_label || 'CPNS SKD') : 'CPNS SKD')}" class="mt-1 w-full px-3 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none" /></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">Status</label><select id="pkg-status" class="mt-1 w-full px-3 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none"><option value="Aktif" ${!isEdit || pkg.status_aktif !== 'Draft' ? 'selected' : ''}>Aktif</option><option value="Draft" ${isEdit && pkg.status_aktif === 'Draft' ? 'selected' : ''}>Draft</option></select></div>
           </div>
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="font-label-md text-label-md text-on-surface-variant">Durasi (Menit)</label><input id="pkg-dur" type="number" value="100" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
-            <div><label class="font-label-md text-label-md text-on-surface-variant">Target Soal</label><input id="pkg-jml" type="number" value="110" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">Durasi (Menit)</label><input id="pkg-dur" type="number" value="${isEdit ? Number(pkg.durasi_menit || 100) : 100}" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">Target Soal</label><input id="pkg-jml" type="number" value="${isEdit ? Number(pkg.jumlah_soal || 110) : 110}" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div><label class="font-label-md text-label-md text-on-surface-variant">PG TWK</label><input id="pkg-twk" type="number" value="65" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
-            <div><label class="font-label-md text-label-md text-on-surface-variant">PG TIU</label><input id="pkg-tiu" type="number" value="80" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
-            <div><label class="font-label-md text-label-md text-on-surface-variant">PG TKP</label><input id="pkg-tkp" type="number" value="166" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">PG TWK</label><input id="pkg-twk" type="number" value="${isEdit ? Number(pkg.pg_twk || 65) : 65}" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">PG TIU</label><input id="pkg-tiu" type="number" value="${isEdit ? Number(pkg.pg_tiu || 80) : 80}" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
+            <div><label class="font-label-md text-label-md text-on-surface-variant">PG TKP</label><input id="pkg-tkp" type="number" value="${isEdit ? Number(pkg.pg_tkp || 166) : 166}" class="mt-1 w-full px-3.5 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-mono-score text-mono-score focus:outline-none" /></div>
           </div>
-          <button type="submit" class="w-full py-3 px-4 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg transition-colors cursor-pointer">Simpan Paket</button>
+          <button type="submit" class="w-full py-3 px-4 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg transition-colors cursor-pointer">${isEdit ? 'Simpan Perubahan Paket' : 'Simpan Paket'}</button>
         </form>
       `);
     },
     savePackage: async function (e) {
       e.preventDefault();
+      const paketId = document.getElementById('pkg-id').value.trim();
       try {
-        await ApiClient.call('admin.savePackage', {
+        const saved = await ApiClient.call('admin.savePackage', {
+          paket_id: paketId,
           nama_paket: document.getElementById('pkg-nama').value,
           deskripsi: document.getElementById('pkg-desk').value,
           tier_akses: document.getElementById('pkg-tier').value,
           kategori_label: document.getElementById('pkg-kat').value,
+          status_aktif: document.getElementById('pkg-status').value,
           durasi_menit: Number(document.getElementById('pkg-dur').value),
           jumlah_soal: Number(document.getElementById('pkg-jml').value),
           pg_twk: Number(document.getElementById('pkg-twk').value),
           pg_tiu: Number(document.getElementById('pkg-tiu').value),
           pg_tkp: Number(document.getElementById('pkg-tkp').value)
         });
+        if (saved && saved.paket_id) state.selectedPaketId = saved.paket_id;
         App.closeModal();
-        App.toast('Paket simulasi ditambahkan', 'success');
+        App.toast(paketId ? 'Paket simulasi diperbarui' : 'Paket simulasi ditambahkan', 'success');
+        render(document.getElementById('app'), 'questions');
+      } catch (err) { App.toast(err.message, 'error'); }
+    },
+    deletePackage: async function (paketId) {
+      const pkg = (state.qData.paket || []).find(function (p) { return p.paket_id === paketId; });
+      if (!pkg) return;
+      if (!confirm('Hapus paket "' + pkg.nama_paket + '" dari daftar paket?')) return;
+      try {
+        await ApiClient.call('admin.deletePackage', { paket_id: paketId });
+        state.selectedPaketId = '';
+        state.editingSoal = null;
+        App.toast('Paket "' + pkg.nama_paket + '" dihapus', 'info');
         render(document.getElementById('app'), 'questions');
       } catch (err) { App.toast(err.message, 'error'); }
     },

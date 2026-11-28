@@ -514,6 +514,12 @@ const ApiClient = (function () {
         return data;
       }
 
+      if (action === 'admin.deletePackage') {
+        db.paket = db.paket.filter(function (p) { return p.paket_id !== data.paket_id; });
+        saveDb(db);
+        return { deleted: data.paket_id };
+      }
+
       if (action === 'admin.getReports') {
         return { users: db.users.filter(function (u) { return u.role !== 'Admin'; }), hasil: db.hasil };
       }
