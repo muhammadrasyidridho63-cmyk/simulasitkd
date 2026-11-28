@@ -14,10 +14,13 @@ const ApiClient = (function () {
   const _inflight = {};
   const _memCache = {};
   let _writeEpoch = 0;
+  let _batchQueue = [];
+  let _batchTimer = null;
 
   const TOKEN_KEY = 'simtkd_session_token';
   const USER_KEY = 'simtkd_session_user';
   const DEMO_DB_KEY = 'simtkd_demo_db_v1';
+  const SWR_PREFIX = 'simtkd_swr_v1_';
 
   function getGasUrl() {
     const u = (window.APP_CONFIG && window.APP_CONFIG.GAS_URL) || '';
@@ -46,13 +49,112 @@ const ApiClient = (function () {
     }
   }
 
+  function clearSwr() {
+    Object.keys(_memCache).forEach(function (k) { delete _memCache[k]; });
+    try {
+      const rm = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (k && k.indexOf(SWR_PREFIX) === 0) rm.push(k);
+      }
+      rm.forEach(function (k) { sessionStorage.removeItem(k); });
+    } catch (e) {}
+  }
+
+  function readSwr(cacheKey) {
+    if (_memCache[cacheKey]) return _memCache[cacheKey];
+    try {
+      const raw = sessionStorage.getItem(SWR_PREFIX + cacheKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        _memCache[cacheKey] = parsed;
+        return parsed;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function writeSwr(cacheKey, val) {
+    const entry = { ts: Date.now(), val: val };
+    _memCache[cacheKey] = entry;
+    try {
+      const s = JSON.stringify(entry);
+      if (s.length < 250000) sessionStorage.setItem(SWR_PREFIX + cacheKey, s);
+    } catch (e) {}
+  }
+
   function clearSession() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    Object.keys(_memCache).forEach(function (k) { delete _memCache[k]; });
+    clearSwr();
   }
 
-  /** Request POST CORS-safe ke GAS + Deduplikasi + SWR */
+  function triggerNotifDrain(json, action) {
+    if (json && json.nq && json.nq > 0 && action !== 'notif.drain') {
+      setTimeout(function () {
+        fetch(getGasUrl(), {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'notif.drain', data: {}, token: getToken() })
+        }).catch(function () {});
+      }, 400);
+    }
+  }
+
+  async function postGas(payload) {
+    const res = await fetch(getGasUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // WAJIB anti-CORS GAS
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (!json.success) {
+      throw new Error(json.message || 'Permintaan gagal diproses server.');
+    }
+    triggerNotifDrain(json, payload.action);
+    return json.data;
+  }
+
+  function flushBatch() {
+    _batchTimer = null;
+    const queue = _batchQueue;
+    _batchQueue = [];
+    if (!queue.length) return;
+
+    if (queue.length === 1) {
+      const item = queue[0];
+      postGas({ action: item.action, data: item.data, token: getToken() })
+        .then(function (val) {
+          if (item.epoch === _writeEpoch) writeSwr(item.cacheKey, val);
+          item.resolve(val);
+        })
+        .catch(item.reject);
+      return;
+    }
+
+    // Gabungkan maksimal 10 panggilan read dalam 1x POST batch (gas-scale-turbo 4.2)
+    for (let offset = 0; offset < queue.length; offset += 10) {
+      const chunk = queue.slice(offset, offset + 10);
+      const calls = chunk.map(function (it) { return { action: it.action, data: it.data }; });
+      postGas({ action: 'batch', data: { calls: calls }, token: getToken() })
+        .then(function (results) {
+          chunk.forEach(function (item, idx) {
+            const r = results && results[idx];
+            if (!r || !r.success) {
+              item.reject(new Error((r && r.message) || 'Permintaan batch gagal.'));
+            } else {
+              if (item.epoch === _writeEpoch) writeSwr(item.cacheKey, r.data);
+              item.resolve(r.data);
+            }
+          });
+        })
+        .catch(function (err) {
+          chunk.forEach(function (item) { item.reject(err); });
+        });
+    }
+  }
+
+  /** Request POST CORS-safe ke GAS + Deduplikasi + Auto-Batcher + SWR */
   async function call(action, data, opts) {
     opts = opts || {};
     if (isDemoMode()) {
@@ -64,57 +166,48 @@ const ApiClient = (function () {
 
     if (!isRead) {
       _writeEpoch++;
-      Object.keys(_memCache).forEach(function (k) { delete _memCache[k]; });
-    } else if (!opts.forceFresh && _memCache[cacheKey]) {
-      const entry = _memCache[cacheKey];
-      if (Date.now() - entry.ts < (opts.ttlMs || 45000)) {
-        return entry.val;
-      }
+      clearSwr();
+      return postGas({ action: action, data: data || {}, token: getToken() });
+    }
+
+    const ttlMs = opts.ttlMs || 60000;
+    const cached = !opts.forceFresh ? readSwr(cacheKey) : null;
+    if (cached && (Date.now() - cached.ts < ttlMs)) {
+      return cached.val;
     }
 
     const inflightKey = _writeEpoch + '|' + cacheKey;
-    if (isRead && _inflight[inflightKey]) return _inflight[inflightKey];
+    if (_inflight[inflightKey]) return _inflight[inflightKey];
 
-    const promise = (async function () {
-      const res = await fetch(getGasUrl(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // WAJIB anti-CORS GAS
-        body: JSON.stringify({
-          action: action,
-          data: data || {},
-          token: getToken()
-        })
+    const promise = new Promise(function (resolve, reject) {
+      _batchQueue.push({
+        action: action,
+        data: data || {},
+        cacheKey: cacheKey,
+        epoch: _writeEpoch,
+        resolve: resolve,
+        reject: reject
       });
-      const json = await res.json();
-      if (!json.success) {
-        throw new Error(json.message || 'Permintaan gagal diproses server.');
+      if (!_batchTimer) {
+        _batchTimer = setTimeout(flushBatch, 0);
       }
-      if (isRead) {
-        _memCache[cacheKey] = { ts: Date.now(), val: json.data };
-      }
-      // Background drain antrean notifikasi tanpa memblokir UI (gas-scale-turbo)
-      if (json.nq && json.nq > 0 && action !== 'notif.drain') {
-        setTimeout(function () {
-          fetch(getGasUrl(), {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'notif.drain', data: {}, token: getToken() })
-          }).catch(function () {});
-        }, 400);
-      }
-      return json.data;
-    })();
+    });
 
-    if (isRead) {
-      _inflight[inflightKey] = promise;
-      promise.finally(function () { delete _inflight[inflightKey]; });
-    }
+    _inflight[inflightKey] = promise;
+    promise.finally(function () { delete _inflight[inflightKey]; });
     return promise;
+  }
+
+  function prefetch(calls) {
+    if (isDemoMode() || !Array.isArray(calls) || !calls.length) return;
+    Promise.all(calls.map(function (c) {
+      return call(c.action, c.data || {}).catch(function () {});
+    }));
   }
 
   function invalidateCache() {
     _writeEpoch++;
-    Object.keys(_memCache).forEach(function (k) { delete _memCache[k]; });
+    clearSwr();
   }
 
   // ==========================================================================
@@ -665,6 +758,7 @@ const ApiClient = (function () {
 
   return {
     call: call,
+    prefetch: prefetch,
     isDemoMode: isDemoMode,
     getToken: getToken,
     setSession: setSession,

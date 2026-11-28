@@ -133,12 +133,31 @@ const AdminPanel = (function () {
     if (tab) state.tab = tab;
     destroyCharts();
     paintShell(root);
+    if (state.tab === 'overview' && state.overview) {
+      mountOverviewCharts();
+    }
 
     try {
       if (state.tab === 'overview') {
-        state.overview = await ApiClient.call('admin.overview');
-        paintShell(root);
-        mountOverviewCharts();
+        const fresh = await ApiClient.call('admin.overview');
+        const changed = JSON.stringify(fresh) !== JSON.stringify(state.overview);
+        state.overview = fresh;
+        if (changed || !document.getElementById('chartAdminWeekly')) {
+          destroyCharts();
+          paintShell(root);
+          mountOverviewCharts();
+        }
+        // Warmup tab admin berikutnya dalam 1 batch di background (0ms saat diklik)
+        if (!state.qData.paket.length) {
+          setTimeout(function () {
+            ApiClient.prefetch([
+              { action: 'admin.getQuestions', data: { paket_id: '' } },
+              { action: 'admin.getReports' },
+              { action: 'admin.crmList' },
+              { action: 'admin.notifConfig' }
+            ]);
+          }, 250);
+        }
       } else if (state.tab === 'questions') {
         const [qd, rep] = await Promise.all([
           ApiClient.call('admin.getQuestions', { paket_id: '' }),
